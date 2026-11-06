@@ -27,19 +27,23 @@ const description =
 const steps = [
   {
     title: 'Download the template',
+    tone: 'blue',
     text: 'Enter your name and email on the download page. You get your own copy in Google Sheets, with an Excel (.xlsx) download one click away.',
     cta: true,
   },
   {
     title: 'Open the spreadsheet',
+    tone: 'green',
     text: 'Open your copy in Google Sheets, or open the .xlsx file in Excel. The Personal Finance Statement (PFS) tab is the main sheet; Homebuyer Readiness is a second tab.',
   },
   {
     title: 'Enter your accounts',
+    tone: 'yellow',
     text: 'Under each asset and liability category, type the institution name and the latest balance. Add a row if you have more accounts than the template shows. Category totals, total assets, total liabilities and net worth calculate automatically.',
   },
   {
     title: 'Review, print and sign',
+    tone: 'green',
     text: 'Check the numbers against your latest statements, set the "as of" date, then print the PFS tab or export it to PDF. Sign and date it before you send it to your lender or advisor.',
   },
 ];
@@ -259,9 +263,27 @@ const jsonLd = [
           <h2 id="categories-title">Tailored to create a personal financial statement super-fast</h2>
           <p class="lead">A comprehensive list of categories modeled on common personal financial statement forms, with the flexibility to add your own.</p>
           <ul class="list-check">
-            <li data-view="assets">{STATS.assetCategories} asset categories</li>
-            <li data-view="liabilities">{STATS.liabilityCategories} liability categories</li>
-            <li>Dynamic calculation formulas</li>
+            <li class="cat-item">
+              <label class="cat-toggle">
+                <input class="cat-input" type="checkbox" checked data-cat="assets" />
+                <span class="cat-box" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M2.5 6.2l2.3 2.3 4.7-4.9" pathLength="1" /></svg></span>
+                <span>{STATS.assetCategories} asset categories</span>
+              </label>
+            </li>
+            <li class="cat-item">
+              <label class="cat-toggle">
+                <input class="cat-input" type="checkbox" checked data-cat="liabilities" />
+                <span class="cat-box" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M2.5 6.2l2.3 2.3 4.7-4.9" pathLength="1" /></svg></span>
+                <span>{STATS.liabilityCategories} liability categories</span>
+              </label>
+            </li>
+            <li class="cat-item">
+              <label class="cat-toggle">
+                <input class="cat-input" type="checkbox" checked data-cat="formulas" />
+                <span class="cat-box" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M2.5 6.2l2.3 2.3 4.7-4.9" pathLength="1" /></svg></span>
+                <span>Dynamic calculation formulas</span>
+              </label>
+            </li>
           </ul>
           <div>
             <Button href="/download/" variant="primary">Get the template for free</Button>
@@ -283,7 +305,7 @@ const jsonLd = [
     <ol class="steps">
       {
         steps.map((s, i) => (
-          <li class="card step">
+          <li class="card step" data-tone={s.tone}>
             <span class="step-num num" aria-hidden="true">{i + 1}</span>
             <h3><span class="sr-only">Step {i + 1}: </span>{s.title}</h3>
             <p class="muted">{s.text}</p>
@@ -612,6 +634,31 @@ const jsonLd = [
     font-weight: 600;
   }
 
+  .steps > li[data-tone='blue'] {
+    --tone: 108, 190, 228;
+  }
+
+  .steps > li[data-tone='green'] {
+    --tone: 64, 170, 74;
+  }
+
+  .steps > li[data-tone='yellow'] {
+    --tone: 250, 195, 68;
+  }
+
+  .steps > li.is-active {
+    --edge: rgba(var(--tone), 0.9);
+    box-shadow: 0 10px 30px -14px rgba(var(--tone), 0.45);
+  }
+
+  .steps > li.is-active .step-num {
+    background: rgb(var(--tone));
+  }
+
+  .steps > li.is-active[data-tone='yellow'] .step-num {
+    color: var(--ink);
+  }
+
   .step h3 {
     font-size: 1.25rem;
   }
@@ -630,7 +677,8 @@ const jsonLd = [
     transition:
       opacity 500ms ease-out,
       filter 500ms ease-out,
-      transform 500ms ease-out;
+      transform 500ms ease-out,
+      box-shadow 500ms ease-out;
   }
 
   html.js .steps.is-sequencing > li:not(.is-active) {
@@ -901,22 +949,113 @@ const jsonLd = [
     font-weight: 560;
   }
 
-  /* Categories list: hover on the two view rows highlights them as a pill (margins keep the check icon in place). */
-  #categories ul.list-check > li[data-view] {
-    margin-left: -6px;
-    padding: 0 6px 0 38px;
-    border-radius: 10px;
-    cursor: default;
-    transition: background-color 200ms cubic-bezier(0.23, 1, 0.32, 1);
+  /* Categories toggles: real checkboxes drawn as the list-check square; no row highlight on hover. */
+  #categories ul.list-check > li.cat-item {
+    padding-left: 0;
   }
 
-  #categories ul.list-check > li[data-view]::before {
-    left: 6px;
+  #categories ul.list-check > li.cat-item::before {
+    content: none;
+  }
+
+  #categories .cat-toggle {
+    position: relative;
+    display: block;
+    padding-left: 32px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  #categories .cat-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  #categories .cat-box {
+    --box: #40aa4a;
+    position: absolute;
+    left: 0;
+    top: 0.2em;
+    display: grid;
+    place-items: center;
+    box-sizing: border-box;
+    width: 20px;
+    height: 20px;
+    border: 1.5px solid var(--box);
+    border-radius: 6px;
+    background-color: transparent;
+  }
+
+  #categories .cat-item:nth-child(3n + 2) .cat-box {
+    --box: #6cbee4;
+  }
+
+  #categories .cat-item:nth-child(3n + 3) .cat-box {
+    --box: #fac344;
+  }
+
+  #categories .cat-box svg {
+    width: 12px;
+    height: 12px;
+    fill: none;
+    opacity: 0;
+    scale: 0.6;
+  }
+
+  #categories .cat-box path {
+    stroke: #fff;
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+  }
+
+  #categories .cat-input:checked + .cat-box {
+    background-color: var(--box);
+  }
+
+  #categories .cat-input:checked + .cat-box svg {
+    opacity: 1;
+    scale: 1;
+  }
+
+  #categories .cat-input:checked + .cat-box path {
+    stroke-dashoffset: 0;
+  }
+
+  #categories .cat-input:focus-visible + .cat-box {
+    outline: 2px solid #2e2926;
+    outline-offset: 3px;
+  }
+
+  #categories .cat-toggle:active .cat-box {
+    scale: 0.9;
   }
 
   @media (hover: hover) and (pointer: fine) {
-    #categories ul.list-check > li[data-view]:hover {
-      background: var(--surface);
+    #categories .cat-toggle:hover .cat-box {
+      filter: brightness(1.08);
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    #categories .cat-box {
+      transition: background-color 160ms cubic-bezier(0.23, 1, 0.32, 1), filter 160ms cubic-bezier(0.23, 1, 0.32, 1), scale 120ms cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    #categories .cat-box svg {
+      transition: opacity 160ms cubic-bezier(0.23, 1, 0.32, 1), scale 160ms cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    #categories .cat-box path {
+      transition: stroke-dashoffset 160ms cubic-bezier(0.23, 1, 0.32, 1);
     }
   }
 </style>
@@ -1085,18 +1224,19 @@ const jsonLd = [
 
 <script>
   const section = document.getElementById('categories');
-  const list = section?.querySelector<HTMLUListElement>('ul.list-check') ?? null;
   const svg = section?.querySelector<SVGSVGElement>('svg.wsi-cats') ?? null;
-  if (list && svg) {
-    const show = (view: string) => svg.setAttribute('data-view', view);
-    list.querySelectorAll<HTMLLIElement>('li').forEach((li) => {
-      const view = li.dataset.view ?? 'mixed';
-      li.addEventListener('pointerenter', () => show(view));
-      li.addEventListener('focusin', () => show(view));
-    });
-    list.addEventListener('pointerleave', () => show('mixed'));
-    list.addEventListener('focusout', (e) => {
-      if (!list.contains(e.relatedTarget as Node | null)) show('mixed');
-    });
+  const assets = section?.querySelector<HTMLInputElement>('input[data-cat="assets"]') ?? null;
+  const liabilities = section?.querySelector<HTMLInputElement>('input[data-cat="liabilities"]') ?? null;
+  const formulas = section?.querySelector<HTMLInputElement>('input[data-cat="formulas"]') ?? null;
+  if (svg && assets && liabilities && formulas) {
+    // Checkboxes drive the illustration: asset/liability toggles pick the view, formulas toggle the values.
+    const sync = () => {
+      const a = assets.checked;
+      const l = liabilities.checked;
+      svg.setAttribute('data-view', a && l ? 'mixed' : a ? 'assets' : l ? 'liabilities' : 'none');
+      svg.setAttribute('data-values', formulas.checked ? 'on' : 'off');
+    };
+    [assets, liabilities, formulas].forEach((input) => input.addEventListener('change', sync));
+    sync();
   }
 </script>

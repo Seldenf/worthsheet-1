@@ -127,10 +127,23 @@ const inStyle = (d: number, dur: number, y: number, s: number) => `--in-d:${d}ms
   svg[data-active] .wsi-steps-n3, svg[data-active] .wsi-steps-n4 { filter: grayscale(.9); opacity: .45; }
   svg[data-active="1"] .wsi-steps-n1, svg[data-active="2"] .wsi-steps-n2,
   svg[data-active="3"] .wsi-steps-n3, svg[data-active="4"] .wsi-steps-n4 {
-    filter: drop-shadow(0 8px 16px rgba(46,41,38,.18));
     opacity: 1;
     translate: 0 -6px;
   }
+  svg[data-active="1"] .wsi-steps-n1 { filter: drop-shadow(0 10px 18px rgba(108,190,228,.35)); }
+  svg[data-active="2"] .wsi-steps-n2 { filter: drop-shadow(0 10px 18px rgba(64,170,74,.35)); }
+  svg[data-active="3"] .wsi-steps-n3 { filter: drop-shadow(0 10px 18px rgba(250,195,68,.35)); }
+  svg[data-active="4"] .wsi-steps-n4 { filter: drop-shadow(0 10px 18px rgba(64,170,74,.35)); }
+
+  /* Soft tone tint on the active tile's pad (base rect) and ground shadow (second rect of the shadow group). */
+  svg[data-active="1"] .wsi-steps-base.wsi-steps-n1 rect { fill: rgba(108,190,228,.22); }
+  svg[data-active="2"] .wsi-steps-base.wsi-steps-n2 rect { fill: rgba(64,170,74,.22); }
+  svg[data-active="3"] .wsi-steps-base.wsi-steps-n3 rect { fill: rgba(250,195,68,.22); }
+  svg[data-active="4"] .wsi-steps-base.wsi-steps-n4 rect { fill: rgba(64,170,74,.22); }
+  svg[data-active="1"] .wsi-steps-n1 .wsi-steps-sh-mid rect:last-child { fill: rgba(108,190,228,.35); }
+  svg[data-active="2"] .wsi-steps-n2 .wsi-steps-sh-mid rect:last-child { fill: rgba(64,170,74,.35); }
+  svg[data-active="3"] .wsi-steps-n3 .wsi-steps-sh-mid rect:last-child { fill: rgba(250,195,68,.35); }
+  svg[data-active="4"] .wsi-steps-n4 .wsi-steps-sh-mid rect:last-child { fill: rgba(64,170,74,.35); }
 
   /* Only the active step breathes; inactive steps hold still while one is selected. */
   svg[data-active] .wsi-steps-base,

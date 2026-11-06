@@ -187,11 +187,18 @@ function parallax(svg: SVGElement, area: HTMLElement) {
 }
 
 // Spreadsheet background for opted-in sections only (`main section[data-sheet]`). Each gets an
-// isometric cell grid generated once at init as an inline SVG data URL in --sheet (motion.css draws
-// it on ::before). Column widths vary per row band (1x / 1.5x / 2x), so it reads as irregular, not
-// tiled. About 1 cell in 18 carries a small value. Seeded per section, so the pattern is stable.
-const SHEET_VALUES = ['$1,240', '$980', '12%', '$4.2k', '=SUM', '28%', '$310'];
-const SHEET_WIDTHS = [1, 1.5, 2];
+// isometric grid generated once at init as an inline SVG data URL in --sheet (motion.css draws
+// it on ::before). Each column has one width and each row one height for the whole section, so
+// every line runs straight and continuous in the projection. Columns are mostly 1x, sometimes
+// 1.6x or 2.2x. About 1 cell in 18 carries a small value; wider columns get longer values.
+// Seeded per section, so the pattern is stable.
+const SHEET_VALUES = [
+  ['$980', '12%', '$310', '28%'],
+  ['$1,240', '$4.2k', '=SUM'],
+  ['$12,480', '=SUM(C2:C9)', 'Q3 total'],
+];
+const SHEET_COL_WIDTHS = [1, 1, 1, 1, 1, 1.6, 2.2];
+const SHEET_ROW_HEIGHTS = [1, 1, 1.5];
 const SHEET_HX = 44; // screen half-width of a unit cell in the isometric projection
 const SHEET_HY = 22; // screen half-height of a unit cell
 const SHEET_LERP = 0.12;
@@ -228,22 +235,47 @@ function sheetSvg(width: number, height: number, seed: number) {
   const tMin = Math.floor(Math.min(...corners.map((c) => c.t))) - 1;
   const tMax = Math.ceil(Math.max(...corners.map((c) => c.t))) + 1;
 
+  // Column widths and row heights are drawn once, before any cell, so every grid line runs
+  // the full length of its column or row.
+  const cols: { s: number; w: number }[] = [];
+  for (let s = sMin; s < sMax; ) {
+    const w = SHEET_COL_WIDTHS[Math.floor(rnd() * SHEET_COL_WIDTHS.length)];
+    cols.push({ s, w });
+    s += w;
+  }
+  const rows: { t: number; h: number }[] = [];
+  for (let t = tMin; t < tMax; ) {
+    const h = SHEET_ROW_HEIGHTS[Math.floor(rnd() * SHEET_ROW_HEIGHTS.length)];
+    rows.push({ t, h });
+    t += h;
+  }
+  const last = cols[cols.length - 1];
+  const sEnd = last.s + last.w;
+  const lastRow = rows[rows.length - 1];
+  const tEnd = lastRow.t + lastRow.h;
+
+  // Every column boundary runs top to bottom and every row boundary left to right.
   let edges = '';
+  for (const s of [...cols.map((c) => c.s), sEnd]) {
+    const [x1, y1] = isoPoint(s, tMin);
+    const [x2, y2] = isoPoint(s, tEnd);
+    edges += `M${x1.toFixed(1)},${y1.toFixed(1)}L${x2.toFixed(1)},${y2.toFixed(1)}`;
+  }
+  for (const t of [...rows.map((r) => r.t), tEnd]) {
+    const [x1, y1] = isoPoint(sMin, t);
+    const [x2, y2] = isoPoint(sEnd, t);
+    edges += `M${x1.toFixed(1)},${y1.toFixed(1)}L${x2.toFixed(1)},${y2.toFixed(1)}`;
+  }
+
   let labels = '';
-  for (let t = tMin; t < tMax; t++) {
-    // Each row band starts at a random half-step offset and steps by random 1x / 1.5x / 2x columns.
-    let s = sMin - Math.floor(rnd() * 4) * 0.5;
-    while (s < sMax) {
-      const w = SHEET_WIDTHS[Math.floor(rnd() * SHEET_WIDTHS.length)];
-      const pts = [isoPoint(s, t), isoPoint(s + w, t), isoPoint(s + w, t + 1), isoPoint(s, t + 1)];
-      edges += `M${pts.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join('L')}Z`;
-      if (rnd() < 1 / 18) {
-        const cx = pts.reduce((a, p) => a + p[0], 0) / 4;
-        const cy = pts.reduce((a, p) => a + p[1], 0) / 4;
-        const value = SHEET_VALUES[Math.floor(rnd() * SHEET_VALUES.length)];
-        labels += `<text x="${cx.toFixed(1)}" y="${(cy + 2.5).toFixed(1)}">${value}</text>`;
-      }
-      s += w;
+  for (const row of rows) {
+    for (const col of cols) {
+      if (rnd() >= 1 / 18) continue;
+      // Wider columns take longer values.
+      const values = SHEET_VALUES[col.w >= 2.2 ? 2 : col.w >= 1.6 ? 1 : 0];
+      const value = values[Math.floor(rnd() * values.length)];
+      const [cx, cy] = isoPoint(col.s + col.w / 2, row.t + row.h / 2);
+      labels += `<text x="${cx.toFixed(1)}" y="${(cy + 2.5).toFixed(1)}">${value}</text>`;
     }
   }
   return (

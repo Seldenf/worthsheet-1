@@ -44,11 +44,13 @@ const { cover, class: className, wide = false } = Astro.props;
 const key = cover ?? DEFAULT;
 const Art = ART[key];
 const tint = TINTS[KEYS.indexOf(key) % TINTS.length];
+const tone = tint.replace('--tint-', '');
 ---
 
 <div
   class:list={['post-cover', wide && 'post-cover-wide', className]}
   style={`--cover-tint: var(${tint})`}
+  data-tint={tone}
   aria-hidden="true"
 >
   <Art class="post-cover-art" />
@@ -85,6 +87,27 @@ const tint = TINTS[KEYS.indexOf(key) % TINTS.length];
     background-color: color-mix(in srgb, var(--cover-tint) 55%, #f5f3f2);
   }
 
+  /* The card around a cover takes the cover's tint: edge-light ring colour, and a soft glow on hover. */
+  :global(:is(.card, .post-card):has(.post-cover)) {
+    transition: box-shadow 300ms var(--ease-out);
+  }
+
+  :global(:is(.card, .post-card):has(.post-cover[data-tint="blue"])) {
+    --edge: rgba(108, 190, 228, 0.9);
+  }
+
+  :global(:is(.card, .post-card):has(.post-cover[data-tint="green"])) {
+    --edge: rgba(64, 170, 74, 0.85);
+  }
+
+  :global(:is(.card, .post-card):has(.post-cover[data-tint="cream"])) {
+    --edge: rgba(250, 195, 68, 0.85);
+  }
+
+  :global(:is(.card, .post-card):has(.post-cover[data-tint="pink"])) {
+    --edge: rgba(224, 127, 184, 0.85);
+  }
+
   /* Looping animations stay paused at rest. :where keeps specificity at zero
      so the hover rule below can override it. */
   .post-cover:not(.post-cover-wide)
@@ -93,6 +116,22 @@ const tint = TINTS[KEYS.indexOf(key) % TINTS.length];
   }
 
   @media (hover: hover) and (pointer: fine) {
+    :global(:is(.card, .post-card):has(.post-cover[data-tint="blue"]):hover) {
+      box-shadow: 0 12px 34px -16px rgba(108, 190, 228, 0.5);
+    }
+
+    :global(:is(.card, .post-card):has(.post-cover[data-tint="green"]):hover) {
+      box-shadow: 0 12px 34px -16px rgba(64, 170, 74, 0.5);
+    }
+
+    :global(:is(.card, .post-card):has(.post-cover[data-tint="cream"]):hover) {
+      box-shadow: 0 12px 34px -16px rgba(250, 195, 68, 0.5);
+    }
+
+    :global(:is(.card, .post-card):has(.post-cover[data-tint="pink"]):hover) {
+      box-shadow: 0 12px 34px -16px rgba(224, 127, 184, 0.5);
+    }
+
     :global(:is(a, .card, .post-card):is(:hover, :focus-visible)) .post-cover {
       background-color: var(--cover-tint);
     }

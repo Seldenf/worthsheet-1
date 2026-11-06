@@ -49,7 +49,7 @@ const G = 0.7;
 const glyphTransform = `translate(${S / 2} ${S / 2}) scale(${G}) translate(-12 -12)`;
 // ~1.8 viewBox units after the iso projection (its linear map has mean scale ≈1).
 const glyphStroke = (1.8 / G).toFixed(2);
-const delayStyle = `animation-delay:${delay}s`;
+const delayStyle = `--iso-delay:${delay}s`;
 ---
 
 <svg
@@ -67,22 +67,30 @@ const delayStyle = `animation-delay:${delay}s`;
   </g>
 
   <g class="iso-ico-tile" style={delayStyle}>
-    <g transform={iso(CY + SLAB)}>
-      <rect width={S} height={S} rx={S * 0.17} fill={t.side}></rect>
+    <g class="iso-ico-slab">
+      <g class="iso-ico-slab-bob">
+        <g transform={iso(CY + SLAB)}>
+          <rect width={S} height={S} rx={S * 0.17} fill={t.side}></rect>
+        </g>
+      </g>
     </g>
-    <g transform={iso(CY)}>
-      <rect width={S} height={S} rx={S * 0.17} fill={t.fill} stroke={t.edge} stroke-width={t.edgeWidth}></rect>
-      <g
-        class="iso-ico-glyph"
-        transform={glyphTransform}
-        color={t.ink}
-        stroke="currentColor"
-        stroke-width={glyphStroke}
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        fill="none"
-        set:html={ICONS[icon]}
-      ></g>
+    <g class="iso-ico-top">
+      <g class="iso-ico-top-bob">
+        <g transform={iso(CY)}>
+          <rect width={S} height={S} rx={S * 0.17} fill={t.fill} stroke={t.edge} stroke-width={t.edgeWidth}></rect>
+          <g
+            class="iso-ico-glyph"
+            transform={glyphTransform}
+            color={t.ink}
+            stroke="currentColor"
+            stroke-width={glyphStroke}
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            fill="none"
+            set:html={ICONS[icon]}
+          ></g>
+        </g>
+      </g>
     </g>
   </g>
 </svg>
@@ -94,17 +102,60 @@ const delayStyle = `animation-delay:${delay}s`;
     flex: none;
   }
 
-  @keyframes iso-ico-breathe {
-    0%, 100% { translate: 0 0; }
-    50% { translate: 0 -1.5px; }
+  @keyframes iso-ico-breathe-top {
+    0%, 100% { translate: 0 -1.5px; }
+    50% { translate: 0 1.5px; }
+  }
+
+  @keyframes iso-ico-breathe-slab {
+    0%, 100% { translate: 0 -0.5px; }
+    50% { translate: 0 0.5px; }
+  }
+
+  /* Rest: shadow hidden (fades in on hover/focus of an ancestor). */
+  .iso-ico-shadow {
+    opacity: 0;
+    transform: scale(0.8);
+    transform-box: fill-box;
+    transform-origin: center;
+    transition:
+      opacity 320ms cubic-bezier(0.23, 1, 0.32, 1),
+      transform 320ms cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  :is(a, .card, .mega-item, .mega-feature, .iso-hover):is(:hover, :focus-visible) .iso-ico .iso-ico-shadow {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+
+  /* Layers: wrapper lifts (plain <g>), inner bob loops; glyph sits inside the top bob. */
+  .iso-ico-slab,
+  .iso-ico-top {
+    translate: 0 0;
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    .iso-ico-tile {
-      transform-box: fill-box;
-      transform-origin: center;
-      will-change: translate;
-      animation: iso-ico-breathe 6s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+    .iso-ico-slab,
+    .iso-ico-top {
+      transition: translate 320ms cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    :is(a, .card, .mega-item, .mega-feature, .iso-hover):is(:hover, :focus-visible) .iso-ico .iso-ico-top {
+      translate: 0 -3px;
+    }
+
+    :is(a, .card, .mega-item, .mega-feature, .iso-hover):is(:hover, :focus-visible) .iso-ico .iso-ico-slab {
+      translate: 0 -1px;
+    }
+
+    :is(a, .card, .mega-item, .mega-feature, .iso-hover):is(:hover, :focus-visible) .iso-ico .iso-ico-top-bob {
+      animation: iso-ico-breathe-top 3.2s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+      animation-delay: var(--iso-delay, 0s);
+    }
+
+    :is(a, .card, .mega-item, .mega-feature, .iso-hover):is(:hover, :focus-visible) .iso-ico .iso-ico-slab-bob {
+      animation: iso-ico-breathe-slab 3.2s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+      animation-delay: calc(var(--iso-delay, 0s) + 1.6s);
     }
   }
 </style>

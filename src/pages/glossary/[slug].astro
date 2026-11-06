@@ -133,19 +133,19 @@ const jsonLd = [
 
   .head-art {
     width: 100%;
-    max-width: 280px;
+    max-width: 360px;
     height: auto;
-    justify-self: start;
+    justify-self: center;
   }
 
   @media (min-width: 900px) {
     .head {
-      grid-template-columns: 1fr 280px;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
       gap: 56px;
     }
 
     .head-art {
-      justify-self: end;
+      max-width: 520px;
     }
   }
 

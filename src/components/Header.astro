@@ -32,14 +32,20 @@ const current = Astro.url.pathname;
 const isCurrent = (path: string) => current === url(path);
 const calculatorsActive = [...calculators, featured].some((c) => current.startsWith(url(c.path)));
 
-const logoRows = Array.from({ length: 16 }, (_, k) => {
+const logoRows = Array.from({ length: 24 }, (_, k) => {
+  // Rows 1–2 are the morph targets (green at y=16, blue at y=36); later rows cycle cream / green / blue.
   const palette = [
+    { fill: '#40aa4a', opacity: 0.9 },
+    { fill: '#6cbee4', opacity: 1 },
+  ];
+  const cycle = [
     { fill: '#fdfcfa', opacity: 1 },
     { fill: '#40aa4a', opacity: 0.9 },
     { fill: '#6cbee4', opacity: 1 },
-    { fill: '#fdfcfa', opacity: 0.9 },
   ];
-  return { y: 14 + k * 20, ...palette[k % 4] };
+  // y=16 and y=36 centre on the original square rows; from row 2 on, a 16-unit pitch (12 tall, 4 gap).
+  const y = k === 0 ? 16 : 36 + (k - 1) * 16;
+  return { y, ...(k < 2 ? palette[k] : cycle[(k - 2) % 3]) };
 });
 ---
 
@@ -59,20 +65,10 @@ const logoRows = Array.from({ length: 16 }, (_, k) => {
               {
                 logoRows.map((r) => (
                   <g class="logo-row">
-                    <rect x="14" y={r.y} width="36" height="16" rx="4" fill={r.fill} fill-opacity={r.opacity}></rect>
-                    <rect x="26" y={r.y} width="1" height="16" fill="#2e2926" fill-opacity="0.22"></rect>
-                    <rect x="38" y={r.y} width="1" height="16" fill="#2e2926" fill-opacity="0.22"></rect>
+                    <rect x="14" y={r.y} width="36" height="12" rx="4" fill={r.fill} fill-opacity={r.opacity}></rect>
+                    <rect x="26" y={r.y} width="1" height="12" fill="#2e2926" fill-opacity="0.22"></rect>
+                    <rect x="38" y={r.y} width="1" height="12" fill="#2e2926" fill-opacity="0.22"></rect>
                   </g>
-                ))
-              }
-            </g>
-            <g class="logo-calc">
-              <rect class="logo-sweep" x="6" y="12" width="2.5" height="40" fill="#fdfcfa" fill-opacity="0.75"></rect>
-              <rect x="22" y="22" width="20" height="20" rx="5" fill="#2e2926"></rect>
-              <text x="32" y="38.5" text-anchor="middle" font-size="18" fill="#fdfcfa">Σ</text>
-              {
-                [[19, 19], [46, 20], [45, 46], [18, 45]].map(([cx, cy]) => (
-                  <circle class="logo-spark" cx={cx} cy={cy} r="1.2" fill="#fdfcfa"></circle>
                 ))
               }
             </g>
@@ -237,10 +233,14 @@ const logoRows = Array.from({ length: 16 }, (_, k) => {
     }
 
     .logo-mark .sq,
-    .logo-stage,
-    .logo-calc {
+    .logo-stage {
       transform-box: view-box;
       transform-origin: 32px 32px;
+    }
+
+    .logo-row {
+      transform-box: fill-box;
+      transform-origin: 0 50%;
     }
   }
 
@@ -765,12 +765,9 @@ const logoRows = Array.from({ length: 16 }, (_, k) => {
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   if (logo && logoMark && !reduceMotion) {
-    // One shared 2400ms timeline. Every animation is created once, paused at 0, fill both.
-    const DUR = 2400;
+    // One shared 2600ms timeline. Every animation is created paused at 0 and filled both ways.
+    const DUR = 2600;
     const EASE_OUT = 'cubic-bezier(0.23, 1, 0.32, 1)';
-    const EASE_IO = 'cubic-bezier(0.65, 0, 0.35, 1)';
-    const EASE_ACCEL = 'cubic-bezier(0.55, 0, 1, 0.45)';
-    const EASE_LAND = 'cubic-bezier(0.16, 1, 0.3, 1)';
     const el = (sel: string) => logoMark.querySelector(sel) as Element;
 
     type Frame = { t: number } & Record<string, string | number>;
@@ -783,116 +780,122 @@ const logoRows = Array.from({ length: 16 }, (_, k) => {
       all.push(anim);
     }
 
-    // Squares: shrink into the centre (0–220ms), then swirl back out from the centre, staggered 40ms.
-    logoMark.querySelectorAll('.sq').forEach((sq, i) => {
-      const s = 2000 + i * 40;
-      track(sq, [
-        { t: 0, transform: 'rotate(0deg) scale(1)', opacity: 1, easing: EASE_OUT },
-        { t: 220, transform: 'rotate(0deg) scale(0.6)', opacity: 0 },
-        { t: s - 1, transform: 'rotate(0deg) scale(0.6)', opacity: 0 },
-        { t: s, transform: 'rotate(-180deg) scale(0)', opacity: 0, easing: EASE_OUT },
-        { t: DUR, transform: 'rotate(0deg) scale(1)', opacity: 1 },
+    // Morph 0–300ms: TL/BL stretch right into rows 1–2 from the left edge; TR/BR slide left and fade into them.
+    const MORPH = 300;
+    const EMERGE = 2000;
+    const EMERGE_STEP = 40;
+    const EMERGE_MS = 480;
+    const morph = [
+      { sel: '.sq-tl', origin: '14px 22px', sx: 2.25, sy: 0.75, dx: 0 },
+      { sel: '.sq-tr', origin: '32px 32px', sx: 1, sy: 1, dx: -12 },
+      { sel: '.sq-br', origin: '32px 32px', sx: 1, sy: 1, dx: -12 },
+      { sel: '.sq-bl', origin: '14px 42px', sx: 2.25, sy: 0.75, dx: 0 },
+    ];
+    morph.forEach(({ sel, origin, sx, sy, dx }, i) => {
+      const start = EMERGE + i * EMERGE_STEP;
+      track(el(sel), [
+        { t: 0, transform: 'translate(0px, 0px) rotate(0deg) scale(1, 1)', transformOrigin: origin, opacity: 1, easing: EASE_OUT },
+        { t: MORPH, transform: `translate(${dx}px, 0px) rotate(0deg) scale(${sx}, ${sy})`, transformOrigin: origin, opacity: 0 },
+        { t: start, transform: 'translate(0px, 0px) rotate(-180deg) scale(0, 0)', transformOrigin: '32px 32px', opacity: 0, easing: EASE_OUT },
+        { t: start + EMERGE_MS, transform: 'translate(0px, 0px) rotate(0deg) scale(1, 1)', transformOrigin: '32px 32px', opacity: 1 },
+        { t: DUR, transform: 'translate(0px, 0px) rotate(0deg) scale(1, 1)', transformOrigin: '32px 32px', opacity: 1 },
       ]);
     });
 
-    // Rows: row 0 in slot 1 (220–420ms), row 1 in slot 2 (420–600ms), later rows enter below and scroll up.
-    logoMark.querySelectorAll('.logo-row').forEach((row, k) => {
-      if (k === 0) {
-        track(row, [
-          { t: 0, opacity: 0, transform: 'translateY(6px)' },
-          { t: 220, opacity: 0, transform: 'translateY(6px)', easing: EASE_OUT },
-          { t: 420, opacity: 1, transform: 'translateY(0px)' },
-        ]);
-      } else if (k === 1) {
-        track(row, [
-          { t: 0, opacity: 0, transform: 'translateY(6px)' },
-          { t: 420, opacity: 0, transform: 'translateY(6px)', easing: EASE_OUT },
-          { t: 600, opacity: 1, transform: 'translateY(0px)' },
-        ]);
-      } else {
-        track(row, [
-          { t: 0, opacity: 0, transform: 'translateY(0px)' },
-          { t: 600, opacity: 0, transform: 'translateY(0px)' },
-          { t: 601, opacity: 1, transform: 'translateY(0px)' },
-          { t: DUR, opacity: 1, transform: 'translateY(0px)' },
-        ]);
+    // Stack scroll, from one curve shared by the scroll keyframes and the typing schedule:
+    // 0–300 hold; 300–1000 accelerate to −190; 1000–1480 linear to −320; 1480–1900 ease-out stop at −336.
+    const scrollY = (t: number) => {
+      if (t <= MORPH) return 0;
+      if (t <= 1000) {
+        const p = (t - MORPH) / 700;
+        return -190 * p * p;
       }
-    });
+      if (t <= 1480) return -190 - (130 * (t - 1000)) / 480;
+      if (t <= 1900) {
+        const q = (t - 1480) / 420;
+        return -320 - 16 * (1 - (1 - q) ** 3);
+      }
+      return -336;
+    };
+    const blurAt = (t: number) => {
+      if (t <= MORPH) return 0;
+      if (t <= 1000) return (2.4 * (t - MORPH)) / 700;
+      if (t <= 1480) return 2.4;
+      if (t <= 1900) return 2.4 * (1 - (t - 1480) / 420);
+      return 0;
+    };
 
-    // Stack scrolls up 280 units (16 rows − 2 visible slots × 20) with accelerate, then ease-out landing.
-    track(el('.logo-rows'), [
-      { t: 0, transform: 'translateY(0px)', filter: 'blur(0px)' },
-      { t: 600, transform: 'translateY(0px)', filter: 'blur(0px)', easing: EASE_ACCEL },
-      { t: 1150, transform: 'translateY(-140px)', filter: 'blur(1.2px)', easing: EASE_LAND },
-      { t: 1700, transform: 'translateY(-280px)', filter: 'blur(0px)' },
-      { t: DUR, transform: 'translateY(-280px)', filter: 'blur(0px)' },
-    ]);
-
-    // Magic calculation: Σ pops in at 1700–2000ms.
-    track(el('.logo-calc'), [
-      { t: 0, transform: 'scale(0.6)', opacity: 0 },
-      { t: 1700, transform: 'scale(0.6)', opacity: 0, easing: EASE_OUT },
-      { t: 1830, transform: 'scale(1.1)', opacity: 1, easing: EASE_IO },
-      { t: 2000, transform: 'scale(1)', opacity: 1 },
-      { t: DUR, transform: 'scale(1)', opacity: 1 },
-    ]);
-    track(el('.logo-sweep'), [
-      { t: 0, transform: 'translateX(-14px)' },
-      { t: 1700, transform: 'translateX(-14px)', easing: EASE_IO },
-      { t: 2000, transform: 'translateX(78px)' },
-      { t: DUR, transform: 'translateX(78px)' },
-    ]);
-    logoMark.querySelectorAll('.logo-spark').forEach((spark, j) => {
-      const d = j * 30;
-      track(spark, [
-        { t: 0, opacity: 0 },
-        { t: 1700 + d, opacity: 0 },
-        { t: 1760 + d, opacity: 1 },
-        { t: 1820 + d, opacity: 0.2 },
-        { t: 1880 + d, opacity: 1 },
-        { t: 1980 + d, opacity: 0 },
-        { t: DUR, opacity: 0 },
+    // Rows 1–2 crossfade in during the morph. Each later row (absolute top 36 + 16·(k−1)) types for 120ms.
+    // It starts when its top reaches y=60, so it types in as it rises. If it would reach the bottom edge (y=64)
+    // sooner, it starts earlier and is fully typed before entering: fast rows never show an unfilled slot.
+    const ROW_MS = 120;
+    const firstTime = (pred: (t: number) => boolean) => {
+      for (let t = 0; t <= DUR; t += 1) if (pred(t)) return t;
+      return DUR;
+    };
+    const typeStart = (k: number) => {
+      const top = 36 + (k - 1) * 16;
+      const rising = firstTime((t) => top + scrollY(t) <= 60);
+      const entering = firstTime((t) => top + scrollY(t) <= 64);
+      return Math.max(MORPH, Math.min(rising, entering - ROW_MS));
+    };
+    logoMark.querySelectorAll('.logo-row').forEach((row, k) => {
+      if (k < 2) {
+        track(row, [
+          { t: 0, opacity: 0, easing: EASE_OUT },
+          { t: MORPH, opacity: 1 },
+          { t: DUR, opacity: 1 },
+        ]);
+        return;
+      }
+      const s = typeStart(k);
+      track(row, [
+        { t: 0, transform: 'scaleX(0)' },
+        { t: s, transform: 'scaleX(0)', easing: EASE_OUT },
+        { t: s + ROW_MS, transform: 'scaleX(1)' },
+        { t: DUR, transform: 'scaleX(1)' },
       ]);
     });
+    // Stack scroll and blur, sampled every 20ms from the same curve used for the typing schedule.
+    const scrollFrames: Frame[] = [];
+    for (let t = 0; t <= DUR; t += 20) {
+      scrollFrames.push({
+        t,
+        transform: `translateY(${scrollY(t).toFixed(2)}px)`,
+        filter: `blur(${blurAt(t).toFixed(2)}px)`,
+      });
+    }
+    track(el('.logo-rows'), scrollFrames);
 
-    // Vortex 2000–2400ms: whole stage spins into the centre and fades out.
+    // Vortex 1900–2400ms: the stack swirls into the tile centre (0 → −90° → −180°, scale → 0.2, fades out).
     track(el('.logo-stage'), [
       { t: 0, transform: 'rotate(0deg) scale(1)', opacity: 1 },
-      { t: 2000, transform: 'rotate(0deg) scale(1)', opacity: 1, easing: EASE_OUT },
-      { t: DUR, transform: 'rotate(-90deg) scale(0.2)', opacity: 0 },
+      { t: 1900, transform: 'rotate(0deg) scale(1)', opacity: 1, easing: EASE_OUT },
+      { t: 2150, transform: 'rotate(-90deg) scale(0.6)', opacity: 0.6 },
+      { t: 2400, transform: 'rotate(-180deg) scale(0.2)', opacity: 0 },
+      { t: DUR, transform: 'rotate(-180deg) scale(0.2)', opacity: 0 },
     ]);
 
-    let hovered = false;
-    let focused = false;
-    let active = false;
-
-    // Boomerang: forward plays to the magic moment and rest; reverse rewinds to the original logo at 0.
-    function sync() {
-      const want = hovered || focused;
-      if (want === active) return;
-      active = want;
+    // Play once to the end. Hover/focus starts it unless already running; leaving never reverses it; after it ends, the next hover replays from 0.
+    let running = false;
+    function play() {
+      if (running) return;
+      running = true;
       for (const anim of all) {
-        anim.playbackRate = want ? 1 : -1.6;
+        anim.currentTime = 0;
         anim.play();
       }
+      void Promise.all(all.map((anim) => anim.finished)).then(() => {
+        running = false;
+      });
     }
 
     logo.addEventListener('pointerenter', () => {
       if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
-      hovered = true;
-      sync();
-    });
-    logo.addEventListener('pointerleave', () => {
-      hovered = false;
-      sync();
+      play();
     });
     logo.addEventListener('focus', () => {
-      focused = logo.matches(':focus-visible');
-      sync();
-    });
-    logo.addEventListener('blur', () => {
-      focused = false;
-      sync();
+      if (logo.matches(':focus-visible')) play();
     });
   }
 </script>
