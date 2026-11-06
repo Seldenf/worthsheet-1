@@ -116,7 +116,7 @@ const itemList = {
         the Federal Reserve{d.regulators.STATE > 0 && <Fragment>, and <strong>{fmt(d.regulators.STATE)}</strong> by {d.regulators.STATE === 1 ? 'a state authority' : 'state authorities'} alone</Fragment>}; <strong>{fmt(d.stateChartered)}</strong> hold state charters. For complaints or licensing questions,
         contact the <a href={state.regulator.url} rel="noopener" target="_blank">{state.regulator.name}</a>.
       </p>
-      <p class="small muted">Source: FDIC BankFind Suite, data as of {dataDate}.</p>
+      <p class="disclaimer">Source: FDIC BankFind Suite, data as of {dataDate}.</p>
     </div>
   </section>
 
@@ -259,7 +259,7 @@ const itemList = {
         </details>
       )
     }
-    <p class="small muted note">
+    <p class="disclaimer note">
       "Community bank" follows the FDIC's community bank definition, which is based on how a bank earns and lends,
       not only on its size. Listing is public data, not a ranking of the best banks.
     </p>
@@ -351,7 +351,7 @@ const itemList = {
       </div>
       <Faq items={faq} />
     </div>
-    <p class="small muted note">
+    <p class="disclaimer note">
       Source: FDIC BankFind Suite, data as of {dataDate}. Counts reflect active FDIC-insured institutions by
       headquarters state and full-service branch offices (brick-and-mortar and retail) by office state. Not an
       endorsement of any institution.

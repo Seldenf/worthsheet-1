@@ -51,23 +51,10 @@ const benefits = ['Free PFS template', 'Regular template updates', 'Secure and p
           Your journey to simplified finances starts here. Tell us where to send your copy and
           you’ll land in the spreadsheet in seconds.
         </p>
-        <ul class="benefits">
+        <ul class="list-check benefits">
           {
             benefits.map((benefit) => (
-              <li>
-                <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
-                  <circle cx="12" cy="12" r="12" fill="var(--tint-green)" />
-                  <path
-                    d="M7 12.5l3.2 3.2L17 8.8"
-                    fill="none"
-                    stroke="var(--sheets-green)"
-                    stroke-width="2.2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
-                {benefit}
-              </li>
+              <li>{benefit}</li>
             ))
           }
         </ul>
@@ -129,18 +116,8 @@ const benefits = ['Free PFS template', 'Regular template updates', 'Secure and p
   }
 
   .benefits {
-    display: grid;
-    gap: 12px;
-    list-style: none;
-    padding: 0;
     font-weight: 540;
     font-size: 1.0625rem;
-  }
-
-  .benefits li {
-    display: flex;
-    align-items: center;
-    gap: 12px;
   }
 
   .hero-copy a,

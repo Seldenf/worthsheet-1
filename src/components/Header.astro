@@ -4,11 +4,42 @@ import { url } from '../lib/url';
 import Button from './Button.astro';
 
 const calculators = [
-  { name: 'Mortgage Calculator', path: '/mortgage-calculator/' },
-  { name: 'Net Worth Calculator', path: '/net-worth-calculator/' },
-  { name: 'Debt-to-Income Calculator', path: '/debt-to-income-ratio-calculator/' },
-  { name: 'Home Affordability Calculator', path: '/how-much-house-can-i-afford/' },
-  { name: 'Mortgage Readiness Assessment', path: '/mortgage-readiness-assessment/' },
+  {
+    name: 'Mortgage Calculator',
+    path: '/mortgage-calculator/',
+    desc: 'Monthly payment & amortization',
+    tint: 'blue',
+    icon: '<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>',
+  },
+  {
+    name: 'Net Worth Calculator',
+    path: '/net-worth-calculator/',
+    desc: 'Assets minus liabilities',
+    tint: 'green',
+    icon: '<path d="M12 4v16"/><path d="M6 20h12"/><path d="M5 7h14"/><path d="M5 7l-3 7a3 3 0 0 0 6 0z"/><path d="M19 7l-3 7a3 3 0 0 0 6 0z"/>',
+  },
+  {
+    name: 'Debt-to-Income Calculator',
+    path: '/debt-to-income-ratio-calculator/',
+    desc: 'Front-end & back-end DTI',
+    tint: 'cream',
+    icon: '<path d="M19 5L5 19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>',
+  },
+  {
+    name: 'Home Affordability Calculator',
+    path: '/how-much-house-can-i-afford/',
+    desc: 'How much house you can afford',
+    tint: 'pink',
+    icon: '<circle cx="8" cy="15" r="4"/><path d="M11 12l9-9"/><path d="M17 6l3 3"/><path d="M14 9l2 2"/>',
+  },
+  {
+    name: 'Mortgage Readiness Assessment',
+    path: '/mortgage-readiness-assessment/',
+    desc: 'Score 5 criteria lenders check',
+    tint: 'green',
+    featured: true,
+    icon: '<path d="M4 16a8 8 0 1 1 16 0"/><path d="M12 16l4-4"/>',
+  },
 ];
 
 const links = [
@@ -76,9 +107,29 @@ const calculatorsActive = calculators.some((c) => current.startsWith(url(c.path)
           <ul id="nav-calculators" class="dropdown" hidden>
             {
               calculators.map((c) => (
-                <li>
-                  <a href={url(c.path)} aria-current={isCurrent(c.path) ? 'page' : undefined}>
-                    {c.name}
+                <li class:list={[{ featured: c.featured }]}>
+                  <a
+                    class:list={['dd-item', { 'is-featured': c.featured }]}
+                    href={url(c.path)}
+                    aria-current={isCurrent(c.path) ? 'page' : undefined}
+                  >
+                    <span class:list={['dd-icon', `dd-icon--${c.tint}`]} aria-hidden="true">
+                      <svg
+                        viewBox="0 0 24 24"
+                        width="18"
+                        height="18"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        set:html={c.icon}
+                      />
+                    </span>
+                    <span class="dd-text">
+                      <span class="dd-title">{c.name}</span>
+                      <span class="dd-desc">{c.desc}</span>
+                    </span>
                   </a>
                 </li>
               ))
@@ -140,22 +191,32 @@ const calculatorsActive = calculators.some((c) => current.startsWith(url(c.path)
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    /* Squares take the next square's color clockwise; each square is offset by a quarter cycle. */
+    /* Four squares travel clockwise around the 2x2 grid as one rigid ring. Cells are 20 user units apart.
+       Each 3.2s cycle: hold at a corner 0–18%, move to the next corner 18–25%, repeat. */
     .logo-mark .sq {
-      animation-name: logo-cycle;
-      animation-duration: 2.4s;
-      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+      animation-duration: 3.2s;
+      animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1);
       animation-iteration-count: infinite;
       animation-play-state: paused;
     }
 
-    /* Rest offsets (phase 0, 1/4, 1/2, 3/4) => TL green, TR cream, BR blue, BL cream. */
-    .logo-mark .sq-tl { animation-delay: 0s; }
-    .logo-mark .sq-tr { animation-delay: -0.6s; }
-    .logo-mark .sq-br { animation-delay: -1.2s; }
-    .logo-mark .sq-bl { animation-delay: -1.8s; }
+    .logo-mark .sq-tl {
+      animation-name: logo-fly-tl;
+    }
 
-    @media (hover: hover) {
+    .logo-mark .sq-tr {
+      animation-name: logo-fly-tr;
+    }
+
+    .logo-mark .sq-br {
+      animation-name: logo-fly-br;
+    }
+
+    .logo-mark .sq-bl {
+      animation-name: logo-fly-bl;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
       .logo:hover .logo-mark .sq {
         animation-play-state: running;
       }
@@ -166,12 +227,37 @@ const calculatorsActive = calculators.some((c) => current.startsWith(url(c.path)
     }
   }
 
-  @keyframes logo-cycle {
-    0% { fill: #40aa4a; }
-    25% { fill: #fdfcfa; }
-    50% { fill: #6cbee4; }
-    75% { fill: #fdfcfa; }
-    100% { fill: #40aa4a; }
+  /* Paths: TL(0,0) → TR(20,0) → BR(20,20) → BL(0,20) → TL, expressed relative to each square's start corner. */
+  @keyframes logo-fly-tl {
+    0%, 18% { translate: 0 0; }
+    25%, 43% { translate: 20px 0; }
+    50%, 68% { translate: 20px 20px; }
+    75%, 93% { translate: 0 20px; }
+    100% { translate: 0 0; }
+  }
+
+  @keyframes logo-fly-tr {
+    0%, 18% { translate: 0 0; }
+    25%, 43% { translate: 0 20px; }
+    50%, 68% { translate: -20px 20px; }
+    75%, 93% { translate: -20px 0; }
+    100% { translate: 0 0; }
+  }
+
+  @keyframes logo-fly-br {
+    0%, 18% { translate: 0 0; }
+    25%, 43% { translate: -20px 0; }
+    50%, 68% { translate: -20px -20px; }
+    75%, 93% { translate: 0 -20px; }
+    100% { translate: 0 0; }
+  }
+
+  @keyframes logo-fly-bl {
+    0%, 18% { translate: 0 0; }
+    25%, 43% { translate: 0 -20px; }
+    50%, 68% { translate: 20px -20px; }
+    75%, 93% { translate: 20px 0; }
+    100% { translate: 0 0; }
   }
 
   .site-nav {
@@ -228,20 +314,124 @@ const calculatorsActive = calculators.some((c) => current.startsWith(url(c.path)
   .dropdown {
     position: absolute;
     top: calc(100% + 8px);
-    left: 0;
-    min-width: 280px;
-    padding: 8px;
+    left: 50%;
+    translate: -50% 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    width: 560px;
+    max-width: calc(100vw - 2 * var(--gutter));
+    margin: 0;
+    padding: 10px;
     list-style: none;
     background: var(--white);
     border: 1px solid var(--line);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
+    border-radius: 20px;
+    box-shadow: 0 1px 0 var(--line), 0 24px 48px -20px rgba(46, 41, 38, 0.28);
+    transform-origin: top;
   }
 
-  .dropdown a {
+  .dropdown[hidden] {
+    display: none;
+  }
+
+  .dropdown:not([hidden]) {
+    animation: dropdown-in 180ms cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  @keyframes dropdown-in {
+    from {
+      opacity: 0;
+      transform: translateY(-6px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  .dropdown li.featured {
+    grid-column: 1 / -1;
+  }
+
+  .dropdown .dd-item {
     display: flex;
-    width: 100%;
-    border-radius: var(--radius-sm);
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 14px;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--ink);
+    background: transparent;
+    text-decoration: none;
+  }
+
+  .dropdown .dd-item.is-featured {
+    background: var(--tint-green);
+  }
+
+  .dropdown .dd-item[aria-current='page'] {
+    box-shadow: inset 0 0 0 1px var(--line-strong);
+  }
+
+  .dd-icon {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+  }
+
+  .dd-icon--blue {
+    background: var(--tint-blue);
+    color: #6cbee4;
+  }
+
+  .dd-icon--green {
+    background: var(--tint-green);
+    color: #40aa4a;
+  }
+
+  .dd-icon--cream {
+    background: var(--tint-cream);
+    color: var(--ink);
+  }
+
+  .dd-icon--pink {
+    background: var(--tint-pink);
+    color: var(--ink);
+  }
+
+  .dropdown .dd-item.is-featured .dd-icon {
+    background: var(--white);
+  }
+
+  .dd-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .dd-title {
+    font-size: 0.9375rem;
+    font-weight: 560;
+    line-height: 1.3;
+  }
+
+  .dd-desc {
+    font-size: 0.8125rem;
+    font-weight: 400;
+    line-height: 1.35;
+    color: var(--muted);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .dropdown .dd-item:hover {
+      background: var(--surface);
+    }
   }
 
   .menu-toggle {
@@ -329,9 +519,14 @@ const calculatorsActive = calculators.some((c) => current.startsWith(url(c.path)
 
     .dropdown {
       position: static;
-      min-width: 0;
+      left: auto;
+      translate: none;
+      width: auto;
+      max-width: none;
+      grid-template-columns: 1fr;
+      gap: 2px;
       margin: 4px 0 4px 12px;
-      padding: 0;
+      padding: 0 0 0 12px;
       border: 0;
       border-left: 1px solid var(--line-strong);
       border-radius: 0;

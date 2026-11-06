@@ -197,6 +197,13 @@ small,
   color: var(--muted);
 }
 
+.disclaimer {
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--muted-soft);
+  max-width: 60ch;
+}
+
 .eyebrow {
   margin: 0;
   font-size: 0.8125rem;
@@ -314,7 +321,7 @@ small,
   border: 1px solid var(--line);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  padding: clamp(22px, 3vw, 34px);
+  padding: clamp(18px, 2.2vw, 26px);
 }
 
 a.card {
@@ -335,6 +342,37 @@ a.card:hover {
   a.card:hover {
     transform: translateY(-2px);
   }
+}
+
+ul.list-check {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+ul.list-check li {
+  position: relative;
+  padding-left: 32px;
+}
+
+ul.list-check li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.2em;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  background: #40aa4a url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 6.2l2.3 2.3 4.7-4.9' fill='none' stroke='%23ffffff' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 12px no-repeat;
+}
+
+ul.list-check li:nth-child(3n + 2)::before {
+  background-color: #6cbee4;
+}
+
+ul.list-check li:nth-child(3n + 3)::before {
+  background-color: #fac344;
 }
 
 .pill {
@@ -360,13 +398,15 @@ a.card:hover {
   align-items: center;
   justify-content: center;
   gap: 0.5em;
-  min-height: 48px;
-  padding: 0 1.5em;
-  border-radius: 999px;
-  border: 1px solid var(--btn-border);
   background: var(--btn-bg);
   color: var(--btn-fg);
-  font-size: 0.925rem;
+  border: 1px solid var(--btn-border);
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: inherit;
+  min-height: 40px;
+  padding: 0 1.15em;
+  font-size: 0.85rem;
   font-weight: 540;
   letter-spacing: -0.01em;
   line-height: 1;
@@ -406,18 +446,6 @@ a.card:hover {
 
 .btn-ghost:hover {
   --btn-bg: var(--beige-soft);
-}
-
-.btn-sm {
-  min-height: 40px;
-  padding: 0 1.15em;
-  font-size: 0.85rem;
-}
-
-.btn-lg {
-  min-height: 56px;
-  padding: 0 1.9em;
-  font-size: 0.975rem;
 }
 
 .btn[disabled],

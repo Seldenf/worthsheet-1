@@ -90,35 +90,48 @@ function headerScroll(el: HTMLElement) {
   update();
 }
 
-function parallax(svg: SVGElement, area: HTMLElement) {
+// Pointer tilt + edge glow for every illustration. Runs only on fine hover pointers
+// (gated by the caller); each svg gets its own lerp loop that stops once settled.
+const TILT_VARS = ['--rx', '--ry', '--tx', '--ty'];
+
+function tilt(svg: SVGElement, area: HTMLElement) {
   let tx = 0, ty = 0, cx = 0, cy = 0, raf = 0;
   const step = () => {
     cx += (tx - cx) * 0.08;
     cy += (ty - cy) * 0.08;
-    const settled = Math.abs(tx - cx) < 0.002 && Math.abs(ty - cy) < 0.002;
+    const settled = Math.abs(tx - cx) < 0.001 && Math.abs(ty - cy) < 0.001;
     if (settled) (cx = tx), (cy = ty);
-    svg.style.setProperty('translate', `${cx * 6}px ${cy * 6}px`);
-    svg.style.transform = `perspective(900px) rotateX(${-cy * 2}deg) rotateY(${cx * 2}deg)`;
     if (settled && !tx && !ty) {
-      svg.style.removeProperty('translate');
-      svg.style.transform = '';
+      for (const name of TILT_VARS) svg.style.removeProperty(name);
+    } else {
+      svg.style.setProperty('--rx', `${(-cy * 3).toFixed(3)}deg`);
+      svg.style.setProperty('--ry', `${(cx * 4).toFixed(3)}deg`);
+      svg.style.setProperty('--tx', `${(cx * 6).toFixed(3)}px`);
+      svg.style.setProperty('--ty', `${(cy * 6).toFixed(3)}px`);
     }
     raf = settled ? 0 : requestAnimationFrame(step);
   };
   const kick = () => {
     if (!raf) raf = requestAnimationFrame(step);
   };
+  area.addEventListener('pointerenter', (e) => {
+    if (e.pointerType === 'touch') return;
+    svg.classList.add('is-pointer');
+  });
   area.addEventListener(
     'pointermove',
     (e) => {
-      const r = area.getBoundingClientRect();
-      tx = ((e.clientX - r.left) / r.width) * 2 - 1;
-      ty = ((e.clientY - r.top) / r.height) * 2 - 1;
+      if (e.pointerType === 'touch') return;
+      const r = svg.getBoundingClientRect();
+      tx = Math.max(-1, Math.min(1, (e.clientX - (r.left + r.width / 2)) / (r.width / 2)));
+      ty = Math.max(-1, Math.min(1, (e.clientY - (r.top + r.height / 2)) / (r.height / 2)));
       kick();
     },
     { passive: true },
   );
-  area.addEventListener('pointerleave', () => {
+  area.addEventListener('pointerleave', (e) => {
+    if (e.pointerType === 'touch') return;
+    svg.classList.remove('is-pointer');
     tx = 0;
     ty = 0;
     kick();
@@ -132,9 +145,11 @@ if (main) {
     main.querySelectorAll<HTMLElement>(SELECTOR).forEach((el) => el.classList.add('is-in'));
   } else {
     reveal(main);
-    const svg = main.querySelector<SVGElement>('svg[class*="wsi-"]');
-    if (hero && svg && hero.contains(svg) && matchMedia('(hover: hover) and (pointer: fine)').matches) {
-      parallax(svg, hero);
+    if (matchMedia('(hover: hover) and (pointer: fine)').matches) {
+      main.querySelectorAll<SVGElement>('svg.wsi').forEach((svg) => {
+        const area = svg.closest<HTMLElement>('section') ?? svg.parentElement;
+        if (area) tilt(svg, area);
+      });
     }
   }
 }

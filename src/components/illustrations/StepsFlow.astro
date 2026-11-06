@@ -17,11 +17,15 @@ const ICONS = [
   '<path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19zM14 7l3 3"/>',
   '<path d="M7 9V4h10v5M7 17H5a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-2M7 14h10v6H7z"/>',
 ];
+// Centers sit on quarter columns of the 960-wide viewBox (12.5%, 37.5%, 62.5%, 87.5%).
+// Zig-zag: tiles 1 & 3 low, 2 & 4 high.
+const LOW = 196;
+const HIGH = 150;
 const steps = [
-  { x: 120, y: 200, fill: C.blue, side: '#4a9fc8', ink: '#fff', pad: C.tB },
-  { x: 360, y: 130, fill: C.sheets, side: '#0a7a43', ink: '#fff', pad: C.tG },
-  { x: 600, y: 200, fill: C.yellow, side: '#d9a02a', ink: '#fff', pad: C.tC },
-  { x: 840, y: 130, fill: C.tG, side: '#b6e2c1', ink: '#2f8a39', pad: C.tG },
+  { x: 120, y: LOW, fill: C.blue, side: '#4a9fc8', ink: '#fff', pad: C.tB },
+  { x: 360, y: HIGH, fill: C.sheets, side: '#0a7a43', ink: '#fff', pad: C.tG },
+  { x: 600, y: LOW, fill: C.yellow, side: '#d9a02a', ink: '#fff', pad: C.tC },
+  { x: 840, y: HIGH, fill: C.tG, side: '#b6e2c1', ink: '#2f8a39', pad: C.tG },
 ];
 const GAP = 34; // pad sits this far below the tile
 const S = 64; // tile side
@@ -37,7 +41,7 @@ for (let i = 1; i < steps.length; i++) {
 <svg
   class:list={['wsi', 'wsi-steps', className]}
   xmlns="http://www.w3.org/2000/svg"
-  viewBox="0 36 960 250"
+  viewBox="0 62 960 216"
   font-family="inherit"
   focusable="false"
   role={title ? 'img' : undefined}
@@ -46,16 +50,18 @@ for (let i = 1; i < steps.length; i++) {
   {title && <title>{title}</title>}
 
   <!-- pads (base) -->
-  {steps.map((t) => (
-    <g class="wsi-steps-base"><g transform={iso(t.x, t.y + GAP, 88)}>
+  {steps.map((t, i) => (
+    <g class={`wsi-steps-base wsi-steps-n${i + 1}`}><g transform={iso(t.x, t.y + GAP, 88)}>
       <rect width="88" height="88" rx="14" fill={t.pad} stroke="#fff" stroke-width="2"></rect>
     </g></g>
   ))}
 
   <path class="wsi-steps-path" d={path} stroke={C.ink} stroke-opacity=".35" stroke-width="2.5" stroke-dasharray="8 10" stroke-linecap="round" fill="none"></path>
+  <!-- progress: same route, shown up to the active step via data-active on <svg> -->
+  <path class="wsi-steps-progress" d={path} pathLength="100" stroke={C.ink} stroke-opacity=".55" stroke-width="2.5" stroke-linecap="round" fill="none"></path>
 
   {steps.map((t, i) => (
-    <g>
+    <g class={`wsi-steps-n${i + 1}`}>
       <g class="wsi-steps-sh-mid" style={lag(0.4 + i * 0.4)}><g transform={iso(t.x + 4, t.y + GAP + 6, S)}><rect width={S} height={S} rx="10" fill={C.ink} fill-opacity=".1"></rect></g></g>
       <g class="wsi-steps-mid" style={lag(0.4 + i * 0.4)}>
         <g transform={iso(t.x, t.y + 8, S)}><rect width={S} height={S} rx="10" fill={t.side}></rect></g>
@@ -94,5 +100,31 @@ for (let i = 1; i < steps.length; i++) {
     .wsi-steps-top { animation: wsi-steps-top 6s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
     .wsi-steps-sh-mid { animation: wsi-steps-shadow 7s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
     .wsi-steps-path { animation: wsi-steps-dash 9s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+  }
+
+  /* Sequential highlight: only applies when <svg data-active="1..4"> is set by the page. */
+  .wsi-steps-progress { opacity: 0; stroke-dasharray: 100; stroke-dashoffset: 100; }
+  svg[data-active] .wsi-steps-progress { opacity: 1; }
+  svg[data-active="1"] .wsi-steps-progress { stroke-dashoffset: 100; }
+  svg[data-active="2"] .wsi-steps-progress { stroke-dashoffset: 66; }
+  svg[data-active="3"] .wsi-steps-progress { stroke-dashoffset: 33; }
+  svg[data-active="4"] .wsi-steps-progress { stroke-dashoffset: 0; }
+
+  svg[data-active] .wsi-steps-n1, svg[data-active] .wsi-steps-n2,
+  svg[data-active] .wsi-steps-n3, svg[data-active] .wsi-steps-n4 { filter: grayscale(.9); opacity: .45; }
+  svg[data-active="1"] .wsi-steps-n1, svg[data-active="2"] .wsi-steps-n2,
+  svg[data-active="3"] .wsi-steps-n3, svg[data-active="4"] .wsi-steps-n4 {
+    filter: drop-shadow(0 8px 16px rgba(46,41,38,.18));
+    opacity: 1;
+    translate: 0 -6px;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .wsi-steps-n1, .wsi-steps-n2, .wsi-steps-n3, .wsi-steps-n4 {
+      transition: filter 600ms cubic-bezier(0.23, 1, 0.32, 1), opacity 600ms cubic-bezier(0.23, 1, 0.32, 1), translate 600ms cubic-bezier(0.23, 1, 0.32, 1);
+    }
+    .wsi-steps-progress {
+      transition: opacity 600ms cubic-bezier(0.23, 1, 0.32, 1), stroke-dashoffset 900ms ease-out;
+    }
   }
 </style>

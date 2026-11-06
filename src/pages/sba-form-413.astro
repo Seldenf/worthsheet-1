@@ -149,7 +149,7 @@ const overview = [
           notice also says forms are being updated to match the SOP.
         </li>
       </ul>
-      <p>
+      <p class="disclaimer">
         Lenders may set shorter windows still, so use fresh balances and the shorter window your
         lender gives you. The same two sources also differ on spouses: the form’s certification
         covers the spouse of any 20%-or-more owner when spousal assets are included, while the SOP
@@ -234,7 +234,7 @@ const overview = [
         <p class="lead">
           Worksheet to organize your numbers — submit the official SBA Form 413 to your lender.
         </p>
-        <ul class="checks">
+        <ul class="list-check">
           <li>
             Front sheet organized like the form: assets, liabilities, net worth, Section 1 income
             and contingent liabilities.
@@ -246,7 +246,7 @@ const overview = [
           <Button href={XLSX} variant="primary" size="lg" download>Download the Excel worksheet</Button>
           <Button href="/download/" variant="secondary" size="lg">Get the general PFS template</Button>
         </div>
-        <p class="muted small">
+        <p class="disclaimer">
           Not an official SBA document. Estimates for educational purposes only. Not a loan offer or
           financial advice.
         </p>
@@ -341,29 +341,6 @@ const overview = [
 
   .worksheet {
     max-width: 760px;
-  }
-
-  .checks {
-    list-style: none;
-    display: grid;
-    gap: 10px;
-  }
-
-  .checks li {
-    position: relative;
-    padding-left: 1.75em;
-  }
-
-  .checks li::before {
-    content: '';
-    position: absolute;
-    left: 0.25em;
-    top: 0.45em;
-    width: 0.5em;
-    height: 0.9em;
-    border: solid var(--sheets-green);
-    border-width: 0 2.5px 2.5px 0;
-    transform: rotate(40deg);
   }
 
   .next-grid {
