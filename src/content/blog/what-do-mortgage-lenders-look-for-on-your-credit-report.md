@@ -3,6 +3,7 @@ title: "What Do Mortgage Lenders Look for on Your Credit Report?"
 seoTitle: "Mortgage Credit Report: What Lenders Look For | WorthSheet"
 description: "Mortgage lenders check payment history, balances, new accounts and negative items on your Equifax, Experian and TransUnion reports. See what they flag."
 pubDate: 2026-11-06
+cover: ShieldSecure
 keywords:
   - what do mortgage lenders look for on credit reports
   - what do mortgage lenders look at on your credit report

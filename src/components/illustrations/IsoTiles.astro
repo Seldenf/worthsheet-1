@@ -14,6 +14,8 @@ const iso = (cx: number, cy: number, s: number, k = 1) =>
 // Breathing layers: base 0s, mid +0.4s, top +0.8s; jit() staggers items within a layer.
 const lag = (s: number) => `animation-delay:${s.toFixed(2)}s`;
 const jit = (i: number, amp: number) => (((i * 0.618) % 1) - 0.5) * 2 * amp;
+const intro = (d: number, dur: number, y: number, s = 0.94) =>
+  `--in-d:${d}ms;--in-dur:${dur}ms;--in-y:${y}px;--in-s:${s}`;
 
 const ICONS: Record<string, string> = {
   house: '<path d="M3.5 11.5 12 4l8.5 7.5M6 10v10h12V10M10 20v-5.5h4V20"/>',
@@ -27,15 +29,15 @@ const ICONS: Record<string, string> = {
 };
 
 const tiles = [
-  { x: 320, y: 112, s: 70, fill: C.blue, side: '#4a9fc8', ink: '#fff', icon: 'chart', z: 62, f: 1 },
-  { x: 168, y: 196, s: 74, fill: C.tG, side: '#b6e2c1', ink: '#2f8a39', icon: 'house', z: 52, f: 2 },
-  { x: 472, y: 196, s: 74, fill: C.yellow, side: '#d9a02a', ink: '#fff', icon: 'car', z: 52, f: 3 },
-  { x: 320, y: 250, s: 88, fill: '#fff', side: '#d6d4d2', ink: '#3f9cc9', icon: 'bank', z: 46, f: 2, line: true },
-  { x: 142, y: 338, s: 70, fill: C.tP, side: '#e8bde0', ink: '#b5388f', icon: 'card', z: 48, f: 3 },
-  { x: 498, y: 344, s: 70, fill: C.tC, side: '#ecd9a8', ink: '#a8730a', icon: 'piggy', z: 48, f: 1 },
-  { x: 320, y: 392, s: 66, fill: C.green, side: '#2f8a39', ink: '#fff', icon: 'coins', z: 42, f: 2 },
-  { x: 560, y: 252, s: 34, fill: C.tB, side: '#b9dcee', ink: '#3f9cc9', icon: 'percent', z: 40, f: 3 },
-  { x: 78, y: 254, s: 34, fill: C.tC, side: '#ecd9a8', ink: '#a8730a', icon: '$', z: 40, f: 1 },
+  { x: 320, y: 112, s: 70, fill: C.blue, side: '#4a9fc8', ink: '#fff', icon: 'chart', z: 62, f: 1, d: 1, enter: intro(380, 620, -18, 0.9) },
+  { x: 168, y: 196, s: 74, fill: C.tG, side: '#b6e2c1', ink: '#2f8a39', icon: 'house', z: 52, f: 2, d: 0.7, enter: intro(420, 680, 18, 0.9) },
+  { x: 472, y: 196, s: 74, fill: C.yellow, side: '#d9a02a', ink: '#fff', icon: 'car', z: 52, f: 3, d: 1.3, enter: intro(480, 700, 14, 0.9) },
+  { x: 320, y: 250, s: 88, fill: '#fff', side: '#d6d4d2', ink: '#3f9cc9', icon: 'bank', z: 46, f: 2, line: true, d: 0.9, enter: intro(120, 780, 22, 0.92) },
+  { x: 142, y: 338, s: 70, fill: C.tP, side: '#e8bde0', ink: '#b5388f', icon: 'card', z: 48, f: 3, d: 1.2, enter: intro(560, 820, 24, 0.9) },
+  { x: 498, y: 344, s: 70, fill: C.tC, side: '#ecd9a8', ink: '#a8730a', icon: 'piggy', z: 48, f: 1, d: 0.8, enter: intro(520, 760, 20, 0.9) },
+  { x: 320, y: 392, s: 66, fill: C.green, side: '#2f8a39', ink: '#fff', icon: 'coins', z: 42, f: 2, d: 1.1, enter: intro(700, 600, 16, 0.9) },
+  { x: 560, y: 252, s: 34, fill: C.tB, side: '#b9dcee', ink: '#3f9cc9', icon: 'percent', z: 40, f: 3, d: 1.4, enter: intro(640, 520, -12, 0.9) },
+  { x: 78, y: 254, s: 34, fill: C.tC, side: '#ecd9a8', ink: '#a8730a', icon: '$', z: 40, f: 1, d: 0.6, enter: intro(900, 480, -16, 0.9) },
 ];
 const lines = Array.from({ length: 7 }, (_, i) => `M0 ${(i + 1) * 32.75}H262M${(i + 1) * 32.75} 0V262`).join('');
 ---
@@ -55,6 +57,7 @@ const lines = Array.from({ length: 7 }, (_, i) => `M0 ${(i + 1) * 32.75}H262M${(
   </defs>
 
   <!-- halo frames (base) -->
+  <g class="wsi-in" style={intro(0, 1000, 10, 0.96)}>
   <g class="wsi-tiles-base"><g transform={iso(320, 300, 310)}>
     <rect width="310" height="310" rx="26" fill={C.tB} fill-opacity=".55" stroke="#fff" stroke-width="2"></rect>
   </g></g>
@@ -62,16 +65,19 @@ const lines = Array.from({ length: 7 }, (_, i) => `M0 ${(i + 1) * 32.75}H262M${(
     <rect width="262" height="262" rx="22" fill={C.tG} fill-opacity=".6" stroke="#fff" stroke-width="2"></rect>
     <path d={lines} stroke="#fff" stroke-width="1.5" fill="none"></path>
   </g></g>
+  </g>
 
   <!-- tile ground shadows (inverse to tile lift) -->
   <g fill={C.ink} fill-opacity=".08" filter="url(#wsi-tiles-blur)">
-    {tiles.map((t, i) => <g class="wsi-tiles-sh-mid" style={lag(0.4 + jit(i, 0.2))}><g transform={iso(t.x + 8, t.y + t.z * 0.7 + 8, t.s)}><rect width={t.s} height={t.s} rx={t.s * 0.17}></rect></g></g>)}
+    {tiles.map((t, i) => <g class="wsi-tiles-sh-mid" style={lag(0.4 + jit(i, 0.2))}><g class="wsi-in" style={t.enter}><g transform={iso(t.x + 8, t.y + t.z * 0.7 + 8, t.s)}><rect width={t.s} height={t.s} rx={t.s * 0.17}></rect></g></g></g>)}
   </g>
 
   {tiles.map((t, i) => {
     const k = (t.s * 0.58) / 24;
     return (
       <>
+        <g class="wsi-in" style={t.enter}>
+        <g class="wsi-pt" style={`--d:${t.d}`}>
         <g class={`wsi-tiles-mid wsi-tiles-f${t.f}`} style={lag(0.4 + jit(i, 0.2))}>
           <g transform={iso(t.x, t.y + 9, t.s)}><rect width={t.s} height={t.s} rx={t.s * 0.17} fill={t.side}></rect></g>
           <g transform={iso(t.x, t.y, t.s)}>
@@ -93,6 +99,8 @@ const lines = Array.from({ length: 7 }, (_, i) => `M0 ${(i + 1) * 32.75}H262M${(
               set:html={ICONS[t.icon]}
             ></g>
           )}
+        </g>
+        </g>
         </g>
       </>
     );

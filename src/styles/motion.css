@@ -65,8 +65,8 @@ html.js [data-reveal].is-in {
 }
 
 /* ---------- Hero entrance (CSS-only, runs on load) ----------
-   `translate` is used instead of `transform` so the pointer tilt (which owns
-   `transform`) never fights the entrance. */
+   `translate` is used instead of `transform` so the pointer parallax (which owns
+   `transform` on .wsi-pt) never fights the entrance. */
 @keyframes ws-rise {
   from {
     opacity: 0;
@@ -195,13 +195,15 @@ html.js details > summary > svg {
   }
 }
 
-/* ---------- Illustration pointer tilt + edge glow (fine hover pointers, motion allowed) ----------
-   motion.ts sets --rx/--ry/--tx/--ty on every svg.wsi and toggles .is-pointer on its section.
-   Pointer offsets live in `transform` (translate inside it); the hero entrance keeps `translate`. */
+/* ---------- Illustration pointer parallax + edge glow (fine hover pointers, motion allowed) ----------
+   motion.ts sets --px/--py on every svg.wsi and toggles .is-pointer on its section.
+   Only small floating elements marked .wsi-pt move; the svg itself never transforms. */
 @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  svg.wsi .wsi-pt {
+    transform: translate(calc(var(--px, 0) * var(--d, 1) * 8px), calc(var(--py, 0) * var(--d, 1) * 6px));
+  }
+
   svg.wsi {
-    transform: perspective(1000px) translate3d(var(--tx, 0px), var(--ty, 0px), 0)
-      rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
     transition: filter 400ms var(--ease-out);
   }
 
@@ -215,6 +217,88 @@ html.js details > summary > svg {
 .btn:active {
   transform: scale(0.97);
   transition-duration: 150ms;
+}
+
+/* ---------- Checklists: items appear one after another (`--i` = item index) ----------
+   Hero list animates on load; other lists animate once JS adds .is-in (after first view).
+   Nothing is hidden unless motion is allowed, so reduced motion shows everything at once. */
+@keyframes ws-check-in {
+  from {
+    opacity: 0;
+    translate: -8px 0;
+    filter: blur(3px);
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+    filter: blur(0);
+  }
+}
+
+@keyframes ws-check-pop {
+  from {
+    scale: 0.6;
+  }
+  to {
+    scale: 1;
+  }
+}
+
+/* Fallback indexes before (or without) JS. */
+ul.list-check > li:nth-child(1) { --i: 0; }
+ul.list-check > li:nth-child(2) { --i: 1; }
+ul.list-check > li:nth-child(3) { --i: 2; }
+ul.list-check > li:nth-child(4) { --i: 3; }
+ul.list-check > li:nth-child(5) { --i: 4; }
+ul.list-check > li:nth-child(6) { --i: 5; }
+ul.list-check > li:nth-child(7) { --i: 6; }
+ul.list-check > li:nth-child(8) { --i: 7; }
+
+@media (prefers-reduced-motion: no-preference) {
+  main > :first-child ul.list-check {
+    --base: 350ms;
+  }
+
+  html.js ul.list-check[data-check-reveal]:not(.is-in) > li {
+    opacity: 0;
+  }
+
+  main > :first-child ul.list-check > li,
+  ul.list-check.is-in > li {
+    animation: ws-check-in 500ms cubic-bezier(0.23, 1, 0.32, 1) backwards;
+    animation-delay: calc(var(--i, 0) * 90ms + var(--base, 0ms));
+  }
+
+  main > :first-child ul.list-check > li::before,
+  ul.list-check.is-in > li::before {
+    animation: ws-check-pop 500ms cubic-bezier(0.23, 1, 0.32, 1) backwards;
+    animation-delay: calc(var(--i, 0) * 90ms + var(--base, 0ms) + 60ms);
+  }
+}
+
+/* ---------- Illustration intro (generic; per-element vars set inline on .wsi-in groups) ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  svg.wsi .wsi-in {
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
+  html.js svg.wsi:not(.is-in) .wsi-in {
+    opacity: 0;
+  }
+
+  svg.wsi.is-in .wsi-in {
+    animation: wsi-intro var(--in-dur, 700ms) cubic-bezier(0.23, 1, 0.32, 1) var(--in-d, 0ms) backwards;
+  }
+}
+
+@keyframes wsi-intro {
+  from {
+    opacity: 0;
+    translate: 0 var(--in-y, 16px);
+    scale: var(--in-s, 0.96);
+    filter: blur(var(--in-b, 4px));
+  }
 }
 
 /* ---------- Reduced motion: no movement, reveals instant ---------- */

@@ -3,6 +3,7 @@ title: "Mortgage Readiness Checklist: Are You Financially Ready to Buy a Home?"
 seoTitle: "Mortgage Readiness Checklist: Are You Ready? | WorthSheet"
 description: "Mortgage readiness checklist: credit, income, down payment, debt-to-income and net worth. See the benchmarks lenders use and what to fix before you apply."
 pubDate: 2026-11-06
+cover: StepsFlow
 keywords:
   - mortgage readiness checklist
   - what is mortgage readiness

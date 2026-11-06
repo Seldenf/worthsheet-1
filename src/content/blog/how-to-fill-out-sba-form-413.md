@@ -3,6 +3,7 @@ title: "How to Fill Out SBA Form 413 (05-24 Edition): Line-by-Line Guide"
 seoTitle: "How to Fill Out SBA Form 413: Step-by-Step | WorthSheet"
 description: "Line-by-line guide to SBA Form 413 (05-24 edition): who files, each asset, liability and contingent-liability line, the 120-day rule and common mistakes."
 pubDate: 2026-11-06
+cover: DocumentStack
 keywords:
   - how to fill out SBA Form 413
   - SBA Form 413 instructions

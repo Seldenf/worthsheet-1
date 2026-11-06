@@ -8,6 +8,7 @@ import Faq from '../components/Faq.astro';
 import Button from '../components/Button.astro';
 import CtaBand from '../components/CtaBand.astro';
 import PostCard from '../components/PostCard.astro';
+import PostCover from '../components/PostCover.astro';
 import CtaTiles from '../components/illustrations/CtaTiles.astro';
 import { SITE_NAME } from '../config';
 import { articleLd, faqLd } from '../lib/seo';
@@ -18,7 +19,17 @@ interface Props {
 }
 
 const { entry, headings = [] } = Astro.props;
-const { title, seoTitle, description, pubDate, updatedDate, heroImage, heroAlt, faq } = entry.data;
+const {
+  title,
+  seoTitle,
+  description,
+  pubDate,
+  updatedDate,
+  heroImage,
+  heroAlt,
+  faq,
+  cover,
+} = entry.data;
 const path = `/${entry.id}/`;
 
 const suffixed = `${title} | ${SITE_NAME}`;
@@ -97,7 +108,7 @@ const jsonLd = [
     </header>
 
     {
-      heroImage && (
+      heroImage ? (
         <figure class="container post-hero">
           <Image
             src={heroImage}
@@ -109,6 +120,10 @@ const jsonLd = [
             fetchpriority="high"
             decoding="async"
           />
+        </figure>
+      ) : (
+        <figure class="container post-hero">
+          <PostCover cover={cover} wide />
         </figure>
       )
     }

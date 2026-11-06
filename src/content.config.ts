@@ -12,6 +12,21 @@ const blog = defineCollection({
       updatedDate: z.coerce.date().optional(),
       heroImage: image().optional(),
       heroAlt: z.string().optional(),
+      cover: z
+        .enum([
+          'HeroSheet',
+          'IsoTiles',
+          'CategoriesStack',
+          'StepsFlow',
+          'ShieldSecure',
+          'CalculatorTile',
+          'BankMap',
+          'GlossaryBook',
+          'DocumentStack',
+          'ReadinessGauge',
+          'CtaTiles',
+        ])
+        .optional(),
       keywords: z.array(z.string()).optional(),
       faq: z.array(z.object({ q: z.string(), a: z.string() })).optional(),
       draft: z.boolean().default(false),

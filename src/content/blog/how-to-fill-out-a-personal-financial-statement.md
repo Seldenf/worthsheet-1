@@ -3,6 +3,7 @@ title: "How to Fill Out a Personal Financial Statement (Step by Step)"
 seoTitle: "How to Fill Out a Personal Financial Statement | WorthSheet"
 description: "Gather statements, list assets at market value, list liabilities, calculate net worth, then sign and date. Includes a document checklist and common mistakes."
 pubDate: 2026-11-06
+cover: HeroSheet
 keywords:
   - how to fill out a personal financial statement
   - how to make a personal financial statement

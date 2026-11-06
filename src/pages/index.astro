@@ -13,10 +13,9 @@ import IsoTiles from '../components/illustrations/IsoTiles.astro';
 import CategoriesStack from '../components/illustrations/CategoriesStack.astro';
 import StepsFlow from '../components/illustrations/StepsFlow.astro';
 import ShieldSecure from '../components/illustrations/ShieldSecure.astro';
+import IsoIcon from '../components/IsoIcon.astro';
 import CtaTiles from '../components/illustrations/CtaTiles.astro';
-import chaseLogo from '../assets/banks/chase.svg';
-import bofaLogo from '../assets/banks/bank-of-america.svg';
-import wellsLogo from '../assets/banks/wells-fargo.svg';
+import PostCover from '../components/PostCover.astro';
 import { STATS } from '../config';
 import { url } from '../lib/url';
 import { faqLd, webAppLd } from '../lib/seo';
@@ -24,12 +23,6 @@ import { faqLd, webAppLd } from '../lib/seo';
 const title = 'Free Personal Financial Statement Template | WorthSheet';
 const description =
   'Free personal financial statement template for Google Sheets and Excel: 27 asset and 13 liability categories, automatic net worth, bank-ready. 9,000+ downloads.';
-
-const banks = [
-  { name: 'Chase', logo: chaseLogo, height: 22 },
-  { name: 'Bank of America', logo: bofaLogo, height: 38 },
-  { name: 'Wells Fargo', logo: wellsLogo, height: 30 },
-];
 
 const steps = [
   {
@@ -55,22 +48,27 @@ const securityCards = [
   {
     title: 'Trusted',
     text: 'A universal template that can be tailored for personal or financial services needs.',
+    icon: '<path d="M12 3l7 3v5c0 4.5-3 8-7 9.5C8 19 5 15.5 5 11V6l7-3z"/><path d="M9 12l2 2 4-4"/>',
   },
   {
     title: 'Safe & Secure',
     text: 'Available to download for Google Sheets or Excel. Save and store it in your own folder.',
+    icon: '<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
   },
   {
     title: 'Easy to use',
     text: 'Add categories and accounts to create your own custom personal financial statement.',
+    icon: '<path d="M5 4l6 16 2.5-6.5L20 11z"/>',
   },
   {
     title: 'Automated',
     text: 'Sections are pre-built to calculate category totals, asset totals, liability totals and net worth.',
+    icon: '<path d="M17 5H7l5 7-5 7h10"/>',
   },
   {
     title: 'Simple customization',
     text: 'Create tabs for multiple time periods and add notes or links to documents for future reference.',
+    icon: '<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>',
   },
 ];
 
@@ -95,45 +93,61 @@ const testimonials = [
 const tools = [
   {
     href: '/mortgage-calculator/',
+    icon: 'house',
+    tone: 'blue',
     title: 'Mortgage calculator',
     text: 'Monthly principal and interest, total interest and a yearly amortization schedule.',
   },
   {
     href: '/net-worth-calculator/',
+    icon: 'scale',
+    tone: 'green',
     title: 'Net worth calculator',
     text: 'Add up assets and liabilities by the template’s categories.',
   },
   {
     href: '/debt-to-income-ratio-calculator/',
+    icon: 'percent',
+    tone: 'yellow',
     title: 'Debt-to-income calculator',
     text: 'Front-end and back-end DTI against the 28/36 benchmarks.',
   },
   {
     href: '/how-much-house-can-i-afford/',
+    icon: 'key',
+    tone: 'pink',
     title: 'Home affordability calculator',
     text: 'Estimate a price range from income, debts, down payment and rate.',
   },
   {
     href: '/mortgage-readiness-assessment/',
+    icon: 'gauge',
+    tone: 'white',
     title: 'Mortgage readiness assessment',
     text: 'Score your credit, income, loan-to-value, DTI and PFS on five criteria.',
   },
   {
     href: '/banks/',
+    icon: 'bank',
+    tone: 'blue',
     title: 'Find banks near you',
     text: 'Search FDIC-insured banks by ZIP code or browse by state.',
   },
   {
     href: '/sba-form-413/',
+    icon: 'document',
+    tone: 'green',
     title: 'SBA Form 413 guide',
     text: 'What the SBA personal financial statement asks for, line by line.',
   },
   {
     href: '/personal-financial-statement-example/',
+    icon: 'sheet',
+    tone: 'yellow',
     title: 'PFS example',
     text: 'A filled-in sample plus printable blank and example PDFs.',
   },
-];
+] as const;
 
 const faq = [
   {
@@ -211,30 +225,6 @@ const jsonLd = [
       <div class="hero-art">
         <HeroSheet />
       </div>
-    </div>
-  </section>
-
-  <!-- Built based on -->
-  <section class="banks-strip tone-paper" aria-labelledby="banks-title">
-    <div class="container banks-row">
-      <p id="banks-title" class="eyebrow">Built based on</p>
-      <ul class="bank-logos">
-        {
-          banks.map((b) => (
-            <li>
-              <Image
-                src={b.logo}
-                alt={`${b.name} logo`}
-                width={70}
-                height={70}
-                style={`height: ${b.height}px`}
-                loading="lazy"
-              />
-            </li>
-          ))
-        }
-      </ul>
-      <p class="disclaimer">The template follows the structure of common bank personal financial statement forms. It is not affiliated with or endorsed by these banks.</p>
     </div>
   </section>
 
@@ -317,15 +307,21 @@ const jsonLd = [
       </div>
       <div class="split-art split-art-small"><ShieldSecure /></div>
     </div>
-    <ul class="feature-grid">
+    <ul class="feature-list">
       {
-        securityCards.map((c) => (
-          <li class="card feature">
+        securityCards.map((c, i) => (
+          <li class="feature-item" data-reveal style={`--reveal-i: ${i}`}>
+            <span class="feature-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" set:html={c.icon} />
+            </span>
             <h3>{c.title}</h3>
             <p class="muted">{c.text}</p>
           </li>
         ))
       }
+      <li class="feature-item feature-cta" data-reveal style="--reveal-i: 5">
+        <a class="feature-link" href={url('/download/')}>Get the free template <span aria-hidden="true">→</span></a>
+      </li>
     </ul>
   </Section>
 
@@ -378,7 +374,8 @@ const jsonLd = [
       {
         tools.map((t) => (
           <li>
-            <a class="card tool" href={url(t.href)}>
+            <a class="card tool iso-hover" href={url(t.href)}>
+              <IsoIcon icon={t.icon} tone={t.tone} size={56} />
               <div class="tool-head">
                 <h3>{t.title}</h3>
                 <span class="tool-arrow" aria-hidden="true">→</span>
@@ -431,7 +428,7 @@ const jsonLd = [
                     loading="lazy"
                   />
                 ) : (
-                  <div class="post-img post-img-empty" aria-hidden="true" />
+                  <PostCover cover={p.data.cover} class="post-img" />
                 )}
                 <div class="post-body">
                   <time class="small muted" datetime={p.data.pubDate.toISOString()}>
@@ -498,59 +495,33 @@ const jsonLd = [
   }
 
   .hero-art {
-    max-width: 640px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
     width: 100%;
     margin-inline: auto;
   }
 
+  .hero-art :global(svg) {
+    width: 100%;
+  }
+
   @media (min-width: 960px) {
     .hero-grid {
-      grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+      grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    }
+
+    .hero-art {
+      align-self: stretch;
     }
   }
 
-  /* ---------- Banks strip ---------- */
-  .banks-strip {
-    padding-block: 0 clamp(40px, 6vw, 72px);
-  }
-
-  .banks-row {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-    padding-block: 32px;
-    border-block: 1px solid var(--line);
-    text-align: center;
-  }
-
-  .bank-logos {
-    list-style: none;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
-    gap: 20px 56px;
-  }
-
-  .bank-logos :global(img) {
-    display: block;
-    width: auto;
-    opacity: 0.6;
-    filter: grayscale(1);
-    transition: opacity 250ms cubic-bezier(0.23, 1, 0.32, 1);
-  }
-
-  @media (hover: hover) and (pointer: fine) {
-    .bank-logos :global(img:hover) {
-      opacity: 1;
+  @media (min-width: 1100px) {
+    .hero-art {
+      max-width: 760px;
+      width: calc(100% + var(--gutter) * 0.6);
+      margin-inline: 0 calc(var(--gutter) * -0.6);
     }
-  }
-
-  .banks-row .disclaimer {
-    max-width: 36em;
-    margin-inline: auto;
-    text-align: center;
   }
 
   /* ---------- Split sections ---------- */
@@ -669,49 +640,113 @@ const jsonLd = [
     transform: translateY(-2px);
   }
 
+  .steps-art :global(svg.wsi) {
+    transition:
+      opacity 300ms cubic-bezier(0.23, 1, 0.32, 1),
+      filter 400ms var(--ease-out);
+  }
+
+  .steps-art :global(svg.wsi.is-resetting) {
+    opacity: 0;
+  }
+
+
   /* ---------- Safe and secure ---------- */
-  .feature-grid {
+  .feature-list {
     list-style: none;
     display: grid;
-    gap: clamp(16px, 2.4vw, 24px);
     grid-template-columns: 1fr;
+    gap: 36px 40px;
     margin-top: clamp(32px, 5vw, 56px);
   }
 
   @media (min-width: 640px) {
-    .feature-grid {
+    .feature-list {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
 
-  @media (min-width: 640px) and (max-width: 1099.98px) {
-    .feature-grid > li:last-child:nth-child(odd) {
-      grid-column: 1 / -1;
-    }
-  }
-
   @media (min-width: 1100px) {
-    .feature-grid {
-      grid-template-columns: repeat(6, minmax(0, 1fr));
-    }
-
-    .feature-grid > li {
-      grid-column: span 2;
-    }
-
-    .feature-grid > li:nth-child(n + 4) {
-      grid-column: span 3;
+    .feature-list {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
     }
   }
 
-  .feature {
+  .feature-item {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 14px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
   }
 
-  .feature h3 {
-    font-size: 1.1875rem;
+  .feature-item:nth-child(3n + 1) {
+    --tint: #40aa4a;
+    --tint-bg: rgba(64, 170, 74, 0.12);
+  }
+
+  .feature-item:nth-child(3n + 2) {
+    --tint: #6cbee4;
+    --tint-bg: rgba(108, 190, 228, 0.16);
+  }
+
+  .feature-item:nth-child(3n) {
+    --tint: #fac344;
+    --tint-bg: rgba(250, 195, 68, 0.18);
+  }
+
+  .feature-icon {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: var(--tint-bg);
+    color: var(--tint);
+    transition:
+      transform 200ms cubic-bezier(0.23, 1, 0.32, 1),
+      box-shadow 200ms cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  .feature-icon svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.75;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .feature-item:hover .feature-icon {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 14px -4px rgba(46, 41, 38, 0.18);
+    }
+  }
+
+  .feature-item h3 {
+    font-size: 1.0625rem;
+    font-weight: 580;
+  }
+
+  .feature-item p {
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    max-width: 38ch;
+  }
+
+  .feature-cta {
+    justify-content: center;
+  }
+
+  .feature-link {
+    font-weight: 580;
+    color: var(--ink);
+  }
+
+  .feature-link:hover {
+    text-decoration: underline;
   }
 
   /* ---------- Community ---------- */
@@ -842,14 +877,6 @@ const jsonLd = [
     width: 100%;
     aspect-ratio: 8 / 5;
     object-fit: cover;
-    display: block;
-    background: var(--tint-blue);
-  }
-
-  .post-img-empty {
-    width: 100%;
-    aspect-ratio: 8 / 5;
-    background: var(--tint-blue);
   }
 
   .post-body {
@@ -881,39 +908,146 @@ const jsonLd = [
     : [];
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  if (list && art && items.length > 1 && !reduceMotion && 'IntersectionObserver' in window) {
-    const STEP_MS = 2400;
-    let index = 0;
-    let timer: number | undefined;
+  if (section && list && art && items.length === 4 && !reduceMotion && 'IntersectionObserver' in window) {
+    const LOOP_MS = 10000;
+    const HOLD_MS = 1600;
+    const FADE_MS = 300;
+    const LERP_MS = 400;
+    const TILES = [0, 100 / 3, 200 / 3, 100];
 
-    const render = (i: number) => {
-      items.forEach((item, j) => item.classList.toggle('is-active', j === i));
+    type Phase = 'run' | 'hold' | 'fade' | 'lerp' | 'pinned';
+    let phase: Phase = 'run';
+    let elapsed = 0;
+    let p = 0;
+    let active = -1;
+    let lerpFrom = 0;
+    let lerpTo = 0;
+    let visible = false;
+    let overridden = false;
+    let pointerOver = false;
+    let focusWithin = false;
+    let raf = 0;
+    let lastTs = 0;
+
+    const indexFor = (v: number) => (v >= 100 ? 3 : v >= 200 / 3 ? 2 : v >= 100 / 3 ? 1 : 0);
+
+    const setActive = (i: number) => {
+      if (i === active) return;
+      active = i;
       art.setAttribute('data-active', String(i + 1));
+      items.forEach((item, j) => item.classList.toggle('is-active', j === i));
     };
 
-    const start = () => {
-      if (timer === undefined) {
-        timer = window.setInterval(() => {
-          index = (index + 1) % items.length;
-          render(index);
-        }, STEP_MS);
+    const setP = (v: number) => {
+      p = v;
+      art.style.setProperty('--p', String(v));
+    };
+
+    const tick = (now: number) => {
+      raf = 0;
+      const dt = lastTs ? Math.min(now - lastTs, 100) : 0;
+      lastTs = now;
+
+      if (phase === 'lerp') {
+        elapsed += dt;
+        const t = Math.min(1, elapsed / LERP_MS);
+        const e = 1 - (1 - t) ** 3;
+        setP(lerpFrom + (lerpTo - lerpFrom) * e);
+        if (t >= 1) {
+          phase = 'pinned';
+          return;
+        }
+      } else if (visible) {
+        if (phase === 'run') {
+          setP(Math.min(100, p + (dt * 100) / LOOP_MS));
+          setActive(indexFor(p));
+          if (p >= 100) {
+            phase = 'hold';
+            elapsed = 0;
+          }
+        } else if (phase === 'hold') {
+          elapsed += dt;
+          if (elapsed >= HOLD_MS) {
+            phase = 'fade';
+            elapsed = 0;
+            art.classList.add('is-resetting');
+          }
+        } else if (phase === 'fade') {
+          elapsed += dt;
+          if (elapsed >= FADE_MS) {
+            setP(0);
+            setActive(0);
+            art.classList.remove('is-resetting');
+            phase = 'run';
+            elapsed = 0;
+          }
+        }
+      }
+
+      if (phase === 'lerp' || (visible && phase !== 'pinned')) {
+        raf = requestAnimationFrame(tick);
       }
     };
 
-    const stop = () => {
-      if (timer !== undefined) {
-        window.clearInterval(timer);
-        timer = undefined;
-      }
+    const kick = () => {
+      if (raf) return;
+      if (!visible && phase !== 'lerp') return;
+      lastTs = 0;
+      raf = requestAnimationFrame(tick);
+    };
+
+    const pin = (i: number) => {
+      overridden = true;
+      setActive(i);
+      lerpFrom = p;
+      lerpTo = TILES[i] ?? 0;
+      elapsed = 0;
+      art.classList.remove('is-resetting');
+      phase = 'lerp';
+      kick();
+    };
+
+    const release = () => {
+      if (!overridden) return;
+      overridden = false;
+      phase = 'run';
+      elapsed = 0;
+      kick();
     };
 
     list.classList.add('is-sequencing');
-    render(index);
+    setP(0);
+    setActive(0);
 
     new IntersectionObserver((entries) => {
-      const [entry] = entries;
-      if (entry?.isIntersecting) start();
-      else stop();
+      visible = entries[0]?.isIntersecting ?? false;
+      if (visible) kick();
     }, { threshold: 0.4 }).observe(list);
+
+    items.forEach((item, i) => {
+      item.addEventListener('pointerenter', () => {
+        pointerOver = true;
+        pin(i);
+      });
+    });
+
+    section.addEventListener('pointerleave', () => {
+      pointerOver = false;
+      if (!focusWithin) release();
+    });
+
+    list.addEventListener('focusin', (e) => {
+      const i = items.findIndex((item) => item.contains(e.target as Node));
+      if (i < 0) return;
+      focusWithin = true;
+      pin(i);
+    });
+
+    section.addEventListener('focusout', (e) => {
+      const next = e.relatedTarget as Node | null;
+      if (next && list.contains(next)) return;
+      focusWithin = false;
+      if (!pointerOver) release();
+    });
   }
 </script>

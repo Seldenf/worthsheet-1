@@ -15,6 +15,8 @@ const iso = (cx: number, cy: number, s: number, k = 1) =>
 // Breathing layers: base 0s, mid +0.4s, top +0.8s; jit() staggers items within a layer.
 const lag = (s: number) => `animation-delay:${s.toFixed(2)}s`;
 const jit = (i: number, amp: number) => (((i * 0.618) % 1) - 0.5) * 2 * amp;
+const intro = (d: number, dur: number, y: number, s = 0.94) =>
+  `--in-d:${d}ms;--in-dur:${dur}ms;--in-y:${y}px;--in-s:${s}`;
 
 // ---- spreadsheet board (local 300x300 plane, scaled 1.1) ----
 const S = 300;
@@ -42,16 +44,16 @@ const grid =
 
 // ---- floating tiles (mid layer) ----
 const tiles = [
-  { x: 262, y: 232, s: 92, fill: C.sheets, side: '#0a7a43', z: 150, cls: 'f1', kind: 'sheets' },
-  { x: 872, y: 392, s: 44, fill: C.yellow, side: '#d9a02a', z: 44, cls: 'f3', kind: 'dollar' },
-  { x: 104, y: 330, s: 40, fill: C.tB, side: '#b9dcee', z: 40, cls: 'f2', kind: 'bars' },
+  { x: 262, y: 232, s: 92, fill: C.sheets, side: '#0a7a43', z: 150, cls: 'f1', kind: 'sheets', d: 1.2, enter: intro(200, 700, 20, 0.92) },
+  { x: 872, y: 392, s: 44, fill: C.yellow, side: '#d9a02a', z: 44, cls: 'f3', kind: 'dollar', d: 0.8, enter: intro(320, 500, 14, 0.9) },
+  { x: 104, y: 330, s: 40, fill: C.tB, side: '#b9dcee', z: 40, cls: 'f2', kind: 'bars', d: 1.35, enter: intro(400, 480, 12, 0.92) },
 ];
 
 // ---- pills (top layer) ----
 const pills = [
-  { x: 690, y: 150, l: 'Assets', v: '$412,500', dot: C.green, fs: 15, cls: 'f2' },
-  { x: 224, y: 470, l: 'Liabilities', v: '$186,200', dot: C.yellow, fs: 15, cls: 'f3' },
-  { x: 706, y: 536, l: 'Net worth', v: '$226,300', dot: C.blue, fs: 18, cls: 'f1', big: true },
+  { x: 690, y: 150, l: 'Assets', v: '$412,500', dot: C.green, fs: 15, cls: 'f2', d: 0.9, enter: intro(600, 450, 14, 0.95) },
+  { x: 224, y: 470, l: 'Liabilities', v: '$186,200', dot: C.yellow, fs: 15, cls: 'f3', d: 1.3, enter: intro(720, 450, -14, 0.95) },
+  { x: 706, y: 536, l: 'Net worth', v: '$226,300', dot: C.blue, fs: 18, cls: 'f1', big: true, d: 1.1, enter: intro(840, 450, 16, 0.94) },
 ].map((p) => {
   const w = Math.round((p.l.length + 1 + p.v.length) * p.fs * 0.54) + 44;
   return { ...p, w, h: p.big ? 48 : 38 };
@@ -61,7 +63,8 @@ const pills = [
 <svg
   class:list={['wsi', 'wsi-hero', className]}
   xmlns="http://www.w3.org/2000/svg"
-  viewBox="0 0 960 640"
+  viewBox="0 49 960 557"
+  overflow="visible"
   font-family="inherit"
   focusable="false"
   role={title ? 'img' : undefined}
@@ -75,9 +78,12 @@ const pills = [
 
   <g transform="translate(480 346) scale(1.1) translate(-480 -372)">
   <!-- halo frames (base) -->
+  <g class="wsi-in" style={intro(0, 900, 10, 0.96)}>
   <g class="wsi-hero-base"><g transform={iso(480, 372, 430)}><rect width="430" height="430" rx="30" fill={C.tB} fill-opacity=".55" stroke="#fff" stroke-width="2"></rect></g></g>
   <g class="wsi-hero-base"><g transform={iso(480, 372, 372)}><rect width="372" height="372" rx="26" fill={C.tG} fill-opacity=".6" stroke="#fff" stroke-width="2"></rect></g></g>
+  </g>
 
+  <g class="wsi-in" style={intro(120, 760, 22, 0.97)}>
   <!-- board shadow + slab (base) -->
   <g class="wsi-hero-sh-base"><g transform={iso(480, 408, 340)} filter="url(#wsi-hero-blur)"><rect width="340" height="340" rx="20" fill={C.ink} fill-opacity=".16"></rect></g></g>
   <g class="wsi-hero-base"><g transform={iso(480, 382, 330)}><rect width="330" height="330" rx="18" fill="#cfcdcb"></rect></g></g>
@@ -114,16 +120,19 @@ const pills = [
   <g class="wsi-hero-base" stroke={C.ink} stroke-opacity=".3" stroke-width="1.5" stroke-dasharray="2 6" stroke-linecap="round" fill="none">
     <path d="M440 168 340 296"></path>
   </g>
+  </g>
 
   <!-- tile ground shadows (inverse to tile lift) -->
   <g fill={C.ink} fill-opacity=".1" filter="url(#wsi-hero-blur)">
     {tiles.map((t, i) => (
-      <g class="wsi-hero-sh-mid" style={lag(0.4 + jit(i, 0.2))}><g transform={iso(t.x + 6, t.y + t.z, t.s)}><rect width={t.s} height={t.s} rx="12"></rect></g></g>
+      <g class="wsi-hero-sh-mid" style={lag(0.4 + jit(i, 0.2))}><g class="wsi-in" style={t.enter}><g transform={iso(t.x + 6, t.y + t.z, t.s)}><rect width={t.s} height={t.s} rx="12"></rect></g></g></g>
     ))}
   </g>
 
   <!-- floating tiles (mid) -->
   {tiles.map((t, i) => (
+    <g class="wsi-in" style={t.enter}>
+    <g class="wsi-pt" style={`--d:${t.d}`}>
     <g class={`wsi-hero-mid wsi-hero-${t.cls}`} style={lag(0.4 + jit(i, 0.2))}>
       <g transform={iso(t.x, t.y + 8, t.s)}><rect width={t.s} height={t.s} rx={t.s * 0.17} fill={t.side}></rect></g>
       <g transform={iso(t.x, t.y, t.s)}>
@@ -147,16 +156,24 @@ const pills = [
         )}
       </g>
     </g>
+    </g>
+    </g>
   ))}
 
   <!-- verified check (top) -->
+  <g class="wsi-in" style={intro(950, 450, 12, 0.8)}>
+  <g class="wsi-pt" style="--d:1">
   <g class="wsi-hero-top wsi-hero-f2" style={lag(0.8 + jit(7, 0.5))}>
     <g class="wsi-hero-sh-top" style={lag(0.8 + jit(7, 0.5))}><circle cx="806" cy="262" r="28" fill={C.ink} fill-opacity=".08" transform="translate(0 8)"></circle></g>
     <circle cx="806" cy="262" r="26" fill={C.green} stroke="#fff" stroke-width="3"></circle>
     <path d="M794 263l8 8 15-17" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
   </g>
+  </g>
+  </g>
 
   <!-- =SUM() chip (top) -->
+  <g class="wsi-in" style={intro(500, 500, -22, 0.95)}>
+  <g class="wsi-pt" style="--d:1.25">
   <g transform="translate(430 144)">
     <g class="wsi-hero-top wsi-hero-f3" style={lag(0.8 + jit(8, 0.5))}>
       <g class="wsi-hero-pulse">
@@ -166,9 +183,13 @@ const pills = [
       </g>
     </g>
   </g>
+  </g>
+  </g>
 
   <!-- pills (top) -->
   {pills.map((p, i) => (
+    <g class="wsi-in" style={p.enter}>
+    <g class="wsi-pt" style={`--d:${p.d}`}>
     <g transform={`translate(${p.x} ${p.y})`}>
       <g class={`wsi-hero-top wsi-hero-${p.cls}`} style={lag(0.8 + jit(i + 3, 0.5))}>
         <rect class="wsi-hero-sh-top" style={lag(0.8 + jit(i + 3, 0.5))} x={-p.w / 2} y={-p.h / 2 + 4} width={p.w} height={p.h} rx={p.h / 2} fill={C.ink} fill-opacity=".1"></rect>
@@ -179,12 +200,15 @@ const pills = [
         </text>
       </g>
     </g>
+    </g>
+    </g>
   ))}
   </g>
 </svg>
 
 <style is:global>
   :where(svg.wsi) { display: block; width: 100%; height: auto; }
+  svg.wsi-hero { overflow: visible; }
   @keyframes wsi-hero-base { 0%, 100% { translate: 0 0; } 50% { translate: 0 -2px; } }
   @keyframes wsi-hero-mid { 0%, 100% { translate: 0 0; } 50% { translate: 0 -7px; } }
   @keyframes wsi-hero-top { 0%, 100% { translate: 0 0; } 50% { translate: 0 -12px; } }

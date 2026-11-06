@@ -61,6 +61,16 @@ const {
     margin-top: 8px;
   }
 
+  .cta-art {
+    min-width: 0;
+  }
+
+  .cta-art :global(svg.wsi-cta) {
+    width: 100%;
+    max-width: 420px;
+    margin-inline: auto;
+  }
+
   .cta-art:empty {
     display: none;
   }
@@ -68,6 +78,10 @@ const {
   @media (min-width: 860px) {
     .cta-band:has(.cta-art:not(:empty)) {
       grid-template-columns: 1.2fr 1fr;
+    }
+
+    .cta-art :global(svg.wsi-cta) {
+      max-width: 560px;
     }
   }
 </style>

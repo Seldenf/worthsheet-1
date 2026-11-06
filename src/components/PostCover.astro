@@ -1,0 +1,81 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import BankMap from './illustrations/BankMap.astro';
+import CalculatorTile from './illustrations/CalculatorTile.astro';
+import CategoriesStack from './illustrations/CategoriesStack.astro';
+import CtaTiles from './illustrations/CtaTiles.astro';
+import DocumentStack from './illustrations/DocumentStack.astro';
+import GlossaryBook from './illustrations/GlossaryBook.astro';
+import HeroSheet from './illustrations/HeroSheet.astro';
+import IsoTiles from './illustrations/IsoTiles.astro';
+import ReadinessGauge from './illustrations/ReadinessGauge.astro';
+import ShieldSecure from './illustrations/ShieldSecure.astro';
+import StepsFlow from './illustrations/StepsFlow.astro';
+
+type Cover = NonNullable<CollectionEntry<'blog'>['data']['cover']>;
+
+// Illustration per cover key. Keys double as the tint rotation order below.
+const ART: Record<Cover, typeof DocumentStack> = {
+  HeroSheet,
+  IsoTiles,
+  CategoriesStack,
+  StepsFlow,
+  ShieldSecure,
+  CalculatorTile,
+  BankMap,
+  GlossaryBook,
+  DocumentStack,
+  ReadinessGauge,
+  CtaTiles,
+};
+const KEYS = Object.keys(ART) as Cover[];
+const TINTS = ['--tint-blue', '--tint-green', '--tint-cream', '--tint-pink'];
+const DEFAULT: Cover = 'DocumentStack';
+
+interface Props {
+  /** Blog frontmatter `cover`; falls back to DocumentStack. */
+  cover?: Cover;
+  class?: string;
+  /** Wide hero panel above an article (max-height 320px) instead of the 16:10 card media. */
+  wide?: boolean;
+}
+
+const { cover, class: className, wide = false } = Astro.props;
+const key = cover ?? DEFAULT;
+const Art = ART[key];
+const tint = TINTS[KEYS.indexOf(key) % TINTS.length];
+---
+
+<div
+  class:list={['post-cover', wide && 'post-cover-wide', className]}
+  style={`--cover-tint: var(${tint})`}
+  aria-hidden="true"
+>
+  <Art class="post-cover-art" />
+</div>
+
+<style>
+  .post-cover {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    background: var(--cover-tint);
+    border-radius: var(--radius) var(--radius) 0 0;
+    overflow: hidden;
+  }
+
+  .post-cover :global(svg) {
+    display: block;
+    width: 85%;
+    height: auto;
+    max-height: 100%;
+  }
+
+  .post-cover-wide {
+    max-width: 960px;
+    max-height: 320px;
+    margin-inline: auto;
+    border-radius: var(--radius-lg);
+  }
+</style>

@@ -205,12 +205,35 @@ small,
 }
 
 .eyebrow {
-  margin: 0;
-  font-size: 0.8125rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  margin: 0 0 16px;
+  padding: 6px 12px 6px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid var(--line);
+  box-shadow:
+    0 1px 2px rgba(46, 41, 38, 0.04),
+    0 6px 16px -10px rgba(46, 41, 38, 0.18);
+  backdrop-filter: blur(6px);
+  font-size: 0.75rem;
   font-weight: 560;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--ink);
+}
+
+.eyebrow::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: 2.5px;
+  background: var(--green);
+  box-shadow: 0 0 0 3px rgba(64, 170, 74, 0.15);
 }
 
 .num {

@@ -3,6 +3,7 @@ title: "Do You Need a Personal Financial Statement for a Mortgage?"
 seoTitle: "Personal Financial Statement for a Mortgage? | WorthSheet"
 description: "Standard mortgage applications collect assets and liabilities themselves, but some lenders and all SBA owner-guarantors need a PFS. Learn when it is required."
 pubDate: 2026-11-06
+cover: IsoTiles
 keywords:
   - do you need a personal financial statement for a mortgage
   - personal financial statement for a mortgage

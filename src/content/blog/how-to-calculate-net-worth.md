@@ -3,6 +3,7 @@ title: "How to Calculate Your Net Worth (Formula, Steps and Example)"
 seoTitle: "How to Calculate Net Worth: Formula & Example | WorthSheet"
 description: "Net worth = total assets minus total liabilities. Follow four steps, see a worked example and compare with the Federal Reserve's 2025 median net worth by age."
 pubDate: 2026-11-06
+cover: CategoriesStack
 keywords:
   - how to calculate net worth
   - how to calculate my net worth

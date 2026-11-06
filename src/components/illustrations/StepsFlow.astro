@@ -36,6 +36,11 @@ for (let i = 1; i < steps.length; i++) {
   const b = steps[i];
   path += `C${a.x + 120} ${a.y + GAP} ${b.x - 120} ${b.y + GAP} ${b.x} ${b.y + GAP}`;
 }
+
+const T0 = 200; // first tile starts here (ms)
+const STEP = 140; // stagger between tiles (ms)
+const tIn = (i: number) => T0 + i * STEP;
+const inStyle = (d: number, dur: number, y: number, s: number) => `--in-d:${d}ms;--in-dur:${dur}ms;--in-y:${y}px;--in-s:${s}`;
 ---
 
 <svg
@@ -51,35 +56,47 @@ for (let i = 1; i < steps.length; i++) {
 
   <!-- pads (base) -->
   {steps.map((t, i) => (
-    <g class={`wsi-steps-base wsi-steps-n${i + 1}`}><g transform={iso(t.x, t.y + GAP, 88)}>
-      <rect width="88" height="88" rx="14" fill={t.pad} stroke="#fff" stroke-width="2"></rect>
-    </g></g>
+    <g class="wsi-in" style={inStyle(i * 60, 900, 10, 0.95)}>
+      <g class={`wsi-steps-base wsi-steps-n${i + 1}`}><g transform={iso(t.x, t.y + GAP, 88)}>
+        <rect width="88" height="88" rx="14" fill={t.pad} stroke="#fff" stroke-width="2"></rect>
+      </g></g>
+    </g>
   ))}
 
+  <g class="wsi-in" style={inStyle(900, 500, 0, 1)}>
   <path class="wsi-steps-path" d={path} stroke={C.ink} stroke-opacity=".35" stroke-width="2.5" stroke-dasharray="8 10" stroke-linecap="round" fill="none"></path>
-  <!-- progress: same route, shown up to the active step via data-active on <svg> -->
-  <path class="wsi-steps-progress" d={path} pathLength="100" stroke={C.ink} stroke-opacity=".55" stroke-width="2.5" stroke-linecap="round" fill="none"></path>
+  </g>
+  <!-- progress: solid overlay on the dashed base; its length is driven by --p (0–100) set on <svg> by the page script -->
+  <path class="wsi-steps-progress" d={path} pathLength="100" stroke={C.ink} stroke-opacity=".6" stroke-width="2.5" stroke-linecap="round" fill="none"></path>
 
   {steps.map((t, i) => (
     <g class={`wsi-steps-n${i + 1}`}>
-      <g class="wsi-steps-sh-mid" style={lag(0.4 + i * 0.4)}><g transform={iso(t.x + 4, t.y + GAP + 6, S)}><rect width={S} height={S} rx="10" fill={C.ink} fill-opacity=".1"></rect></g></g>
-      <g class="wsi-steps-mid" style={lag(0.4 + i * 0.4)}>
-        <g transform={iso(t.x, t.y + 8, S)}><rect width={S} height={S} rx="10" fill={t.side}></rect></g>
-        <g transform={iso(t.x, t.y, S)}><rect width={S} height={S} rx="10" fill={t.fill} stroke="#fff" stroke-width="2"></rect></g>
+      <g class="wsi-in" style={inStyle(tIn(i), 620, 0, 0.92)}>
+        <g class="wsi-steps-sh-mid" style={lag(0.4 + i * 0.4)}><g transform={iso(t.x + 4, t.y + GAP + 6, S)}><rect width={S} height={S} rx="10" fill={C.ink} fill-opacity=".1"></rect></g></g>
+      </g>
+      <g class="wsi-in" style={inStyle(tIn(i), 620, 22, 0.9)}>
+        <g class="wsi-steps-mid" style={lag(0.4 + i * 0.4)}>
+          <g transform={iso(t.x, t.y + 8, S)}><rect width={S} height={S} rx="10" fill={t.side}></rect></g>
+          <g transform={iso(t.x, t.y, S)}><rect width={S} height={S} rx="10" fill={t.fill} stroke="#fff" stroke-width="2"></rect></g>
+        </g>
       </g>
       <g class="wsi-steps-top" style={lag(0.8 + i * 0.4 + jit(i, 0.3))}>
-        <g
-          transform={`translate(${t.x - 12 * k} ${t.y - 12 * k - 2}) scale(${k})`}
-          color={t.ink}
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          fill="none"
-          set:html={ICONS[i]}
-        ></g>
-        <circle cx={t.x} cy={t.y - 54} r="17" fill={C.ink} stroke="#fff" stroke-width="3"></circle>
-        <text x={t.x} y={t.y - 48} font-size="17" font-weight="700" fill="#fff" text-anchor="middle">{i + 1}</text>
+        <g class="wsi-in" style={inStyle(tIn(i), 620, 22, 0.9)}>
+          <g
+            transform={`translate(${t.x - 12 * k} ${t.y - 12 * k - 2}) scale(${k})`}
+            color={t.ink}
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            fill="none"
+            set:html={ICONS[i]}
+          ></g>
+        </g>
+        <g class="wsi-in" style={inStyle(780 + i * 90, 340, -12, 0.85)}>
+          <circle cx={t.x} cy={t.y - 54} r="17" fill={C.ink} stroke="#fff" stroke-width="3"></circle>
+          <text x={t.x} y={t.y - 48} font-size="17" font-weight="700" fill="#fff" text-anchor="middle">{i + 1}</text>
+        </g>
       </g>
     </g>
   ))}
@@ -102,13 +119,9 @@ for (let i = 1; i < steps.length; i++) {
     .wsi-steps-path { animation: wsi-steps-dash 9s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
   }
 
-  /* Sequential highlight: only applies when <svg data-active="1..4"> is set by the page. */
-  .wsi-steps-progress { opacity: 0; stroke-dasharray: 100; stroke-dashoffset: 100; }
-  svg[data-active] .wsi-steps-progress { opacity: 1; }
-  svg[data-active="1"] .wsi-steps-progress { stroke-dashoffset: 100; }
-  svg[data-active="2"] .wsi-steps-progress { stroke-dashoffset: 66; }
-  svg[data-active="3"] .wsi-steps-progress { stroke-dashoffset: 33; }
-  svg[data-active="4"] .wsi-steps-progress { stroke-dashoffset: 0; }
+  /* Path progress: overlay follows --p directly (JS animates it smoothly); visible once --p or data-active is set. */
+  .wsi-steps-progress { opacity: 0; stroke-dasharray: 100; stroke-dashoffset: calc(100 - var(--p, 0)); }
+  svg[data-active] .wsi-steps-progress, svg.wsi-steps[style*="--p:"] .wsi-steps-progress { opacity: 1; }
 
   svg[data-active] .wsi-steps-n1, svg[data-active] .wsi-steps-n2,
   svg[data-active] .wsi-steps-n3, svg[data-active] .wsi-steps-n4 { filter: grayscale(.9); opacity: .45; }
@@ -124,7 +137,7 @@ for (let i = 1; i < steps.length; i++) {
       transition: filter 600ms cubic-bezier(0.23, 1, 0.32, 1), opacity 600ms cubic-bezier(0.23, 1, 0.32, 1), translate 600ms cubic-bezier(0.23, 1, 0.32, 1);
     }
     .wsi-steps-progress {
-      transition: opacity 600ms cubic-bezier(0.23, 1, 0.32, 1), stroke-dashoffset 900ms ease-out;
+      transition: opacity 600ms cubic-bezier(0.23, 1, 0.32, 1);
     }
   }
 </style>

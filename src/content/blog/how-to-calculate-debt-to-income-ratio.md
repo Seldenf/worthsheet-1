@@ -3,6 +3,7 @@ title: "How to Calculate Your Debt-to-Income (DTI) Ratio for a Mortgage"
 seoTitle: "How to Calculate Debt-to-Income Ratio (DTI) | WorthSheet"
 description: "Divide total monthly debt payments by gross monthly income. See what counts as debt, front-end vs back-end DTI, and the DTI limits lenders and Fannie Mae use."
 pubDate: 2026-11-06
+cover: CalculatorTile
 keywords:
   - how to calculate debt-to-income ratio
   - DTI ratio formula

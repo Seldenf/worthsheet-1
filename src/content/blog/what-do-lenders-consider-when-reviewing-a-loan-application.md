@@ -3,6 +3,7 @@ title: "What Do Lenders Consider When Reviewing a Loan Application?"
 seoTitle: "What Lenders Consider on a Loan Application | WorthSheet"
 description: "Lenders weigh the 5 C's of credit: character, capacity, capital, collateral and conditions. See which items they check on a loan application and how to prepare."
 pubDate: 2026-11-06
+cover: ReadinessGauge
 keywords:
   - what do lenders consider when reviewing a loan application
   - 5 c's of credit

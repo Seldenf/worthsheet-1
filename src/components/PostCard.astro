@@ -1,7 +1,7 @@
 ---
 import type { CollectionEntry } from 'astro:content';
 import { Image } from 'astro:assets';
-import DocumentStack from './illustrations/DocumentStack.astro';
+import PostCover from './PostCover.astro';
 import { url } from '../lib/url';
 
 interface Props {
@@ -13,7 +13,7 @@ interface Props {
 }
 
 const { post, level = 3, eager = false } = Astro.props;
-const { title, description, pubDate, heroImage, heroAlt } = post.data;
+const { title, description, pubDate, heroImage, heroAlt, cover } = post.data;
 const Heading = `h${level}` as 'h2' | 'h3';
 const date = pubDate.toLocaleDateString('en-US', {
   year: 'numeric',
@@ -39,7 +39,7 @@ const date = pubDate.toLocaleDateString('en-US', {
             decoding="async"
           />
         ) : (
-          <DocumentStack class="post-card-art" />
+          <PostCover cover={cover} />
         )
       }
     </div>
@@ -80,12 +80,10 @@ const date = pubDate.toLocaleDateString('en-US', {
 
   .post-card-media {
     aspect-ratio: 16 / 10;
-    background: var(--tint-blue);
     overflow: hidden;
   }
 
-  .post-card-media :global(img),
-  .post-card-media :global(svg) {
+  .post-card-media :global(img) {
     display: block;
     width: 100%;
     height: 100%;

@@ -195,20 +195,6 @@ const related = [
         Net worth statement, as of <span data-print-date></span>
       </p>
 
-      <div class="nw-summary" aria-live="polite" aria-atomic="true">
-        <div class="nw-sum">
-          <span class="nw-sum-label">Total assets</span>
-          <span class="nw-sum-value num" data-total="assets">$0</span>
-        </div>
-        <div class="nw-sum">
-          <span class="nw-sum-label">Total liabilities</span>
-          <span class="nw-sum-value num" data-total="liabilities">$0</span>
-        </div>
-        <div class="nw-sum nw-sum-main">
-          <span class="nw-sum-label">Net worth</span>
-          <span class="nw-sum-value num" data-total="net">$0</span>
-        </div>
-      </div>
       <p class="field-error nw-status" data-status aria-live="polite"></p>
 
       <div class="nw-cols">
@@ -280,6 +266,20 @@ const related = [
             </div>
           ))
         }
+      </div>
+      <div class="nw-summary" aria-live="polite" aria-atomic="true">
+        <div class="nw-sum">
+          <span class="nw-sum-label">Total assets</span>
+          <span class="nw-sum-value num" data-total="assets">$0</span>
+        </div>
+        <div class="nw-sum">
+          <span class="nw-sum-label">Total liabilities</span>
+          <span class="nw-sum-value num" data-total="liabilities">$0</span>
+        </div>
+        <div class="nw-sum nw-sum-main">
+          <span class="nw-sum-label">Net worth</span>
+          <span class="nw-sum-value num" data-total="net">$0</span>
+        </div>
       </div>
 
       <noscript>
@@ -501,16 +501,24 @@ const related = [
 
   .nw-summary {
     position: sticky;
-    bottom: 12px;
+    bottom: 16px;
+    top: auto;
     z-index: 5;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1px;
-    background: var(--line-strong);
-    border: 1px solid var(--line-strong);
-    border-radius: var(--radius);
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 20px;
     overflow: hidden;
-    box-shadow: var(--shadow);
+    box-shadow: 0 10px 30px -12px rgba(46, 41, 38, 0.25);
+  }
+
+  @media (max-width: 519px) {
+    .nw-sum {
+      gap: 2px;
+      padding: 10px 12px;
+    }
   }
 
   .nw-sum {

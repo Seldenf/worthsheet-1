@@ -6,10 +6,12 @@ interface Props {
 const { class: className, title } = Astro.props;
 
 const C = { ink: '#2e2926', beige: '#e8e7e5', blue: '#6cbee4', green: '#40aa4a', yellow: '#fac344', tB: '#e2f2f9', tG: '#e2f9e9', tP: '#f9e2f3', tC: '#f9f2e2', sheets: '#0f9d58' };
+// Iso plane: local (x, y) in [0, s] maps to a diamond centred on (cx, cy).
 const iso = (cx: number, cy: number, s: number) => `matrix(1 -.5 1 .5 ${cx - s} ${cy})`;
 // Breathing layers: base 0s, mid +0.4s, top +0.8s; jit() staggers items within a layer.
 const lag = (s: number) => `animation-delay:${s.toFixed(2)}s`;
 const jit = (i: number, amp: number) => (((i * 0.618) % 1) - 0.5) * 2 * amp;
+const lines = (n: number, d: number) => Array.from({ length: n }, (_, i) => `M0 ${(i + 1) * d}H${n * d + d}M${(i + 1) * d} 0V${n * d + d}`).join('');
 
 const ICONS: Record<string, string> = {
   sheet: '<path d="M6 3h8l4 4v14H6zM14 3v4h4M9 12.5h6M9 16h6M12 10v8"/>',
@@ -18,33 +20,41 @@ const ICONS: Record<string, string> = {
   house: '<path d="M3.5 11.5 12 4l8.5 7.5M6 10v10h12V10M10 20v-5.5h4V20"/>',
   card: '<rect x="3" y="6" width="18" height="12" rx="2.5"/><path d="M3 10.5h18M6.5 15h4"/>',
   lock: '<rect x="5" y="11" width="14" height="9" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
-  percent: '<path d="M18 6 6 18"/><circle cx="7.5" cy="7.5" r="2.3"/><circle cx="16.5" cy="16.5" r="2.3"/>',
   check: '<path d="m5 12.5 4.5 4.5L19 7"/>',
 };
-type Tile = { x: number; y: number; s: number; fill: string; side: string; ink: string; icon: string; z: number; f: number; line?: boolean };
-const left: Tile[] = [
-  { x: 96, y: 232, s: 76, fill: C.tG, side: '#b6e2c1', ink: '#2f8a39', icon: 'house', z: 46, f: 1 },
-  { x: 268, y: 170, s: 96, fill: C.sheets, side: '#0a7a43', ink: '#fff', icon: 'sheet', z: 58, f: 2 },
-  { x: 392, y: 276, s: 66, fill: C.yellow, side: '#d9a02a', ink: '#fff', icon: 'coins', z: 44, f: 3 },
-  { x: 40, y: 104, s: 36, fill: C.tB, side: '#b9dcee', ink: '#3f9cc9', icon: 'percent', z: 36, f: 3 },
-  { x: 168, y: 300, s: 40, fill: C.tP, side: '#e8bde0', ink: '#b5388f', icon: 'card', z: 34, f: 1 },
+
+// x/y = screen centre of the tile; s = side; h = slab thickness (varies apparent height).
+// `pt` marks small floating tiles that get a pointer-parallax wrapper (contract A).
+type Tile = { x: number; y: number; s: number; h: number; fill: string; side: string; ink: string; icon: string; line?: boolean; pt?: number };
+// Sorted back to front (ascending y) so nearer tiles overlap farther ones.
+const tiles: Tile[] = [
+  { x: 410, y: 112, s: 44, h: 6, fill: C.green, side: '#2f8a39', ink: '#fff', icon: 'check', pt: 1.2 },
+  { x: 196, y: 160, s: 58, h: 8, fill: '#fff', side: '#d6d4d2', ink: '#3f9cc9', icon: 'lock', line: true },
+  { x: 520, y: 178, s: 92, h: 16, fill: C.blue, side: '#4a9fc8', ink: '#fff', icon: 'chart' },
+  { x: 320, y: 214, s: 150, h: 14, fill: C.sheets, side: '#0a7a43', ink: '#fff', icon: 'sheet' },
+  { x: 120, y: 280, s: 84, h: 10, fill: C.tG, side: '#b6e2c1', ink: '#2f8a39', icon: 'house' },
+  { x: 536, y: 300, s: 76, h: 12, fill: C.tP, side: '#e8bde0', ink: '#b5388f', icon: 'card' },
+  { x: 330, y: 352, s: 66, h: 10, fill: C.yellow, side: '#d9a02a', ink: '#fff', icon: 'coins' },
 ];
-const right: Tile[] = [
-  { x: 1166, y: 150, s: 88, fill: C.blue, side: '#4a9fc8', ink: '#fff', icon: 'chart', z: 56, f: 3 },
-  { x: 1318, y: 238, s: 80, fill: C.tP, side: '#e8bde0', ink: '#b5388f', icon: 'card', z: 46, f: 1 },
-  { x: 1030, y: 268, s: 64, fill: '#fff', side: '#d6d4d2', ink: '#3f9cc9', icon: 'lock', z: 42, f: 2, line: true },
-  { x: 1400, y: 96, s: 40, fill: C.tC, side: '#ecd9a8', ink: '#a8730a', icon: 'coins', z: 36, f: 2 },
-  { x: 1222, y: 316, s: 36, fill: C.green, side: '#2f8a39', ink: '#fff', icon: 'check', z: 30, f: 3 },
+
+// Per-tile intro [delay ms, duration ms, start y px (negative = from above), start scale], by tiles index.
+const IN: [number, number, number, number][] = [
+  [700, 460, -22, 0.85], // 0 check: small floating tile, drops in
+  [660, 500, -18, 0.95], // 1 lock: drops in
+  [420, 600, 14, 0.92], // 2 chart
+  [200, 750, 24, 0.9], // 3 Sheets: big green tile leads
+  [300, 680, 18, 0.9], // 4 house
+  [560, 560, 16, 0.92], // 5 card
+  [520, 780, -14, 0.94], // 6 coins: drops in
 ];
-const all = [...left, ...right];
-const lines = (n: number, d: number) => Array.from({ length: n }, (_, i) => `M0 ${(i + 1) * d}H${n * d + d}M${(i + 1) * d} 0V${n * d + d}`).join('');
+const inStyle = (d: number, dur: number, y: number, s: number) => `--in-d:${d}ms;--in-dur:${dur}ms;--in-y:${y}px;--in-s:${s}`;
 ---
 
 <svg
   class:list={['wsi', 'wsi-cta', className]}
   xmlns="http://www.w3.org/2000/svg"
-  viewBox="0 0 1440 360"
-  preserveAspectRatio="xMidYMid slice"
+  viewBox="0 0 640 420"
+  preserveAspectRatio="xMidYMid meet"
   font-family="inherit"
   focusable="false"
   role={title ? 'img' : undefined}
@@ -55,61 +65,71 @@ const lines = (n: number, d: number) => Array.from({ length: n }, (_, i) => `M0 
     <filter id="wsi-cta-blur" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="6"></feGaussianBlur></filter>
   </defs>
 
-  <!-- halo frames (base) -->
-  <g class="wsi-cta-base"><g transform={iso(210, 262, 230)}>
-    <rect width="230" height="230" rx="26" fill={C.tB} fill-opacity=".6" stroke="#fff" stroke-width="2"></rect>
-    <path d={lines(6, 32.8)} stroke="#fff" stroke-width="1.5" fill="none"></path>
-  </g></g>
-  <g class="wsi-cta-base"><g transform={iso(1230, 250, 230)}>
-    <rect width="230" height="230" rx="26" fill={C.tG} fill-opacity=".65" stroke="#fff" stroke-width="2"></rect>
-    <path d={lines(6, 32.8)} stroke="#fff" stroke-width="1.5" fill="none"></path>
-  </g></g>
+  <!-- iso grid plate (base layer, 2px) -->
+    <g class="wsi-in" style={inStyle(0, 1000, 10, 0.96)}>
+  <g class="wsi-cta-base">
+    <g transform={iso(320, 256, 300)}><rect width="300" height="300" rx="36" fill={C.beige}></rect></g>
+    <g transform={iso(320, 250, 300)}>
+      <rect width="300" height="300" rx="36" fill={C.tB} fill-opacity=".6" stroke="#fff" stroke-width="2"></rect>
+      <path d={lines(9, 30)} stroke="#fff" stroke-width="1.5" stroke-opacity=".9" fill="none"></path>
+    </g>
+  </g>
+    </g>
 
-  <!-- tile ground shadows (inverse to tile lift) -->
+  <!-- ground shadows (inverse to tile lift) -->
   <g fill={C.ink} fill-opacity=".09" filter="url(#wsi-cta-blur)">
-    {all.map((t, i) => <g class="wsi-cta-sh-mid" style={lag(0.4 + jit(i, 0.2))}><g transform={iso(t.x + 8, t.y + t.z * 0.7 + 8, t.s)}><rect width={t.s} height={t.s} rx={t.s * 0.17}></rect></g></g>)}
+    {tiles.map((t, i) => <g class="wsi-in" style={inStyle(IN[i][0], IN[i][1], 0, 0.92)}><g class="wsi-cta-sh-mid" style={lag(0.4 + jit(i, 0.2))}><g transform={iso(t.x + 8, t.y + t.h + 8, t.s)}><rect width={t.s} height={t.s} rx={t.s * 0.17}></rect></g></g></g>)}
   </g>
 
-  {all.map((t, i) => {
+  {tiles.map((t, i) => {
     const k = (t.s * 0.58) / 24;
-    return (
-      <>
-        <g class={`wsi-cta-mid wsi-cta-f${t.f}`} style={lag(0.4 + jit(i, 0.2))}>
-          <g transform={iso(t.x, t.y + 9, t.s)}><rect width={t.s} height={t.s} rx={t.s * 0.17} fill={t.side}></rect></g>
-          <g transform={iso(t.x, t.y, t.s)}><rect width={t.s} height={t.s} rx={t.s * 0.17} fill={t.fill} stroke={t.line ? C.beige : '#fff'} stroke-width="2"></rect></g>
-        </g>
-        <g class="wsi-cta-top" style={lag(0.8 + jit(i, 0.5))}>
-          <g
-            transform={`translate(${t.x - 12 * k} ${t.y - 12 * k - 2}) scale(${k})`}
-            color={t.ink}
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            fill="none"
-            set:html={ICONS[t.icon]}
-          ></g>
-        </g>
-      </>
+    const body = (
+      <g class="wsi-cta-mid" style={lag(0.4 + jit(i, 0.2))}>
+        <g transform={iso(t.x, t.y + t.h, t.s)}><rect width={t.s} height={t.s} rx={t.s * 0.17} fill={t.side}></rect></g>
+        <g transform={iso(t.x, t.y, t.s)}><rect width={t.s} height={t.s} rx={t.s * 0.17} fill={t.fill} stroke={t.line ? C.beige : '#fff'} stroke-width="2"></rect></g>
+        <g
+          transform={`translate(${t.x - 12 * k} ${t.y - 12 * k - 2}) scale(${k})`}
+          color={t.ink}
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          fill="none"
+          set:html={ICONS[t.icon]}
+        ></g>
+      </g>
     );
+    const wrapped = <g class="wsi-in" style={inStyle(...IN[i])}>{body}</g>;
+    return t.pt ? <g class="wsi-pt" style={`--d:${t.pt}`}>{wrapped}</g> : wrapped;
   })}
 
-  <g transform="translate(206 72)">
-    <g class="wsi-cta-top wsi-cta-f2" style={lag(0.8 + jit(10, 0.5))}>
-      <g class="wsi-cta-pulse">
-        <rect class="wsi-cta-sh-top" style={lag(0.8 + jit(10, 0.5))} x="-52" y="-16" width="104" height="36" rx="18" fill={C.ink} fill-opacity=".1"></rect>
-        <rect x="-52" y="-20" width="104" height="36" rx="18" fill={C.ink}></rect>
-        <text x="0" y="3" font-size="16" font-weight="600" fill="#fff" text-anchor="middle">=SUM()</text>
+  <!-- =SUM() chip -->
+  <g class="wsi-in" style={inStyle(860, 480, -26, 0.92)}>
+  <g class="wsi-pt" style="--d:1.3">
+    <g transform="translate(210 92)">
+      <g class="wsi-cta-top" style={lag(0.8 + jit(20, 0.5))}>
+        <rect class="wsi-cta-sh-top" style={lag(0.8 + jit(20, 0.5))} x="-52" y="-16" width="104" height="36" rx="18" fill={C.ink} fill-opacity=".1"></rect>
+        <g class="wsi-cta-pulse">
+          <rect x="-52" y="-20" width="104" height="36" rx="18" fill={C.ink}></rect>
+          <text x="0" y="3" font-size="16" font-weight="600" fill="#fff" text-anchor="middle">=SUM()</text>
+        </g>
       </g>
     </g>
   </g>
-  <g transform="translate(1290 66)">
-    <g class="wsi-cta-top wsi-cta-f1" style={lag(0.8 + jit(11, 0.5))}>
-      <rect class="wsi-cta-sh-top" style={lag(0.8 + jit(11, 0.5))} x="-70" y="-15" width="140" height="38" rx="19" fill={C.ink} fill-opacity=".1"></rect>
-      <rect x="-70" y="-19" width="140" height="38" rx="19" fill="#fff" stroke={C.beige} stroke-width="1.5"></rect>
-      <circle cx="-48" cy="0" r="6" fill={C.green}></circle>
-      <text x="-32" y="5" font-size="14" font-weight="600" fill={C.ink}>Net worth</text>
+  </g>
+
+  <!-- Net worth pill -->
+  <g class="wsi-in" style={inStyle(900, 500, 14, 0.94)}>
+  <g class="wsi-pt" style="--d:0.8">
+    <g transform="translate(506 376)">
+      <g class="wsi-cta-top" style={lag(0.8 + jit(21, 0.5))}>
+        <rect class="wsi-cta-sh-top" style={lag(0.8 + jit(21, 0.5))} x="-105" y="-15" width="210" height="38" rx="19" fill={C.ink} fill-opacity=".1"></rect>
+        <rect x="-105" y="-19" width="210" height="38" rx="19" fill="#fff" stroke={C.beige} stroke-width="1.5"></rect>
+        <circle cx="-86" cy="0" r="6" fill={C.green}></circle>
+        <text x="-70" y="5" font-size="14" font-weight="600" fill={C.ink}>Net worth $226,300</text>
+      </g>
     </g>
+  </g>
   </g>
 </svg>
 
