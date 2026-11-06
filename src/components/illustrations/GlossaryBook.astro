@@ -42,19 +42,21 @@ const pills = [
     <g transform={at(0)}><rect width={W} height={H} rx="16" fill={C.blue} stroke="#fff" stroke-width="2"></rect></g>
     <g transform={at(-2)}><rect x="8" y="8" width={W - 16} height={H - 16} rx="10" fill={C.beige}></rect></g>
     <g transform={at(-9)}>
-      <rect x="8" y="8" width={W - 16} height={H - 16} rx="10" fill="#fff"></rect>
-      <path d={`M${W / 2} 8V${H - 8}`} stroke={C.beige} stroke-width="2"></path>
-      <rect x="22" y="22" width="34" height="34" rx="9" fill={C.tB}></rect>
-      <text x="39" y="48" font-size="24" font-weight="700" fill="#3f9cc9" text-anchor="middle">A</text>
-      <rect x="22" y="94" width="76" height="12" rx="6" fill={C.yellow} fill-opacity=".45"></rect>
-      <g fill={C.beige}>
-        {left.map(([x, y, w]) => <rect x={x} y={y - 3} width={w} height="7" rx="3.5"></rect>)}
-        {right.map(([x, y, w]) => <rect x={x} y={y} width={w} height="7" rx="3.5"></rect>)}
+      <g class="wsi-book-pages">
+        <rect x="8" y="8" width={W - 16} height={H - 16} rx="10" fill="#fff"></rect>
+        <path d={`M${W / 2} 8V${H - 8}`} stroke={C.beige} stroke-width="2"></path>
+        <rect x="22" y="22" width="34" height="34" rx="9" fill={C.tB}></rect>
+        <text x="39" y="48" font-size="24" font-weight="700" fill="#3f9cc9" text-anchor="middle">A</text>
+        <rect x="22" y="94" width="76" height="12" rx="6" fill={C.yellow} fill-opacity=".45"></rect>
+        <g fill={C.beige}>
+          {left.map(([x, y, w]) => <rect x={x} y={y - 3} width={w} height="7" rx="3.5"></rect>)}
+          {right.map(([x, y, w]) => <rect x={x} y={y} width={w} height="7" rx="3.5"></rect>)}
+        </g>
       </g>
     </g>
     <!-- ribbon -->
     <g transform={at(-9)}>
-      <path d={`M${W - 54} ${H - 8}h16v40l-8-7-8 7z`} fill={C.yellow} stroke="#fff" stroke-width="1.5" stroke-linejoin="round"></path>
+      <path class="wsi-book-ribbon" d={`M${W - 54} ${H - 8}h16v40l-8-7-8 7z`} fill={C.yellow} stroke="#fff" stroke-width="1.5" stroke-linejoin="round"></path>
     </g>
   </g>
 
@@ -72,10 +74,28 @@ const pills = [
 
 <style is:global>
   :where(svg.wsi) { display: block; width: 100%; height: auto; }
-  @keyframes wsi-book-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
   @media (prefers-reduced-motion: no-preference) {
-    .wsi-book-f1 { animation: wsi-book-float 6s ease-in-out infinite; }
-    .wsi-book-f2 { animation: wsi-book-float 7s ease-in-out -2s infinite; }
-    .wsi-book-f3 { animation: wsi-book-float 8s ease-in-out -4s infinite; }
+    @keyframes wsi-book-lift { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+    @keyframes wsi-book-drift {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      33% { transform: translate(-1.5px, -4px) rotate(-0.8deg); }
+      66% { transform: translate(1.5px, -2px) rotate(0.6deg); }
+    }
+    @keyframes wsi-book-sway {
+      0%, 100% { transform: rotate(0deg); }
+      50% { transform: rotate(0.6deg); }
+    }
+    @keyframes wsi-book-flutter {
+      0%, 100% { transform: rotate(-0.9deg); }
+      50% { transform: rotate(0.9deg); }
+    }
+    .wsi-book-f1, .wsi-book-f2, .wsi-book-f3, .wsi-book-pages, .wsi-book-ribbon { transform-box: fill-box; transform-origin: center; will-change: transform; }
+    .wsi-book-ribbon { transform-origin: 50% 0; }
+    .wsi-book-pages { transform-origin: 50% 100%; }
+    .wsi-book-f1 { animation: wsi-book-lift 8s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+    .wsi-book-f2 { animation: wsi-book-drift 6.5s cubic-bezier(0.45, 0, 0.55, 1) -2s infinite; }
+    .wsi-book-f3 { animation: wsi-book-drift 7.5s cubic-bezier(0.45, 0, 0.55, 1) -4s infinite; }
+    .wsi-book-pages { animation: wsi-book-sway 9s cubic-bezier(0.45, 0, 0.55, 1) -1s infinite; }
+    .wsi-book-ribbon { animation: wsi-book-flutter 5.5s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
   }
 </style>

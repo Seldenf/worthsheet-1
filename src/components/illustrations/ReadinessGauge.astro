@@ -88,8 +88,10 @@ const baseB = pt(11, nd - 90);
 
 <style is:global>
   :where(svg.wsi) { display: block; width: 100%; height: auto; }
-  @keyframes wsi-gauge-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
   @media (prefers-reduced-motion: no-preference) {
-    .wsi-gauge-f1 { animation: wsi-gauge-float 7s ease-in-out infinite; }
+    @keyframes wsi-gauge-lift { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+    @keyframes wsi-gauge-glow { 0%, 100% { opacity: 1; } 50% { opacity: 0.8; } }
+    .wsi-gauge-f1 { animation: wsi-gauge-lift 8s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+    .wsi-gauge-f1 > g[opacity="1"] > path:last-of-type { animation: wsi-gauge-glow 6s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
   }
 </style>

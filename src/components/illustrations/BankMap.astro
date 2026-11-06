@@ -71,8 +71,11 @@ const pills = [
   {pins.map((p) => (
     <ellipse cx={p.x} cy={p.y} rx="15" ry="6" fill={C.ink} fill-opacity=".18"></ellipse>
   ))}
+  {pins.map((p, i) => (i === 0 || i === 2 ? (
+    <ellipse class="wsi-map-ring" style={i === 2 ? 'animation-delay:-3s' : undefined} cx={p.x} cy={p.y} rx="15" ry="6" fill="none" stroke={p.fill} stroke-width="2"></ellipse>
+  ) : null))}
   {pins.map((p, i) => (
-    <g class={`wsi-map-f${(i % 3) + 1}`}>
+    <g class="wsi-map-pin" style={`animation-delay:-${(i * 0.6).toFixed(1)}s`}>
       <g transform={`translate(${p.x} ${p.y})`}>
         <path d={PIN} fill={p.fill} stroke="#fff" stroke-width="3" stroke-linejoin="round"></path>
         <circle cy="-26" r="5.5" fill="#fff"></circle>
@@ -94,10 +97,21 @@ const pills = [
 
 <style is:global>
   :where(svg.wsi) { display: block; width: 100%; height: auto; }
-  @keyframes wsi-map-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
   @media (prefers-reduced-motion: no-preference) {
-    .wsi-map-f1 { animation: wsi-map-float 6s ease-in-out infinite; }
-    .wsi-map-f2 { animation: wsi-map-float 7s ease-in-out -2s infinite; }
-    .wsi-map-f3 { animation: wsi-map-float 8s ease-in-out -4s infinite; }
+    @keyframes wsi-map-drift {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      33% { transform: translate(-1.5px, -4px) rotate(-0.8deg); }
+      66% { transform: translate(1.5px, -2px) rotate(0.6deg); }
+    }
+    @keyframes wsi-map-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+    @keyframes wsi-map-ring {
+      0% { transform: scale(0.9); opacity: 0.7; }
+      100% { transform: scale(1.15); opacity: 0; }
+    }
+    .wsi-map-pin, .wsi-map-f2, .wsi-map-f3, .wsi-map-ring { transform-box: fill-box; transform-origin: center; will-change: transform; }
+    .wsi-map-pin { animation: wsi-map-bob 6s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+    .wsi-map-ring { animation: wsi-map-ring 6s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+    .wsi-map-f2 { animation: wsi-map-drift 7s cubic-bezier(0.45, 0, 0.55, 1) -2s infinite; }
+    .wsi-map-f3 { animation: wsi-map-drift 8.5s cubic-bezier(0.45, 0, 0.55, 1) -4s infinite; }
   }
 </style>

@@ -43,9 +43,9 @@ const pills = [
     <g transform={iso(280, 252, 130, 1.18)}>
       <rect width="130" height="130" rx="16" fill="#fff" stroke={C.ink} stroke-opacity=".2"></rect>
       <rect x="12" y="12" width="106" height="30" rx="8" fill={C.ink}></rect>
-      <text x="110" y="33" font-size="15" font-weight="600" fill="#fff" text-anchor="end">$226,300</text>
-      {keys.map((k) => (
-        <g>
+      <text class="wsi-calc-display" x="110" y="33" font-size="15" font-weight="600" fill="#fff" text-anchor="end">$226,300</text>
+      {keys.map((k, i) => (
+        <g class="wsi-calc-key" style={`animation-delay:-${(i * 0.9).toFixed(1)}s`}>
           <rect x={k.x} y={k.y} width="22" height="18" rx="6" fill={k.eq ? C.yellow : k.op ? C.tB : C.surface}></rect>
           <text x={k.x + 11} y={k.y + 13} font-size="12" font-weight="600" fill={C.ink} text-anchor="middle">{k.t}</text>
         </g>
@@ -53,10 +53,12 @@ const pills = [
     </g>
   </g>
 
-  <g class="wsi-calc-f2" transform="translate(436 150)">
-    <circle r="27" fill={C.ink} fill-opacity=".08" transform="translate(0 8)"></circle>
-    <circle r="25" fill={C.green} stroke="#fff" stroke-width="3"></circle>
-    <path d="m-11 1 8 8 14-16" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
+  <g transform="translate(436 150)">
+    <g class="wsi-calc-f2">
+      <circle r="27" fill={C.ink} fill-opacity=".08" transform="translate(0 8)"></circle>
+      <circle r="25" fill={C.green} stroke="#fff" stroke-width="3"></circle>
+      <path d="m-11 1 8 8 14-16" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
+    </g>
   </g>
 
   {pills.map((p) => (
@@ -75,10 +77,19 @@ const pills = [
 
 <style is:global>
   :where(svg.wsi) { display: block; width: 100%; height: auto; }
-  @keyframes wsi-calc-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
   @media (prefers-reduced-motion: no-preference) {
-    .wsi-calc-f1 { animation: wsi-calc-float 6s ease-in-out infinite; }
-    .wsi-calc-f2 { animation: wsi-calc-float 7s ease-in-out -2s infinite; }
-    .wsi-calc-f3 { animation: wsi-calc-float 8s ease-in-out -4s infinite; }
+    @keyframes wsi-calc-lift { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+    @keyframes wsi-calc-drift {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      33% { transform: translate(-1.5px, -4px) rotate(-0.8deg); }
+      66% { transform: translate(1.5px, -2px) rotate(0.6deg); }
+    }
+    @keyframes wsi-calc-tap { 0%, 100% { opacity: 1; } 50% { opacity: 0.86; } }
+    .wsi-calc-f1, .wsi-calc-f2, .wsi-calc-f3 { transform-box: fill-box; transform-origin: center; will-change: transform; }
+    .wsi-calc-f1 { animation: wsi-calc-lift 8s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+    .wsi-calc-f2 { animation: wsi-calc-drift 6.5s cubic-bezier(0.45, 0, 0.55, 1) -2s infinite; }
+    .wsi-calc-f3 { animation: wsi-calc-drift 7.5s cubic-bezier(0.45, 0, 0.55, 1) -4s infinite; }
+    .wsi-calc-display { animation: wsi-calc-tap 6s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+    .wsi-calc-key { animation: wsi-calc-tap 7s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
   }
 </style>

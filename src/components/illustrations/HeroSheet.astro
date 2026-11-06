@@ -120,8 +120,8 @@ const pills = [
   </g>
 
   <!-- floating tiles -->
-  {tiles.map((t) => (
-    <g class={`wsi-hero-${t.cls}`}>
+  {tiles.map((t, i) => (
+    <g class={`wsi-hero-${t.cls}`} style={`animation-delay:${(-(0.6 + i * 2.1)).toFixed(2)}s`}>
       <g transform={iso(t.x, t.y + 8, t.s)}><rect width={t.s} height={t.s} rx={t.s * 0.17} fill={t.side}></rect></g>
       <g transform={iso(t.x, t.y, t.s)}>
         <rect width={t.s} height={t.s} rx={t.s * 0.17} fill={t.fill} stroke="#fff" stroke-width="2"></rect>
@@ -147,23 +147,27 @@ const pills = [
   ))}
 
   <!-- verified check -->
-  <g class="wsi-hero-f2">
+  <g class="wsi-hero-f2" style="animation-delay:-3.6s">
     <circle cx="806" cy="262" r="28" fill={C.ink} fill-opacity=".08" transform="translate(0 8)"></circle>
     <circle cx="806" cy="262" r="26" fill={C.green} stroke="#fff" stroke-width="3"></circle>
     <path d="M794 263l8 8 15-17" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
   </g>
 
   <!-- =SUM() chip -->
-  <g class="wsi-hero-f3" transform="translate(430 144)">
-    <rect x="-52" y="-16" width="104" height="36" rx="18" fill={C.ink} fill-opacity=".1"></rect>
-    <rect x="-52" y="-20" width="104" height="36" rx="18" fill={C.ink}></rect>
-    <text x="0" y="3" font-size="16" font-weight="600" fill="#fff" text-anchor="middle">=SUM()</text>
+  <g transform="translate(430 144)">
+    <g class="wsi-hero-f3" style="animation-delay:-5.2s">
+      <g class="wsi-hero-pulse">
+        <rect x="-52" y="-16" width="104" height="36" rx="18" fill={C.ink} fill-opacity=".1"></rect>
+        <rect x="-52" y="-20" width="104" height="36" rx="18" fill={C.ink}></rect>
+        <text x="0" y="3" font-size="16" font-weight="600" fill="#fff" text-anchor="middle">=SUM()</text>
+      </g>
+    </g>
   </g>
 
   <!-- pills -->
-  {pills.map((p) => (
+  {pills.map((p, i) => (
     <g transform={`translate(${p.x} ${p.y})`}>
-      <g class={`wsi-hero-${p.cls}`}>
+      <g class={`wsi-hero-${p.cls}`} style={`animation-delay:${(-(1.7 + i * 2.1)).toFixed(2)}s`}>
         <rect x={-p.w / 2} y={-p.h / 2 + 4} width={p.w} height={p.h} rx={p.h / 2} fill={C.ink} fill-opacity=".1"></rect>
         <rect x={-p.w / 2} y={-p.h / 2} width={p.w} height={p.h} rx={p.h / 2} fill="#fff" stroke={C.beige} stroke-width="1.5"></rect>
         <circle cx={-p.w / 2 + 22} cy="0" r={p.big ? 7 : 6} fill={p.dot}></circle>
@@ -178,10 +182,19 @@ const pills = [
 
 <style is:global>
   :where(svg.wsi) { display: block; width: 100%; height: auto; }
-  @keyframes wsi-hero-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+  @keyframes wsi-hero-drift {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    50% { transform: translate(var(--dx, 0px), var(--dy, -4px)) rotate(var(--r, 0deg)); }
+  }
+  @keyframes wsi-hero-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .85; } }
   @media (prefers-reduced-motion: no-preference) {
-    .wsi-hero-f1 { animation: wsi-hero-float 6s ease-in-out infinite; }
-    .wsi-hero-f2 { animation: wsi-hero-float 7s ease-in-out -2s infinite; }
-    .wsi-hero-f3 { animation: wsi-hero-float 8s ease-in-out -4s infinite; }
+    .wsi-hero-f1, .wsi-hero-f2, .wsi-hero-f3 {
+      transform-box: fill-box; transform-origin: center; will-change: transform;
+      animation: wsi-hero-drift 7s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+    }
+    .wsi-hero-f1 { --dx: 2px; --dy: -4px; --r: 1deg; animation-duration: 6.4s; }
+    .wsi-hero-f2 { --dx: -2px; --dy: -3px; --r: -1deg; animation-duration: 7.6s; }
+    .wsi-hero-f3 { --dx: 0px; --dy: -4px; --r: .6deg; animation-duration: 8.8s; }
+    .wsi-hero-pulse { animation: wsi-hero-pulse 6s cubic-bezier(0.45, 0, 0.55, 1) infinite; will-change: opacity; }
   }
 </style>

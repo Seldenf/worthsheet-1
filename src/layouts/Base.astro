@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import '../styles/motion.css';
 import geistLatinUrl from '@fontsource-variable/geist/files/geist-latin-wght-normal.woff2?url';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
@@ -128,5 +129,6 @@ const structuredData = [
     </main>
     <Footer />
     <ConsentBanner />
+    <script>import '../scripts/motion.ts';</script>
   </body>
 </html>

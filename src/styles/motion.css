@@ -1,0 +1,197 @@
+/* WorthSheet motion system: tokens, scroll reveals, hero entrance, micro-interactions.
+   Animates only transform / translate / opacity / filter. Reduced motion disables movement. */
+
+:root {
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-soft: cubic-bezier(0.45, 0, 0.55, 1);
+  interpolate-size: allow-keywords;
+}
+
+/* ---------- Scroll reveal (JS-gated: tagged by src/scripts/motion.ts) ---------- */
+html.js [data-reveal] {
+  opacity: 0;
+  transform: translateY(12px);
+  filter: blur(4px);
+  transition:
+    opacity 0.7s var(--ease-out),
+    transform 0.7s var(--ease-out),
+    filter 0.7s var(--ease-out);
+  transition-delay: calc(var(--reveal-i, 0) * 70ms);
+}
+
+html.js [data-reveal].is-in {
+  opacity: 1;
+  transform: none;
+  filter: none;
+}
+
+/* ---------- Hero entrance (CSS-only, runs on load) ----------
+   `translate` is used instead of `transform` so the hero illustration's
+   pointer parallax can own `transform` without fighting the entrance. */
+@keyframes ws-rise {
+  from {
+    opacity: 0;
+    translate: 0 10px;
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+    filter: blur(0);
+  }
+}
+
+/* h1 never fades: LCP stays fully opaque. */
+@keyframes ws-rise-h1 {
+  from {
+    translate: 0 10px;
+    filter: blur(4px);
+  }
+  to {
+    translate: 0 0;
+    filter: blur(0);
+  }
+}
+
+main > :first-child h1 {
+  animation: ws-rise-h1 800ms var(--ease-out) backwards;
+}
+
+main > :first-child .eyebrow {
+  animation: ws-rise 700ms var(--ease-out) 80ms backwards;
+}
+
+main > :first-child .lead {
+  animation: ws-rise 700ms var(--ease-out) 160ms backwards;
+}
+
+main > :first-child ul {
+  animation: ws-rise 700ms var(--ease-out) 240ms backwards;
+}
+
+main > :first-child svg[class*='wsi-'] {
+  animation: ws-rise 700ms var(--ease-out) 240ms backwards;
+  will-change: transform;
+}
+
+main > :first-child .btn {
+  animation: ws-rise 700ms var(--ease-out) 320ms backwards;
+}
+
+/* ---------- Buttons ---------- */
+.btn {
+  transition:
+    transform 200ms var(--ease-out),
+    background-color 200ms var(--ease-out),
+    border-color 200ms var(--ease-out),
+    box-shadow 200ms var(--ease-out);
+}
+
+/* ---------- Cards ---------- */
+a.card,
+.card.is-link {
+  transition:
+    transform 250ms var(--ease-out),
+    box-shadow 250ms var(--ease-out);
+}
+
+/* ---------- Links in prose ---------- */
+main p a {
+  text-decoration-color: color-mix(in srgb, currentColor 30%, transparent);
+  transition: text-decoration-color 200ms var(--ease-out);
+}
+
+/* ---------- Header scrolled state (class set by motion.ts) ---------- */
+html .site-header {
+  transition:
+    background-color 250ms var(--ease-out),
+    border-color 250ms var(--ease-out),
+    box-shadow 250ms var(--ease-out);
+}
+
+html .site-header.is-scrolled {
+  background: rgba(253, 252, 250, 0.94);
+  -webkit-backdrop-filter: saturate(1.6) blur(18px);
+  backdrop-filter: saturate(1.6) blur(18px);
+  border-bottom-color: var(--line-strong);
+  box-shadow:
+    0 1px 0 var(--line),
+    0 10px 30px -20px rgba(46, 41, 38, 0.22);
+}
+
+/* ---------- FAQ <details> smooth open (progressive; no-op where unsupported) ---------- */
+details::details-content {
+  block-size: 0;
+  overflow: hidden;
+  transition:
+    content-visibility 0.3s allow-discrete,
+    block-size 0.3s var(--ease-out);
+}
+
+details[open]::details-content {
+  block-size: auto;
+}
+
+html.js details > summary > svg {
+  transition: transform 200ms var(--ease-out);
+}
+
+/* ---------- Hover (fine pointers only) ---------- */
+@media (hover: hover) and (pointer: fine) {
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 24px -12px rgba(46, 41, 38, 0.5);
+  }
+
+  a.card:hover,
+  .card.is-link:hover {
+    transform: translateY(-3px);
+    box-shadow:
+      0 1px 0 var(--line),
+      0 24px 48px -20px rgba(46, 41, 38, 0.28);
+  }
+
+  main p a:hover {
+    text-decoration-color: currentColor;
+  }
+}
+
+/* Press feedback (after hover so :active wins when both apply). */
+.btn:active {
+  transform: scale(0.97);
+  transition-duration: 150ms;
+}
+
+/* ---------- Reduced motion: no movement, reveals instant ---------- */
+@media (prefers-reduced-motion: reduce) {
+  html.js [data-reveal],
+  html.js [data-reveal].is-in {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    transition: none;
+  }
+
+  main > :first-child :is(h1, .eyebrow, .lead, ul, .btn, svg[class*='wsi-']) {
+    animation: none;
+  }
+
+  .btn:hover,
+  .btn:active,
+  .btn-primary:hover,
+  a.card:hover,
+  .card.is-link:hover {
+    transform: none;
+  }
+
+  .btn,
+  a.card,
+  .card.is-link,
+  main p a,
+  html .site-header,
+  html.js details > summary > svg,
+  details::details-content {
+    transition: none;
+  }
+}

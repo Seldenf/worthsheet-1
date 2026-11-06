@@ -66,10 +66,10 @@ const lines = (n: number, d: number) => Array.from({ length: n }, (_, i) => `M0 
     {all.map((t) => <g transform={iso(t.x + 8, t.y + t.z * 0.7 + 8, t.s)}><rect width={t.s} height={t.s} rx={t.s * 0.17}></rect></g>)}
   </g>
 
-  {all.map((t) => {
+  {all.map((t, i) => {
     const k = (t.s * 0.58) / 24;
     return (
-      <g class={`wsi-cta-f${t.f}`}>
+      <g class={`wsi-cta-f${t.f}`} style={`animation-delay:${(-(i * 1.1)).toFixed(2)}s`}>
         <g transform={iso(t.x, t.y + 9, t.s)}><rect width={t.s} height={t.s} rx={t.s * 0.17} fill={t.side}></rect></g>
         <g transform={iso(t.x, t.y, t.s)}><rect width={t.s} height={t.s} rx={t.s * 0.17} fill={t.fill} stroke={t.line ? C.beige : '#fff'} stroke-width="2"></rect></g>
         <g
@@ -86,25 +86,40 @@ const lines = (n: number, d: number) => Array.from({ length: n }, (_, i) => `M0 
     );
   })}
 
-  <g class="wsi-cta-f2" transform="translate(206 72)">
-    <rect x="-52" y="-16" width="104" height="36" rx="18" fill={C.ink} fill-opacity=".1"></rect>
-    <rect x="-52" y="-20" width="104" height="36" rx="18" fill={C.ink}></rect>
-    <text x="0" y="3" font-size="16" font-weight="600" fill="#fff" text-anchor="middle">=SUM()</text>
+  <g transform="translate(206 72)">
+    <g class="wsi-cta-f2" style="animation-delay:-2.4s">
+      <g class="wsi-cta-pulse">
+        <rect x="-52" y="-16" width="104" height="36" rx="18" fill={C.ink} fill-opacity=".1"></rect>
+        <rect x="-52" y="-20" width="104" height="36" rx="18" fill={C.ink}></rect>
+        <text x="0" y="3" font-size="16" font-weight="600" fill="#fff" text-anchor="middle">=SUM()</text>
+      </g>
+    </g>
   </g>
-  <g class="wsi-cta-f1" transform="translate(1290 66)">
-    <rect x="-70" y="-15" width="140" height="38" rx="19" fill={C.ink} fill-opacity=".1"></rect>
-    <rect x="-70" y="-19" width="140" height="38" rx="19" fill="#fff" stroke={C.beige} stroke-width="1.5"></rect>
-    <circle cx="-48" cy="0" r="6" fill={C.green}></circle>
-    <text x="-32" y="5" font-size="14" font-weight="600" fill={C.ink}>Net worth</text>
+  <g transform="translate(1290 66)">
+    <g class="wsi-cta-f1" style="animation-delay:-5.5s">
+      <rect x="-70" y="-15" width="140" height="38" rx="19" fill={C.ink} fill-opacity=".1"></rect>
+      <rect x="-70" y="-19" width="140" height="38" rx="19" fill="#fff" stroke={C.beige} stroke-width="1.5"></rect>
+      <circle cx="-48" cy="0" r="6" fill={C.green}></circle>
+      <text x="-32" y="5" font-size="14" font-weight="600" fill={C.ink}>Net worth</text>
+    </g>
   </g>
 </svg>
 
 <style is:global>
   :where(svg.wsi) { display: block; width: 100%; height: auto; }
-  @keyframes wsi-cta-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+  @keyframes wsi-cta-drift {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    50% { transform: translate(var(--dx, 0px), var(--dy, -4px)) rotate(var(--r, 0deg)); }
+  }
+  @keyframes wsi-cta-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .85; } }
   @media (prefers-reduced-motion: no-preference) {
-    .wsi-cta-f1 { animation: wsi-cta-float 6s ease-in-out infinite; }
-    .wsi-cta-f2 { animation: wsi-cta-float 7s ease-in-out -2s infinite; }
-    .wsi-cta-f3 { animation: wsi-cta-float 8s ease-in-out -4s infinite; }
+    .wsi-cta-f1, .wsi-cta-f2, .wsi-cta-f3 {
+      transform-box: fill-box; transform-origin: center; will-change: transform;
+      animation: wsi-cta-drift 7s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+    }
+    .wsi-cta-f1 { --dx: 2px; --dy: -4px; --r: .8deg; animation-duration: 6.4s; }
+    .wsi-cta-f2 { --dx: -2px; --dy: -3px; --r: -.8deg; animation-duration: 7.6s; }
+    .wsi-cta-f3 { --dx: 0px; --dy: -4px; --r: .5deg; animation-duration: 8.8s; }
+    .wsi-cta-pulse { animation: wsi-cta-pulse 6s cubic-bezier(0.45, 0, 0.55, 1) infinite; will-change: opacity; }
   }
 </style>

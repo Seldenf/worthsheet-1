@@ -42,10 +42,10 @@
   --font-sans:
     'Geist Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue',
     Arial, sans-serif;
-  --container: 1200px;
+  --container: 1120px;
   --prose: 720px;
-  --gutter: clamp(20px, 4vw, 40px);
-  --section-y: clamp(64px, 10vw, 128px);
+  --gutter: clamp(24px, 6vw, 88px);
+  --section-y: clamp(80px, 11vw, 152px);
   --header-h: 72px;
 }
 
@@ -68,7 +68,7 @@ body {
   background: var(--paper);
   color: var(--ink);
   font-family: var(--font-sans);
-  font-size: 1.0625rem;
+  font-size: 0.95rem;
   line-height: 1.6;
   font-weight: 400;
   -webkit-font-smoothing: antialiased;
@@ -78,7 +78,7 @@ body {
 
 @media (min-width: 900px) {
   body {
-    font-size: 1.125rem;
+    font-size: 1rem;
   }
 }
 
@@ -89,6 +89,12 @@ canvas {
   display: block;
   max-width: 100%;
   height: auto;
+}
+
+/* Illustrations: root <svg class="wsi …"> only; 90% of container width, centred. */
+svg.wsi {
+  max-width: 90%;
+  margin-inline: auto;
 }
 
 input,
@@ -152,25 +158,25 @@ h4 {
 }
 
 h1 {
-  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  font-size: clamp(2.25rem, 5.4vw, 4.05rem);
   font-weight: 580;
   letter-spacing: -0.035em;
   line-height: 1.04;
 }
 
 h2 {
-  font-size: clamp(1.875rem, 4vw, 3rem);
+  font-size: clamp(1.7rem, 3.6vw, 2.7rem);
   letter-spacing: -0.03em;
 }
 
 h3 {
-  font-size: clamp(1.25rem, 2vw, 1.5rem);
+  font-size: clamp(1.125rem, 1.8vw, 1.35rem);
   letter-spacing: -0.02em;
   line-height: 1.2;
 }
 
 h4 {
-  font-size: 1.125rem;
+  font-size: 1rem;
   letter-spacing: -0.02em;
   line-height: 1.3;
 }
@@ -186,7 +192,7 @@ small,
 }
 
 .lead {
-  font-size: clamp(1.125rem, 1.6vw, 1.375rem);
+  font-size: clamp(1rem, 1.45vw, 1.25rem);
   line-height: 1.5;
   color: var(--muted);
   text-wrap: pretty;
@@ -230,7 +236,7 @@ small,
 }
 
 .section-tight {
-  padding-block: clamp(40px, 6vw, 72px);
+  padding-block: clamp(48px, 7vw, 88px);
 }
 
 .tone-paper {
@@ -258,7 +264,7 @@ small,
 
 .grid {
   display: grid;
-  gap: var(--gap, clamp(16px, 2.4vw, 28px));
+  gap: var(--gap, clamp(20px, 2.8vw, 36px));
   grid-template-columns: 1fr;
 }
 
@@ -314,7 +320,7 @@ small,
   border: 1px solid var(--line);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  padding: clamp(20px, 3vw, 32px);
+  padding: clamp(22px, 3vw, 34px);
 }
 
 a.card {
@@ -326,10 +332,15 @@ a.card {
 }
 
 a.card:hover {
-  transform: translateY(-2px);
   box-shadow:
     0 1px 0 var(--line),
     0 18px 40px -16px rgba(46, 41, 38, 0.24);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  a.card:hover {
+    transform: translateY(-2px);
+  }
 }
 
 .pill {
@@ -361,7 +372,7 @@ a.card:hover {
   border: 1px solid var(--btn-border);
   background: var(--btn-bg);
   color: var(--btn-fg);
-  font-size: 1rem;
+  font-size: 0.925rem;
   font-weight: 540;
   letter-spacing: -0.01em;
   line-height: 1;
@@ -373,8 +384,10 @@ a.card:hover {
     border-color 0.15s ease;
 }
 
-.btn:hover {
-  transform: translateY(-1px);
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover {
+    transform: translateY(-1px);
+  }
 }
 
 .btn-primary:hover {
@@ -404,13 +417,13 @@ a.card:hover {
 .btn-sm {
   min-height: 40px;
   padding: 0 1.15em;
-  font-size: 0.9375rem;
+  font-size: 0.85rem;
 }
 
 .btn-lg {
   min-height: 56px;
   padding: 0 1.9em;
-  font-size: 1.0625rem;
+  font-size: 0.975rem;
 }
 
 .btn[disabled],

@@ -53,7 +53,8 @@ const pills = [
   <ellipse cx="280" cy="388" rx="64" ry="21" fill={C.ink} fill-opacity=".22" filter="url(#wsi-shield-blur)"></ellipse>
 
   <!-- shield -->
-  <g class="wsi-shield-f1" transform="translate(280 184)">
+  <g transform="translate(280 184)">
+    <g class="wsi-shield-f1">
     <path d={SH} fill="#2f8a39" transform="translate(8 11)"></path>
     <path d={SH} fill={C.green} stroke="#fff" stroke-width="3" stroke-linejoin="round"></path>
     <path d="M0-88 72-62V8C72 50 42 76 0 92z" fill="#fff" fill-opacity=".14"></path>
@@ -61,11 +62,12 @@ const pills = [
     <rect x="-26" y="-8" width="52" height="42" rx="10" fill="#fff"></rect>
     <circle cx="0" cy="10" r="5.5" fill={C.green}></circle>
     <rect x="-2.5" y="12" width="5" height="12" rx="2.5" fill={C.green}></rect>
+    </g>
   </g>
 
-  {pills.map((p) => (
+  {pills.map((p, i) => (
     <g transform={`translate(${p.x} ${p.y})`}>
-      <g class={`wsi-shield-${p.cls}`}>
+      <g class={`wsi-shield-${p.cls}`} style={`animation-delay:${(-(0.8 + i * 2.6)).toFixed(2)}s`}>
         <rect x={-p.w / 2} y="-15" width={p.w} height="38" rx="19" fill={C.ink} fill-opacity=".1"></rect>
         <rect x={-p.w / 2} y="-19" width={p.w} height="38" rx="19" fill="#fff" stroke={C.beige} stroke-width="1.5"></rect>
         <circle cx={-p.w / 2 + 22} cy="0" r="6" fill={p.dot}></circle>
@@ -77,11 +79,17 @@ const pills = [
 
 <style is:global>
   :where(svg.wsi) { display: block; width: 100%; height: auto; }
-  @keyframes wsi-shield-float { 0%, 100% { transform: translate(280px, 184px); } 50% { transform: translate(280px, 176px); } }
-  @keyframes wsi-shield-pill { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+  @keyframes wsi-shield-drift {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    50% { transform: translate(var(--dx, 0px), var(--dy, -4px)) rotate(var(--r, 0deg)); }
+  }
   @media (prefers-reduced-motion: no-preference) {
-    .wsi-shield-f1 { animation: wsi-shield-float 6s ease-in-out infinite; }
-    .wsi-shield-f2 { animation: wsi-shield-pill 7s ease-in-out -2s infinite; }
-    .wsi-shield-f3 { animation: wsi-shield-pill 8s ease-in-out -4s infinite; }
+    .wsi-shield-f1, .wsi-shield-f2, .wsi-shield-f3 {
+      transform-box: fill-box; transform-origin: center; will-change: transform;
+      animation: wsi-shield-drift 7s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+    }
+    .wsi-shield-f1 { --dx: 0px; --dy: -5px; --r: .5deg; animation-duration: 6.8s; animation-delay: -1.5s; }
+    .wsi-shield-f2 { --dx: -2px; --dy: -3px; --r: -1deg; animation-duration: 7.6s; }
+    .wsi-shield-f3 { --dx: 2px; --dy: -4px; --r: 1deg; animation-duration: 8.4s; }
   }
 </style>

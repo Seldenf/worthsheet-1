@@ -63,10 +63,10 @@ const lines = Array.from({ length: 7 }, (_, i) => `M0 ${(i + 1) * 32.75}H262M${(
     {tiles.map((t) => <g transform={iso(t.x + 8, t.y + t.z * 0.7 + 8, t.s)}><rect width={t.s} height={t.s} rx={t.s * 0.17}></rect></g>)}
   </g>
 
-  {tiles.map((t) => {
+  {tiles.map((t, i) => {
     const k = (t.s * 0.58) / 24;
     return (
-      <g class={`wsi-tiles-f${t.f}`}>
+      <g class={`wsi-tiles-f${t.f}`} style={`animation-delay:${(-(i * 1.37)).toFixed(2)}s`}>
         <g transform={iso(t.x, t.y + 9, t.s)}><rect width={t.s} height={t.s} rx={t.s * 0.17} fill={t.side}></rect></g>
         <g transform={iso(t.x, t.y, t.s)}>
           <rect width={t.s} height={t.s} rx={t.s * 0.17} fill={t.fill} stroke={t.line ? C.beige : '#fff'} stroke-width="2"></rect>
@@ -92,10 +92,17 @@ const lines = Array.from({ length: 7 }, (_, i) => `M0 ${(i + 1) * 32.75}H262M${(
 
 <style is:global>
   :where(svg.wsi) { display: block; width: 100%; height: auto; }
-  @keyframes wsi-tiles-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+  @keyframes wsi-tiles-drift {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    50% { transform: translate(var(--dx, 0px), var(--dy, -4px)) rotate(var(--r, 0deg)); }
+  }
   @media (prefers-reduced-motion: no-preference) {
-    .wsi-tiles-f1 { animation: wsi-tiles-float 6s ease-in-out infinite; }
-    .wsi-tiles-f2 { animation: wsi-tiles-float 7s ease-in-out -2s infinite; }
-    .wsi-tiles-f3 { animation: wsi-tiles-float 8s ease-in-out -4s infinite; }
+    .wsi-tiles-f1, .wsi-tiles-f2, .wsi-tiles-f3 {
+      transform-box: fill-box; transform-origin: center; will-change: transform;
+      animation: wsi-tiles-drift 7s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+    }
+    .wsi-tiles-f1 { --dx: 2px; --dy: -4px; --r: .6deg; animation-duration: 6.4s; }
+    .wsi-tiles-f2 { --dx: -2px; --dy: -3px; --r: -.6deg; animation-duration: 7.6s; }
+    .wsi-tiles-f3 { --dx: 0px; --dy: -4px; --r: .4deg; animation-duration: 8.8s; }
   }
 </style>

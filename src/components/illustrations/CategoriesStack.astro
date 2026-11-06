@@ -66,9 +66,9 @@ const menu = ['Checking', 'Savings', 'Retirement'];
     <path d="M550 392h-52"></path>
   </g>
 
-  {pills.map((p) => (
+  {pills.map((p, i) => (
     <g transform={`translate(${p.x} ${p.y})`}>
-      <g class={`wsi-cats-${p.cls}`}>
+      <g class={`wsi-cats-${p.cls}`} style={`animation-delay:${(-(0.9 + i * 2.6)).toFixed(2)}s`}>
         <rect x={-p.w / 2} y="-15" width={p.w} height="38" rx="19" fill={C.ink} fill-opacity=".1"></rect>
         <rect x={-p.w / 2} y="-19" width={p.w} height="38" rx="19" fill="#fff" stroke={C.beige} stroke-width="1.5"></rect>
         <circle cx={-p.w / 2 + 22} cy="0" r="6" fill={p.dot}></circle>
@@ -80,7 +80,8 @@ const menu = ['Checking', 'Savings', 'Retirement'];
   ))}
 
   <!-- dropdown chip + open menu -->
-  <g class="wsi-cats-f2" transform="translate(40 190)">
+  <g transform="translate(40 190)">
+    <g class="wsi-cats-f2" style="animation-delay:-4.1s">
     <rect x="0" y="6" width="150" height="40" rx="20" fill={C.ink} fill-opacity=".1"></rect>
     <rect x="0" y="0" width="150" height="40" rx="20" fill="#fff" stroke={C.blue} stroke-width="2"></rect>
     <text x="18" y="25" font-size="14" font-weight="600" fill={C.ink}>Category</text>
@@ -92,15 +93,23 @@ const menu = ['Checking', 'Savings', 'Retirement'];
       {menu.map((m, i) => <text x="20" y={80 + i * 36}>{m}</text>)}
     </g>
     <path d="m118 109 5 5 9-10" stroke="#3f9cc9" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
+    </g>
   </g>
 </svg>
 
 <style is:global>
   :where(svg.wsi) { display: block; width: 100%; height: auto; }
-  @keyframes wsi-cats-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+  @keyframes wsi-cats-drift {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    50% { transform: translate(var(--dx, 0px), var(--dy, -4px)) rotate(var(--r, 0deg)); }
+  }
   @media (prefers-reduced-motion: no-preference) {
-    .wsi-cats-f1 { animation: wsi-cats-float 6s ease-in-out infinite; }
-    .wsi-cats-f2 { animation: wsi-cats-float 7s ease-in-out -2s infinite; }
-    .wsi-cats-f3 { animation: wsi-cats-float 8s ease-in-out -4s infinite; }
+    .wsi-cats-f1, .wsi-cats-f2, .wsi-cats-f3 {
+      transform-box: fill-box; transform-origin: center; will-change: transform;
+      animation: wsi-cats-drift 7s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+    }
+    .wsi-cats-f1 { --dx: 2px; --dy: -4px; --r: .8deg; animation-duration: 6.4s; }
+    .wsi-cats-f2 { --dx: -2px; --dy: -3px; --r: -.8deg; animation-duration: 7.6s; }
+    .wsi-cats-f3 { --dx: 0px; --dy: -4px; --r: .5deg; animation-duration: 8.8s; }
   }
 </style>

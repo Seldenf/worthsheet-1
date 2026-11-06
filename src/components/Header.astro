@@ -27,10 +27,10 @@ const calculatorsActive = calculators.some((c) => current.startsWith(url(c.path)
     <a class="logo" href={url('/')} aria-label={`${SITE_NAME} home`}>
       <svg class="logo-mark" viewBox="0 0 64 64" width="32" height="32" aria-hidden="true">
         <rect width="64" height="64" rx="16" fill="#2e2926"></rect>
-        <rect x="14" y="14" width="16" height="16" rx="4" fill="#40aa4a"></rect>
-        <rect x="34" y="14" width="16" height="16" rx="4" fill="#fdfcfa"></rect>
-        <rect x="14" y="34" width="16" height="16" rx="4" fill="#fdfcfa"></rect>
-        <rect x="34" y="34" width="16" height="16" rx="4" fill="#6cbee4"></rect>
+        <rect class="sq sq-tl" x="14" y="14" width="16" height="16" rx="4" fill="#40aa4a"></rect>
+        <rect class="sq sq-tr" x="34" y="14" width="16" height="16" rx="4" fill="#fdfcfa"></rect>
+        <rect class="sq sq-br" x="34" y="34" width="16" height="16" rx="4" fill="#6cbee4"></rect>
+        <rect class="sq sq-bl" x="14" y="34" width="16" height="16" rx="4" fill="#fdfcfa"></rect>
       </svg>
       <span class="logo-text">{SITE_NAME}</span>
     </a>
@@ -129,6 +129,49 @@ const calculatorsActive = calculators.some((c) => current.startsWith(url(c.path)
     font-size: 1.25rem;
     font-weight: 600;
     letter-spacing: -0.03em;
+  }
+
+  .logo-mark {
+    transition: transform 150ms cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  .logo:active .logo-mark {
+    transform: scale(0.96);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    /* Squares take the next square's color clockwise; each square is offset by a quarter cycle. */
+    .logo-mark .sq {
+      animation-name: logo-cycle;
+      animation-duration: 2.4s;
+      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+      animation-iteration-count: infinite;
+      animation-play-state: paused;
+    }
+
+    /* Rest offsets (phase 0, 1/4, 1/2, 3/4) => TL green, TR cream, BR blue, BL cream. */
+    .logo-mark .sq-tl { animation-delay: 0s; }
+    .logo-mark .sq-tr { animation-delay: -0.6s; }
+    .logo-mark .sq-br { animation-delay: -1.2s; }
+    .logo-mark .sq-bl { animation-delay: -1.8s; }
+
+    @media (hover: hover) {
+      .logo:hover .logo-mark .sq {
+        animation-play-state: running;
+      }
+    }
+
+    .logo:focus-visible .logo-mark .sq {
+      animation-play-state: running;
+    }
+  }
+
+  @keyframes logo-cycle {
+    0% { fill: #40aa4a; }
+    25% { fill: #fdfcfa; }
+    50% { fill: #6cbee4; }
+    75% { fill: #fdfcfa; }
+    100% { fill: #40aa4a; }
   }
 
   .site-nav {
