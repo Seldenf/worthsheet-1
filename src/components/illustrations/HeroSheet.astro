@@ -12,6 +12,9 @@ const C = {
 // 2:1 isometric square of side s*k centred on (cx, cy); local origin = left corner.
 const iso = (cx: number, cy: number, s: number, k = 1) =>
   `matrix(${k} ${-k / 2} ${k} ${k / 2} ${cx - s * k} ${cy})`;
+// Breathing layers: base 0s, mid +0.4s, top +0.8s; jit() staggers items within a layer.
+const lag = (s: number) => `animation-delay:${s.toFixed(2)}s`;
+const jit = (i: number, amp: number) => (((i * 0.618) % 1) - 0.5) * 2 * amp;
 
 // ---- spreadsheet board (local 300x300 plane, scaled 1.1) ----
 const S = 300;
@@ -37,14 +40,14 @@ const grid =
   `M0 ${HDR}H${S}` +
   colX.slice(1, 7).map((x) => `M${x} 0V${S}`).join('');
 
-// ---- floating tiles ----
+// ---- floating tiles (mid layer) ----
 const tiles = [
   { x: 262, y: 232, s: 92, fill: C.sheets, side: '#0a7a43', z: 150, cls: 'f1', kind: 'sheets' },
   { x: 872, y: 392, s: 44, fill: C.yellow, side: '#d9a02a', z: 44, cls: 'f3', kind: 'dollar' },
   { x: 104, y: 330, s: 40, fill: C.tB, side: '#b9dcee', z: 40, cls: 'f2', kind: 'bars' },
 ];
 
-// ---- pills ----
+// ---- pills (top layer) ----
 const pills = [
   { x: 690, y: 150, l: 'Assets', v: '$412,500', dot: C.green, fs: 15, cls: 'f2' },
   { x: 224, y: 470, l: 'Liabilities', v: '$186,200', dot: C.yellow, fs: 15, cls: 'f3' },
@@ -71,17 +74,17 @@ const pills = [
   </defs>
 
   <g transform="translate(480 346) scale(1.1) translate(-480 -372)">
-  <!-- halo frames -->
-  <g transform={iso(480, 372, 430)}><rect width="430" height="430" rx="30" fill={C.tB} fill-opacity=".55" stroke="#fff" stroke-width="2"></rect></g>
-  <g transform={iso(480, 372, 372)}><rect width="372" height="372" rx="26" fill={C.tG} fill-opacity=".6" stroke="#fff" stroke-width="2"></rect></g>
+  <!-- halo frames (base) -->
+  <g class="wsi-hero-base"><g transform={iso(480, 372, 430)}><rect width="430" height="430" rx="30" fill={C.tB} fill-opacity=".55" stroke="#fff" stroke-width="2"></rect></g></g>
+  <g class="wsi-hero-base"><g transform={iso(480, 372, 372)}><rect width="372" height="372" rx="26" fill={C.tG} fill-opacity=".6" stroke="#fff" stroke-width="2"></rect></g></g>
 
-  <!-- board shadow + slab -->
-  <g transform={iso(480, 408, 340)} filter="url(#wsi-hero-blur)"><rect width="340" height="340" rx="20" fill={C.ink} fill-opacity=".16"></rect></g>
-  <g transform={iso(480, 382, 330)}><rect width="330" height="330" rx="18" fill="#cfcdcb"></rect></g>
-  <g transform={iso(480, 372, 330)}><rect width="330" height="330" rx="18" fill="#fff" stroke={C.ink} stroke-opacity=".2"></rect></g>
+  <!-- board shadow + slab (base) -->
+  <g class="wsi-hero-sh-base"><g transform={iso(480, 408, 340)} filter="url(#wsi-hero-blur)"><rect width="340" height="340" rx="20" fill={C.ink} fill-opacity=".16"></rect></g></g>
+  <g class="wsi-hero-base"><g transform={iso(480, 382, 330)}><rect width="330" height="330" rx="18" fill="#cfcdcb"></rect></g></g>
+  <g class="wsi-hero-base"><g transform={iso(480, 372, 330)}><rect width="330" height="330" rx="18" fill="#fff" stroke={C.ink} stroke-opacity=".2"></rect></g></g>
 
-  <!-- board content -->
-  <g transform={iso(480, 372, S, K)}>
+  <!-- board content (base) -->
+  <g class="wsi-hero-base"><g transform={iso(480, 372, S, K)}>
     <g clip-path="url(#wsi-hero-clip)">
       <rect width={S} height={HDR} fill={C.surface}></rect>
       <rect y={rowY(0)} width={S} height={RH} fill={rows[0].h}></rect>
@@ -105,23 +108,23 @@ const pills = [
       <rect x="102" y={rowY(0)} width="62" height={RH} fill="none" stroke={C.blue} stroke-width="2.5"></rect>
       <rect x="160" y={rowY(1) - 4} width="7" height="7" rx="1.5" fill={C.blue} stroke="#fff" stroke-width="1.5"></rect>
     </g>
-  </g>
+  </g></g>
 
-  <!-- leaders -->
-  <g stroke={C.ink} stroke-opacity=".3" stroke-width="1.5" stroke-dasharray="2 6" stroke-linecap="round" fill="none">
+  <!-- leaders (base) -->
+  <g class="wsi-hero-base" stroke={C.ink} stroke-opacity=".3" stroke-width="1.5" stroke-dasharray="2 6" stroke-linecap="round" fill="none">
     <path d="M440 168 340 296"></path>
   </g>
 
-  <!-- tile ground shadows -->
+  <!-- tile ground shadows (inverse to tile lift) -->
   <g fill={C.ink} fill-opacity=".1" filter="url(#wsi-hero-blur)">
-    {tiles.map((t) => (
-      <g transform={iso(t.x + 6, t.y + t.z, t.s)}><rect width={t.s} height={t.s} rx="12"></rect></g>
+    {tiles.map((t, i) => (
+      <g class="wsi-hero-sh-mid" style={lag(0.4 + jit(i, 0.2))}><g transform={iso(t.x + 6, t.y + t.z, t.s)}><rect width={t.s} height={t.s} rx="12"></rect></g></g>
     ))}
   </g>
 
-  <!-- floating tiles -->
+  <!-- floating tiles (mid) -->
   {tiles.map((t, i) => (
-    <g class={`wsi-hero-${t.cls}`} style={`animation-delay:${(-(0.6 + i * 2.1)).toFixed(2)}s`}>
+    <g class={`wsi-hero-mid wsi-hero-${t.cls}`} style={lag(0.4 + jit(i, 0.2))}>
       <g transform={iso(t.x, t.y + 8, t.s)}><rect width={t.s} height={t.s} rx={t.s * 0.17} fill={t.side}></rect></g>
       <g transform={iso(t.x, t.y, t.s)}>
         <rect width={t.s} height={t.s} rx={t.s * 0.17} fill={t.fill} stroke="#fff" stroke-width="2"></rect>
@@ -146,29 +149,29 @@ const pills = [
     </g>
   ))}
 
-  <!-- verified check -->
-  <g class="wsi-hero-f2" style="animation-delay:-3.6s">
-    <circle cx="806" cy="262" r="28" fill={C.ink} fill-opacity=".08" transform="translate(0 8)"></circle>
+  <!-- verified check (top) -->
+  <g class="wsi-hero-top wsi-hero-f2" style={lag(0.8 + jit(7, 0.5))}>
+    <g class="wsi-hero-sh-top" style={lag(0.8 + jit(7, 0.5))}><circle cx="806" cy="262" r="28" fill={C.ink} fill-opacity=".08" transform="translate(0 8)"></circle></g>
     <circle cx="806" cy="262" r="26" fill={C.green} stroke="#fff" stroke-width="3"></circle>
     <path d="M794 263l8 8 15-17" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
   </g>
 
-  <!-- =SUM() chip -->
+  <!-- =SUM() chip (top) -->
   <g transform="translate(430 144)">
-    <g class="wsi-hero-f3" style="animation-delay:-5.2s">
+    <g class="wsi-hero-top wsi-hero-f3" style={lag(0.8 + jit(8, 0.5))}>
       <g class="wsi-hero-pulse">
-        <rect x="-52" y="-16" width="104" height="36" rx="18" fill={C.ink} fill-opacity=".1"></rect>
+        <rect class="wsi-hero-sh-top" style={lag(0.8 + jit(8, 0.5))} x="-52" y="-16" width="104" height="36" rx="18" fill={C.ink} fill-opacity=".1"></rect>
         <rect x="-52" y="-20" width="104" height="36" rx="18" fill={C.ink}></rect>
         <text x="0" y="3" font-size="16" font-weight="600" fill="#fff" text-anchor="middle">=SUM()</text>
       </g>
     </g>
   </g>
 
-  <!-- pills -->
+  <!-- pills (top) -->
   {pills.map((p, i) => (
     <g transform={`translate(${p.x} ${p.y})`}>
-      <g class={`wsi-hero-${p.cls}`} style={`animation-delay:${(-(1.7 + i * 2.1)).toFixed(2)}s`}>
-        <rect x={-p.w / 2} y={-p.h / 2 + 4} width={p.w} height={p.h} rx={p.h / 2} fill={C.ink} fill-opacity=".1"></rect>
+      <g class={`wsi-hero-top wsi-hero-${p.cls}`} style={lag(0.8 + jit(i + 3, 0.5))}>
+        <rect class="wsi-hero-sh-top" style={lag(0.8 + jit(i + 3, 0.5))} x={-p.w / 2} y={-p.h / 2 + 4} width={p.w} height={p.h} rx={p.h / 2} fill={C.ink} fill-opacity=".1"></rect>
         <rect x={-p.w / 2} y={-p.h / 2} width={p.w} height={p.h} rx={p.h / 2} fill="#fff" stroke={C.beige} stroke-width="1.5"></rect>
         <circle cx={-p.w / 2 + 22} cy="0" r={p.big ? 7 : 6} fill={p.dot}></circle>
         <text x={-p.w / 2 + 38} y={p.fs * 0.35} font-size={p.fs} fill={C.ink}>
@@ -182,19 +185,20 @@ const pills = [
 
 <style is:global>
   :where(svg.wsi) { display: block; width: 100%; height: auto; }
-  @keyframes wsi-hero-drift {
-    0%, 100% { transform: translate(0, 0) rotate(0deg); }
-    50% { transform: translate(var(--dx, 0px), var(--dy, -4px)) rotate(var(--r, 0deg)); }
-  }
+  @keyframes wsi-hero-base { 0%, 100% { translate: 0 0; } 50% { translate: 0 -2px; } }
+  @keyframes wsi-hero-mid { 0%, 100% { translate: 0 0; } 50% { translate: 0 -7px; } }
+  @keyframes wsi-hero-top { 0%, 100% { translate: 0 0; } 50% { translate: 0 -12px; } }
+  @keyframes wsi-hero-shadow { 0%, 100% { scale: 1; opacity: 1; } 50% { scale: .92; opacity: .7; } }
   @keyframes wsi-hero-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .85; } }
   @media (prefers-reduced-motion: no-preference) {
-    .wsi-hero-f1, .wsi-hero-f2, .wsi-hero-f3 {
-      transform-box: fill-box; transform-origin: center; will-change: transform;
-      animation: wsi-hero-drift 7s cubic-bezier(0.45, 0, 0.55, 1) infinite;
-    }
-    .wsi-hero-f1 { --dx: 2px; --dy: -4px; --r: 1deg; animation-duration: 6.4s; }
-    .wsi-hero-f2 { --dx: -2px; --dy: -3px; --r: -1deg; animation-duration: 7.6s; }
-    .wsi-hero-f3 { --dx: 0px; --dy: -4px; --r: .6deg; animation-duration: 8.8s; }
-    .wsi-hero-pulse { animation: wsi-hero-pulse 6s cubic-bezier(0.45, 0, 0.55, 1) infinite; will-change: opacity; }
+    .wsi-hero-base, .wsi-hero-mid, .wsi-hero-top { transform-box: fill-box; transform-origin: center; will-change: translate; }
+    .wsi-hero-sh-base, .wsi-hero-sh-mid, .wsi-hero-sh-top { transform-box: fill-box; transform-origin: center; will-change: scale, opacity; }
+    .wsi-hero-base { animation: wsi-hero-base 8s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+    .wsi-hero-mid { animation: wsi-hero-mid 7s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+    .wsi-hero-top { animation: wsi-hero-top 6s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+    .wsi-hero-sh-base { animation: wsi-hero-shadow 8s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+    .wsi-hero-sh-mid { animation: wsi-hero-shadow 7s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+    .wsi-hero-sh-top { animation: wsi-hero-shadow 6s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+    .wsi-hero-pulse { animation: wsi-hero-pulse 6s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
   }
 </style>

@@ -91,12 +91,6 @@ canvas {
   height: auto;
 }
 
-/* Illustrations: root <svg class="wsi …"> only; 90% of container width, centred. */
-svg.wsi {
-  max-width: 90%;
-  margin-inline: auto;
-}
-
 input,
 button,
 select,

@@ -7,6 +7,9 @@ const { class: className, title } = Astro.props;
 
 const C = { ink: '#2e2926', beige: '#e8e7e5', blue: '#6cbee4', green: '#40aa4a', yellow: '#fac344', tB: '#e2f2f9', tG: '#e2f9e9', tC: '#f9f2e2', sheets: '#0f9d58' };
 const iso = (cx: number, cy: number, s: number) => `matrix(1 -.5 1 .5 ${cx - s} ${cy})`;
+// Breathing layers: base 0s, mid +0.4s, top +0.8s; steps ripple left to right.
+const lag = (s: number) => `animation-delay:${s.toFixed(2)}s`;
+const jit = (i: number, amp: number) => (((i * 0.618) % 1) - 0.5) * 2 * amp;
 
 const ICONS = [
   '<path d="M12 4v11M7 10.5l5 5 5-5M5 19.5h14"/>',
@@ -42,20 +45,23 @@ for (let i = 1; i < steps.length; i++) {
 >
   {title && <title>{title}</title>}
 
+  <!-- pads (base) -->
   {steps.map((t) => (
-    <g transform={iso(t.x, t.y + GAP, 88)}>
+    <g class="wsi-steps-base"><g transform={iso(t.x, t.y + GAP, 88)}>
       <rect width="88" height="88" rx="14" fill={t.pad} stroke="#fff" stroke-width="2"></rect>
-    </g>
+    </g></g>
   ))}
 
-  <path d={path} class="wsi-steps-path" stroke={C.ink} stroke-opacity=".35" stroke-width="2.5" stroke-dasharray="8 10" stroke-linecap="round" fill="none"></path>
+  <path class="wsi-steps-path" d={path} stroke={C.ink} stroke-opacity=".35" stroke-width="2.5" stroke-dasharray="8 10" stroke-linecap="round" fill="none"></path>
 
   {steps.map((t, i) => (
     <g>
-      <g transform={iso(t.x + 4, t.y + GAP + 6, S)}><rect width={S} height={S} rx="10" fill={C.ink} fill-opacity=".1"></rect></g>
-      <g class="wsi-steps-f1" style={`animation-delay:${(-(i * 1.6)).toFixed(1)}s`}>
+      <g class="wsi-steps-sh-mid" style={lag(0.4 + i * 0.4)}><g transform={iso(t.x + 4, t.y + GAP + 6, S)}><rect width={S} height={S} rx="10" fill={C.ink} fill-opacity=".1"></rect></g></g>
+      <g class="wsi-steps-mid" style={lag(0.4 + i * 0.4)}>
         <g transform={iso(t.x, t.y + 8, S)}><rect width={S} height={S} rx="10" fill={t.side}></rect></g>
         <g transform={iso(t.x, t.y, S)}><rect width={S} height={S} rx="10" fill={t.fill} stroke="#fff" stroke-width="2"></rect></g>
+      </g>
+      <g class="wsi-steps-top" style={lag(0.8 + i * 0.4 + jit(i, 0.3))}>
         <g
           transform={`translate(${t.x - 12 * k} ${t.y - 12 * k - 2}) scale(${k})`}
           color={t.ink}
@@ -75,16 +81,18 @@ for (let i = 1; i < steps.length; i++) {
 
 <style is:global>
   :where(svg.wsi) { display: block; width: 100%; height: auto; }
-  @keyframes wsi-steps-drift {
-    0%, 100% { transform: translate(0, 0) rotate(0deg); }
-    50% { transform: translate(0, -4px) rotate(.6deg); }
-  }
+  @keyframes wsi-steps-base { 0%, 100% { translate: 0 0; } 50% { translate: 0 -2px; } }
+  @keyframes wsi-steps-mid { 0%, 100% { translate: 0 0; } 50% { translate: 0 -7px; } }
+  @keyframes wsi-steps-top { 0%, 100% { translate: 0 0; } 50% { translate: 0 -12px; } }
+  @keyframes wsi-steps-shadow { 0%, 100% { scale: 1; opacity: 1; } 50% { scale: .92; opacity: .7; } }
   @keyframes wsi-steps-dash { to { stroke-dashoffset: -18; } }
   @media (prefers-reduced-motion: no-preference) {
-    .wsi-steps-f1 {
-      transform-box: fill-box; transform-origin: center; will-change: transform;
-      animation: wsi-steps-drift 6.4s cubic-bezier(0.45, 0, 0.55, 1) infinite;
-    }
+    .wsi-steps-base, .wsi-steps-mid, .wsi-steps-top { transform-box: fill-box; transform-origin: center; will-change: translate; }
+    .wsi-steps-sh-mid { transform-box: fill-box; transform-origin: center; will-change: scale, opacity; }
+    .wsi-steps-base { animation: wsi-steps-base 8s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+    .wsi-steps-mid { animation: wsi-steps-mid 7s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+    .wsi-steps-top { animation: wsi-steps-top 6s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+    .wsi-steps-sh-mid { animation: wsi-steps-shadow 7s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
     .wsi-steps-path { animation: wsi-steps-dash 9s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
   }
 </style>

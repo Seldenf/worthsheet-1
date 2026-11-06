@@ -9,6 +9,9 @@ const C = {
   ink: '#2e2926', beige: '#e8e7e5', blue: '#6cbee4', green: '#40aa4a', yellow: '#fac344',
   tB: '#e2f2f9', tG: '#e2f9e9', tP: '#f9e2f3', tC: '#f9f2e2',
 };
+// Breathing layers: base 0s, mid +0.4s, top +0.8s; jit() staggers items within a layer.
+const lag = (s: number) => `animation-delay:${s.toFixed(2)}s`;
+const jit = (i: number, amp: number) => (((i * 0.618) % 1) - 0.5) * 2 * amp;
 // Strip-shaped isometric card: local x runs up-right, local y runs down-right.
 const W = 220;
 const H = 80;
@@ -48,9 +51,10 @@ const menu = ['Checking', 'Savings', 'Retirement'];
 >
   {title && <title>{title}</title>}
 
+  <!-- stacked cards (mid): one shared phase so the stack lifts as a unit -->
   {order.map((c) => (
-    <g>
-      <g transform={stripT(c.i, 16)}><rect width={W} height={H} rx="14" fill={C.ink} fill-opacity=".07"></rect></g>
+    <g class="wsi-cats-mid" style={lag(0.4)}>
+      <g class="wsi-cats-sh-mid"><g transform={stripT(c.i, 16)}><rect width={W} height={H} rx="14" fill={C.ink} fill-opacity=".07"></rect></g></g>
       <g transform={stripT(c.i, 8)}><rect width={W} height={H} rx="14" fill={c.side}></rect></g>
       <g transform={stripT(c.i)}>
         <rect width={W} height={H} rx="14" fill={c.fill} stroke="#fff" stroke-width="2"></rect>
@@ -61,15 +65,17 @@ const menu = ['Checking', 'Savings', 'Retirement'];
     </g>
   ))}
 
-  <g stroke={C.ink} stroke-opacity=".3" stroke-width="1.5" stroke-dasharray="2 6" stroke-linecap="round" fill="none">
+  <!-- leaders (base) -->
+  <g class="wsi-cats-base" stroke={C.ink} stroke-opacity=".3" stroke-width="1.5" stroke-dasharray="2 6" stroke-linecap="round" fill="none">
     <path d="M550 112h-35"></path>
     <path d="M550 392h-52"></path>
   </g>
 
+  <!-- pills (top) -->
   {pills.map((p, i) => (
     <g transform={`translate(${p.x} ${p.y})`}>
-      <g class={`wsi-cats-${p.cls}`} style={`animation-delay:${(-(0.9 + i * 2.6)).toFixed(2)}s`}>
-        <rect x={-p.w / 2} y="-15" width={p.w} height="38" rx="19" fill={C.ink} fill-opacity=".1"></rect>
+      <g class={`wsi-cats-top wsi-cats-${p.cls}`} style={lag(0.8 + jit(i, 0.5))}>
+        <rect class="wsi-cats-sh-top" style={lag(0.8 + jit(i, 0.5))} x={-p.w / 2} y="-15" width={p.w} height="38" rx="19" fill={C.ink} fill-opacity=".1"></rect>
         <rect x={-p.w / 2} y="-19" width={p.w} height="38" rx="19" fill="#fff" stroke={C.beige} stroke-width="1.5"></rect>
         <circle cx={-p.w / 2 + 22} cy="0" r="6" fill={p.dot}></circle>
         <text x={-p.w / 2 + 38} y="5" font-size="14" fill={C.ink}>
@@ -79,37 +85,37 @@ const menu = ['Checking', 'Savings', 'Retirement'];
     </g>
   ))}
 
-  <!-- dropdown chip + open menu -->
+  <!-- dropdown chip + open menu (top) -->
   <g transform="translate(40 190)">
-    <g class="wsi-cats-f2" style="animation-delay:-4.1s">
-    <rect x="0" y="6" width="150" height="40" rx="20" fill={C.ink} fill-opacity=".1"></rect>
-    <rect x="0" y="0" width="150" height="40" rx="20" fill="#fff" stroke={C.blue} stroke-width="2"></rect>
-    <text x="18" y="25" font-size="14" font-weight="600" fill={C.ink}>Category</text>
-    <path d="m118 17 6 6 6-6" stroke={C.ink} stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
-    <rect x="0" y="54" width="150" height="112" rx="16" fill={C.ink} fill-opacity=".08" transform="translate(0 5)"></rect>
-    <rect x="0" y="54" width="150" height="112" rx="16" fill="#fff" stroke={C.beige} stroke-width="1.5"></rect>
-    <rect x="8" y="98" width="134" height="32" rx="10" fill={C.tB}></rect>
-    <g font-size="14" fill={C.ink} font-weight="500">
-      {menu.map((m, i) => <text x="20" y={80 + i * 36}>{m}</text>)}
-    </g>
-    <path d="m118 109 5 5 9-10" stroke="#3f9cc9" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
+    <g class="wsi-cats-top wsi-cats-f2" style={lag(0.8 + jit(2, 0.5))}>
+      <rect class="wsi-cats-sh-top" style={lag(0.8 + jit(2, 0.5))} x="0" y="6" width="150" height="40" rx="20" fill={C.ink} fill-opacity=".1"></rect>
+      <rect x="0" y="0" width="150" height="40" rx="20" fill="#fff" stroke={C.blue} stroke-width="2"></rect>
+      <text x="18" y="25" font-size="14" font-weight="600" fill={C.ink}>Category</text>
+      <path d="m118 17 6 6 6-6" stroke={C.ink} stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
+      <g class="wsi-cats-sh-top" style={lag(0.8 + jit(2, 0.5))}><rect x="0" y="54" width="150" height="112" rx="16" fill={C.ink} fill-opacity=".08" transform="translate(0 5)"></rect></g>
+      <rect x="0" y="54" width="150" height="112" rx="16" fill="#fff" stroke={C.beige} stroke-width="1.5"></rect>
+      <rect x="8" y="98" width="134" height="32" rx="10" fill={C.tB}></rect>
+      <g font-size="14" fill={C.ink} font-weight="500">
+        {menu.map((m, i) => <text x="20" y={80 + i * 36}>{m}</text>)}
+      </g>
+      <path d="m118 109 5 5 9-10" stroke="#3f9cc9" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
     </g>
   </g>
 </svg>
 
 <style is:global>
   :where(svg.wsi) { display: block; width: 100%; height: auto; }
-  @keyframes wsi-cats-drift {
-    0%, 100% { transform: translate(0, 0) rotate(0deg); }
-    50% { transform: translate(var(--dx, 0px), var(--dy, -4px)) rotate(var(--r, 0deg)); }
-  }
+  @keyframes wsi-cats-base { 0%, 100% { translate: 0 0; } 50% { translate: 0 -2px; } }
+  @keyframes wsi-cats-mid { 0%, 100% { translate: 0 0; } 50% { translate: 0 -7px; } }
+  @keyframes wsi-cats-top { 0%, 100% { translate: 0 0; } 50% { translate: 0 -12px; } }
+  @keyframes wsi-cats-shadow { 0%, 100% { scale: 1; opacity: 1; } 50% { scale: .92; opacity: .7; } }
   @media (prefers-reduced-motion: no-preference) {
-    .wsi-cats-f1, .wsi-cats-f2, .wsi-cats-f3 {
-      transform-box: fill-box; transform-origin: center; will-change: transform;
-      animation: wsi-cats-drift 7s cubic-bezier(0.45, 0, 0.55, 1) infinite;
-    }
-    .wsi-cats-f1 { --dx: 2px; --dy: -4px; --r: .8deg; animation-duration: 6.4s; }
-    .wsi-cats-f2 { --dx: -2px; --dy: -3px; --r: -.8deg; animation-duration: 7.6s; }
-    .wsi-cats-f3 { --dx: 0px; --dy: -4px; --r: .5deg; animation-duration: 8.8s; }
+    .wsi-cats-base, .wsi-cats-mid, .wsi-cats-top { transform-box: fill-box; transform-origin: center; will-change: translate; }
+    .wsi-cats-sh-mid, .wsi-cats-sh-top { transform-box: fill-box; transform-origin: center; will-change: scale, opacity; }
+    .wsi-cats-base { animation: wsi-cats-base 8s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+    .wsi-cats-mid { animation: wsi-cats-mid 7s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+    .wsi-cats-top { animation: wsi-cats-top 6s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+    .wsi-cats-sh-mid { animation: wsi-cats-shadow 7s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+    .wsi-cats-sh-top { animation: wsi-cats-shadow 6s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
   }
 </style>

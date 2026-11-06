@@ -34,15 +34,15 @@ const cells = grid.map(([r, c]) => ({
 }));
 const pins = cells
   .filter((c) => c.pin)
-  .map((c) => {
+  .map((c, i) => {
     const lx = c.x + 12;
     const ly = c.y + 12;
-    return { x: OX + lx + ly, y: OY + (ly - lx) / 2, fill: c.pin };
+    return { x: OX + lx + ly, y: OY + (ly - lx) / 2, fill: c.pin, d: +(0.3 + i * 0.3).toFixed(1) };
   });
 const PIN = 'M0 0C-9-12-14-17-14-26a14 14 0 1 1 28 0c0 9-5 14-14 26z';
 const pills = [
-  { x: 118, y: 96, l: 'Find banks by ZIP', dot: C.blue, cls: 'f2' },
-  { x: 540, y: 410, l: 'FDIC-insured', dot: C.green, cls: 'f3' },
+  { x: 118, y: 96, l: 'Find banks by ZIP', dot: C.blue, cls: 'f2', lift: 12, d: 0.8 },
+  { x: 540, y: 410, l: 'FDIC-insured', dot: C.green, cls: 'f3', lift: 14, d: 1.2 },
 ].map((p) => ({ ...p, w: Math.round(p.l.length * 14 * 0.54) + 48 }));
 ---
 
@@ -60,22 +60,26 @@ const pills = [
     <filter id="wsi-map-blur" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="8"></feGaussianBlur></filter>
   </defs>
 
-  <g transform={T}><rect x="-34" y="-34" width={PW + 68} height={PH + 68} rx="30" fill={C.tB} fill-opacity=".55" stroke="#fff" stroke-width="2"></rect></g>
-  <g transform={`matrix(1 -.5 1 .5 ${OX} ${OY + 22})`} filter="url(#wsi-map-blur)"><rect width={PW} height={PH} rx="20" fill={C.ink} fill-opacity=".14"></rect></g>
-  <g transform={`matrix(1 -.5 1 .5 ${OX} ${OY + 11})`}><rect width={PW} height={PH} rx="20" fill="#cfcdcb"></rect></g>
-  <g transform={T}>
+  <!-- base layer: plain wrappers carry the animation; matrix groups keep their attribute transform -->
+  <g class="wsi-map-base"><g transform={T}><rect x="-34" y="-34" width={PW + 68} height={PH + 68} rx="30" fill={C.tB} fill-opacity=".55" stroke="#fff" stroke-width="2"></rect></g></g>
+  <g class="wsi-map-shadow"><g transform={`matrix(1 -.5 1 .5 ${OX} ${OY + 22})`}><rect width={PW} height={PH} rx="20" fill={C.ink} fill-opacity=".14" filter="url(#wsi-map-blur)"></rect></g></g>
+  <g class="wsi-map-base"><g transform={`matrix(1 -.5 1 .5 ${OX} ${OY + 11})`}><rect width={PW} height={PH} rx="20" fill="#cfcdcb"></rect></g></g>
+  <g class="wsi-map-base"><g transform={T}>
     <rect width={PW} height={PH} rx="20" fill="#fff" stroke={C.ink} stroke-opacity=".2"></rect>
     {cells.map((c) => <rect x={c.x} y={c.y} width="24" height="24" rx="6" fill={c.fill}></rect>)}
-  </g>
+  </g></g>
 
+  <!-- ground shadows and pulse rings under pins -->
   {pins.map((p) => (
-    <ellipse cx={p.x} cy={p.y} rx="15" ry="6" fill={C.ink} fill-opacity=".18"></ellipse>
+    <ellipse class="wsi-map-pshadow" style={`animation-delay:${p.d}s`} cx={p.x} cy={p.y} rx="15" ry="6" fill={C.ink} fill-opacity=".18"></ellipse>
   ))}
   {pins.map((p, i) => (i === 0 || i === 2 ? (
     <ellipse class="wsi-map-ring" style={i === 2 ? 'animation-delay:-3s' : undefined} cx={p.x} cy={p.y} rx="15" ry="6" fill="none" stroke={p.fill} stroke-width="2"></ellipse>
   ) : null))}
-  {pins.map((p, i) => (
-    <g class="wsi-map-pin" style={`animation-delay:-${(i * 0.6).toFixed(1)}s`}>
+
+  <!-- top layer: pins -->
+  {pins.map((p) => (
+    <g class="wsi-map-pin" style={`animation-delay:${p.d}s`}>
       <g transform={`translate(${p.x} ${p.y})`}>
         <path d={PIN} fill={p.fill} stroke="#fff" stroke-width="3" stroke-linejoin="round"></path>
         <circle cy="-26" r="5.5" fill="#fff"></circle>
@@ -83,9 +87,10 @@ const pills = [
     </g>
   ))}
 
+  <!-- top layer: pills -->
   {pills.map((p) => (
     <g transform={`translate(${p.x} ${p.y})`}>
-      <g class={`wsi-map-${p.cls}`}>
+      <g class={`wsi-map-${p.cls}`} style={`--lift:${p.lift}px;animation-delay:${p.d}s`}>
         <rect x={-p.w / 2} y="-15" width={p.w} height="38" rx="19" fill={C.ink} fill-opacity=".1"></rect>
         <rect x={-p.w / 2} y="-19" width={p.w} height="38" rx="19" fill="#fff" stroke={C.beige} stroke-width="1.5"></rect>
         <circle cx={-p.w / 2 + 22} cy="0" r="6" fill={p.dot}></circle>
@@ -98,20 +103,23 @@ const pills = [
 <style is:global>
   :where(svg.wsi) { display: block; width: 100%; height: auto; }
   @media (prefers-reduced-motion: no-preference) {
-    @keyframes wsi-map-drift {
-      0%, 100% { transform: translate(0, 0) rotate(0deg); }
-      33% { transform: translate(-1.5px, -4px) rotate(-0.8deg); }
-      66% { transform: translate(1.5px, -2px) rotate(0.6deg); }
-    }
-    @keyframes wsi-map-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+    @keyframes wsi-map-breathe { 0%, 100% { translate: 0 0; } 50% { translate: 0 calc(var(--lift) * -1); } }
+    @keyframes wsi-map-shade { 0%, 100% { scale: 1; opacity: 1; } 50% { scale: 0.92; opacity: 0.7; } }
     @keyframes wsi-map-ring {
-      0% { transform: scale(0.9); opacity: 0.7; }
-      100% { transform: scale(1.15); opacity: 0; }
+      0% { scale: 0.9; opacity: 0.7; }
+      100% { scale: 1.15; opacity: 0; }
     }
-    .wsi-map-pin, .wsi-map-f2, .wsi-map-f3, .wsi-map-ring { transform-box: fill-box; transform-origin: center; will-change: transform; }
-    .wsi-map-pin { animation: wsi-map-bob 6s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+    .wsi-map-base, .wsi-map-pin, .wsi-map-f2, .wsi-map-f3, .wsi-map-shadow, .wsi-map-pshadow, .wsi-map-ring {
+      transform-box: fill-box;
+      transform-origin: center;
+      will-change: translate, scale;
+    }
+    .wsi-map-base { --lift: 2px; animation: wsi-map-breathe 8s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+    .wsi-map-shadow { animation: wsi-map-shade 8s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+    .wsi-map-pin { --lift: 12px; animation: wsi-map-breathe 6.5s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+    .wsi-map-pshadow { animation: wsi-map-shade 6.5s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
     .wsi-map-ring { animation: wsi-map-ring 6s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
-    .wsi-map-f2 { animation: wsi-map-drift 7s cubic-bezier(0.45, 0, 0.55, 1) -2s infinite; }
-    .wsi-map-f3 { animation: wsi-map-drift 8.5s cubic-bezier(0.45, 0, 0.55, 1) -4s infinite; }
+    .wsi-map-f2 { --lift: 12px; animation: wsi-map-breathe 6.5s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+    .wsi-map-f3 { --lift: 14px; animation: wsi-map-breathe 7.5s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
   }
 </style>

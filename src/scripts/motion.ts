@@ -12,31 +12,62 @@ const main = document.querySelector<HTMLElement>('main');
 const header = document.querySelector<HTMLElement>('[data-header]');
 const hero = (main?.firstElementChild ?? null) as HTMLElement | null;
 
+// Top edge within 90% of the viewport, i.e. already visible at load.
+const inView = (el: Element) => {
+  const r = el.getBoundingClientRect();
+  return r.top < innerHeight * 0.9 && r.bottom > 0;
+};
+
+function show(el: HTMLElement, attr: string) {
+  el.classList.add('is-in');
+  el.addEventListener('transitionend', () => el.removeAttribute(attr), { once: true });
+}
+
 function reveal(root: HTMLElement) {
-  const targets = Array.from(root.querySelectorAll<HTMLElement>(SELECTOR)).filter((el) => {
-    if (hero?.contains(el)) return false;
-    const r = el.getBoundingClientRect();
-    return !(r.top < innerHeight * 0.9 && r.bottom > 0);
-  });
-  const io = new IntersectionObserver(
+  // Read layout first, then write, to avoid interleaved reads and writes.
+  const sections = Array.from(root.children).filter(
+    (el): el is HTMLElement => el.tagName === 'SECTION' && el !== hero && !inView(el),
+  );
+  const children = Array.from(root.querySelectorAll<HTMLElement>(SELECTOR)).filter(
+    (el) => !hero?.contains(el) && !inView(el),
+  );
+
+  const sectionIO = new IntersectionObserver(
     (entries) => {
       for (const { target, isIntersecting } of entries) {
         if (!isIntersecting) continue;
-        const el = target as HTMLElement;
-        io.unobserve(el);
-        el.classList.add('is-in');
-        el.addEventListener('transitionend', () => el.removeAttribute('data-reveal'), { once: true });
+        const section = target as HTMLElement;
+        sectionIO.unobserve(section);
+        show(section, 'data-section-reveal');
+        section.querySelectorAll<HTMLElement>('[data-reveal]').forEach((el) => show(el, 'data-reveal'));
+      }
+    },
+    { threshold: 0.15 },
+  );
+  const childIO = new IntersectionObserver(
+    (entries) => {
+      for (const { target, isIntersecting } of entries) {
+        if (!isIntersecting) continue;
+        childIO.unobserve(target);
+        show(target as HTMLElement, 'data-reveal');
       }
     },
     { rootMargin: '0px 0px -10% 0px', threshold: 0.1 },
   );
-  for (const el of targets) {
+
+  for (const section of sections) {
+    section.setAttribute('data-section-reveal', '');
+    sectionIO.observe(section);
+  }
+
+  for (const el of children) {
     el.setAttribute('data-reveal', '');
     const parent = el.parentElement;
     if (parent?.classList.contains('grid')) {
       el.style.setProperty('--reveal-i', String(Math.min(Array.from(parent.children).indexOf(el), 6)));
     }
-    io.observe(el);
+    // Children of a hidden section are revealed together with that section.
+    if (!el.closest('[data-section-reveal]')) childIO.observe(el);
   }
 }
 

@@ -15,8 +15,8 @@ const keys = labels.map((t, i) => {
   return { t, x: 12 + c * 28, y: 54 + r * 24, op: c === 3, eq: t === '=' };
 });
 const pills = [
-  { x: 108, y: 150, l: 'DTI', v: '28%', dot: C.blue, cls: 'f2' },
-  { x: 462, y: 372, l: 'Net worth', v: '', dot: C.green, cls: 'f3' },
+  { x: 108, y: 150, l: 'DTI', v: '28%', dot: C.blue, cls: 'f2', lift: 12, d: 0.8 },
+  { x: 462, y: 372, l: 'Net worth', v: '', dot: C.green, cls: 'f3', lift: 14, d: 1.2 },
 ].map((p) => ({ ...p, w: Math.round((p.l.length + p.v.length + 1) * 15 * 0.54) + 48 }));
 ---
 
@@ -34,10 +34,12 @@ const pills = [
     <filter id="wsi-calc-blur" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="7"></feGaussianBlur></filter>
   </defs>
 
-  <g transform={iso(280, 300, 240)}><rect width="240" height="240" rx="26" fill={C.tG} fill-opacity=".6" stroke="#fff" stroke-width="2"></rect></g>
-  <g transform={iso(280, 300, 196)}><rect width="196" height="196" rx="22" fill={C.tB} stroke="#fff" stroke-width="2"></rect></g>
-  <g transform={iso(280, 320, 170)}><rect width="170" height="170" rx="16" fill={C.ink} fill-opacity=".09" filter="url(#wsi-calc-blur)"></rect></g>
+  <!-- base layer (plain wrappers carry the animation; iso groups keep their attribute transform) -->
+  <g class="wsi-calc-base"><g transform={iso(280, 300, 240)}><rect width="240" height="240" rx="26" fill={C.tG} fill-opacity=".6" stroke="#fff" stroke-width="2"></rect></g></g>
+  <g class="wsi-calc-base"><g transform={iso(280, 300, 196)}><rect width="196" height="196" rx="22" fill={C.tB} stroke="#fff" stroke-width="2"></rect></g></g>
+  <g class="wsi-calc-shadow"><g transform={iso(280, 320, 170)}><rect width="170" height="170" rx="16" fill={C.ink} fill-opacity=".09" filter="url(#wsi-calc-blur)"></rect></g></g>
 
+  <!-- mid layer: calculator body -->
   <g class="wsi-calc-f1">
     <g transform={iso(280, 266, 130, 1.18)}><rect width="130" height="130" rx="16" fill="#cfcdcb"></rect></g>
     <g transform={iso(280, 252, 130, 1.18)}>
@@ -53,17 +55,19 @@ const pills = [
     </g>
   </g>
 
+  <!-- top layer: check -->
   <g transform="translate(436 150)">
-    <g class="wsi-calc-f2">
+    <g class="wsi-calc-f2" style="--lift:10px;animation-delay:.3s">
       <circle r="27" fill={C.ink} fill-opacity=".08" transform="translate(0 8)"></circle>
       <circle r="25" fill={C.green} stroke="#fff" stroke-width="3"></circle>
       <path d="m-11 1 8 8 14-16" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
     </g>
   </g>
 
+  <!-- top layer: pills -->
   {pills.map((p) => (
     <g transform={`translate(${p.x} ${p.y})`}>
-      <g class={`wsi-calc-${p.cls}`}>
+      <g class={`wsi-calc-${p.cls}`} style={`--lift:${p.lift}px;animation-delay:${p.d}s`}>
         <rect x={-p.w / 2} y="-15" width={p.w} height="38" rx="19" fill={C.ink} fill-opacity=".1"></rect>
         <rect x={-p.w / 2} y="-19" width={p.w} height="38" rx="19" fill="#fff" stroke={C.beige} stroke-width="1.5"></rect>
         <circle cx={-p.w / 2 + 22} cy="0" r="6" fill={p.dot}></circle>
@@ -78,17 +82,19 @@ const pills = [
 <style is:global>
   :where(svg.wsi) { display: block; width: 100%; height: auto; }
   @media (prefers-reduced-motion: no-preference) {
-    @keyframes wsi-calc-lift { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
-    @keyframes wsi-calc-drift {
-      0%, 100% { transform: translate(0, 0) rotate(0deg); }
-      33% { transform: translate(-1.5px, -4px) rotate(-0.8deg); }
-      66% { transform: translate(1.5px, -2px) rotate(0.6deg); }
-    }
+    @keyframes wsi-calc-breathe { 0%, 100% { translate: 0 0; } 50% { translate: 0 calc(var(--lift) * -1); } }
+    @keyframes wsi-calc-shade { 0%, 100% { scale: 1; opacity: 1; } 50% { scale: 0.92; opacity: 0.7; } }
     @keyframes wsi-calc-tap { 0%, 100% { opacity: 1; } 50% { opacity: 0.86; } }
-    .wsi-calc-f1, .wsi-calc-f2, .wsi-calc-f3 { transform-box: fill-box; transform-origin: center; will-change: transform; }
-    .wsi-calc-f1 { animation: wsi-calc-lift 8s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
-    .wsi-calc-f2 { animation: wsi-calc-drift 6.5s cubic-bezier(0.45, 0, 0.55, 1) -2s infinite; }
-    .wsi-calc-f3 { animation: wsi-calc-drift 7.5s cubic-bezier(0.45, 0, 0.55, 1) -4s infinite; }
+    .wsi-calc-base, .wsi-calc-f1, .wsi-calc-f2, .wsi-calc-f3, .wsi-calc-shadow {
+      transform-box: fill-box;
+      transform-origin: center;
+      will-change: translate, scale;
+    }
+    .wsi-calc-base { --lift: 2px; animation: wsi-calc-breathe 8s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+    .wsi-calc-f1 { --lift: 7px; animation: wsi-calc-breathe 7s cubic-bezier(0.45, 0, 0.55, 1) 0.4s infinite; }
+    .wsi-calc-f2 { --lift: 12px; animation: wsi-calc-breathe 6.5s cubic-bezier(0.45, 0, 0.55, 1) 0.8s infinite; }
+    .wsi-calc-f3 { --lift: 14px; animation: wsi-calc-breathe 7.5s cubic-bezier(0.45, 0, 0.55, 1) 1.2s infinite; }
+    .wsi-calc-shadow { animation: wsi-calc-shade 7s cubic-bezier(0.45, 0, 0.55, 1) 0.4s infinite; }
     .wsi-calc-display { animation: wsi-calc-tap 6s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
     .wsi-calc-key { animation: wsi-calc-tap 7s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
   }

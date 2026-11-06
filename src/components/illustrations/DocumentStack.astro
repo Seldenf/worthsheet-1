@@ -15,8 +15,8 @@ const at = (dy: number) => `matrix(1 -.5 1 .5 ${OX} ${OY + dy})`;
 const assets = [['Checking', '$18,400'], ['Savings', '$45,000'], ['Retirement', '$149,100'], ['Real estate', '$200,000']];
 const liabs = [['Mortgage', '$168,000'], ['Student loans', '$11,200'], ['Credit cards', '$7,000']];
 const pills = [
-  { x: 140, y: 120, l: 'Printable PDF', v: '', dot: C.blue, cls: 'f2' },
-  { x: 546, y: 396, l: 'Net worth', v: '$226,300', dot: C.green, cls: 'f3' },
+  { x: 140, y: 120, l: 'Printable PDF', v: '', dot: C.blue, cls: 'f2', lift: 12, d: 0.8 },
+  { x: 546, y: 396, l: 'Net worth', v: '$226,300', dot: C.green, cls: 'f3', lift: 14, d: 1.2 },
 ].map((p) => ({ ...p, w: Math.round((p.l.length + p.v.length + 1) * 14 * 0.54) + 48 }));
 ---
 
@@ -34,14 +34,15 @@ const pills = [
     <filter id="wsi-docs-blur" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="8"></feGaussianBlur></filter>
   </defs>
 
-  <g transform={at(0)}><rect x="-40" y="-40" width={W + 80} height={H + 80} rx="30" fill={C.tB} fill-opacity=".5" stroke="#fff" stroke-width="2"></rect></g>
-  <g transform={at(46)}><rect width={W} height={H} rx="12" fill={C.ink} fill-opacity=".14" filter="url(#wsi-docs-blur)"></rect></g>
+  <!-- base layer: plain wrappers carry the animation; matrix groups keep their attribute transform -->
+  <g class="wsi-docs-base"><g transform={at(0)}><rect x="-40" y="-40" width={W + 80} height={H + 80} rx="30" fill={C.tB} fill-opacity=".5" stroke="#fff" stroke-width="2"></rect></g></g>
+  <g class="wsi-docs-shadow"><g transform={at(46)}><rect width={W} height={H} rx="12" fill={C.ink} fill-opacity=".14" filter="url(#wsi-docs-blur)"></rect></g></g>
 
-  <!-- back sheets -->
-  <g transform={at(26)}><rect width={W} height={H} rx="12" fill="#d6d4d2"></rect></g>
-  <g transform={at(18)}><rect width={W} height={H} rx="12" fill={C.surface} stroke="#fff" stroke-width="2"></rect></g>
-  <g transform={at(12)}><rect width={W} height={H} rx="12" fill="#d6d4d2"></rect></g>
-  <g transform={at(6)}><rect width={W} height={H} rx="12" fill="#fff" stroke={C.beige} stroke-width="1.5"></rect></g>
+  <!-- back sheets: lift increases toward the top of the stack -->
+  <g class="wsi-docs-s1" style="--lift:2px;animation-delay:0s"><g transform={at(26)}><rect width={W} height={H} rx="12" fill="#d6d4d2"></rect></g></g>
+  <g class="wsi-docs-s2" style="--lift:3px;animation-delay:.1s"><g transform={at(18)}><rect width={W} height={H} rx="12" fill={C.surface} stroke="#fff" stroke-width="2"></rect></g></g>
+  <g class="wsi-docs-s3" style="--lift:5px;animation-delay:.2s"><g transform={at(12)}><rect width={W} height={H} rx="12" fill="#d6d4d2"></rect></g></g>
+  <g class="wsi-docs-s4" style="--lift:7px;animation-delay:.3s"><g transform={at(6)}><rect width={W} height={H} rx="12" fill="#fff" stroke={C.beige} stroke-width="1.5"></rect></g></g>
 
   <!-- top sheet -->
   <g class="wsi-docs-f1">
@@ -78,18 +79,19 @@ const pills = [
     </g>
   </g>
 
-  <!-- signed check -->
+  <!-- top layer: signed check -->
   <g transform="translate(572 168)">
-    <g class="wsi-docs-f2">
+    <g class="wsi-docs-f2" style="--lift:10px;animation-delay:.5s">
       <circle r="27" fill={C.ink} fill-opacity=".08" transform="translate(0 8)"></circle>
       <circle r="25" fill={C.green} stroke="#fff" stroke-width="3"></circle>
       <path d="m-11 1 8 8 14-16" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
     </g>
   </g>
 
+  <!-- top layer: pills -->
   {pills.map((p) => (
     <g transform={`translate(${p.x} ${p.y})`}>
-      <g class={`wsi-docs-${p.cls}`}>
+      <g class={`wsi-docs-${p.cls}`} style={`--lift:${p.lift}px;animation-delay:${p.d}s`}>
         <rect x={-p.w / 2} y="-15" width={p.w} height="38" rx="19" fill={C.ink} fill-opacity=".1"></rect>
         <rect x={-p.w / 2} y="-19" width={p.w} height="38" rx="19" fill="#fff" stroke={C.beige} stroke-width="1.5"></rect>
         <circle cx={-p.w / 2 + 22} cy="0" r="6" fill={p.dot}></circle>
@@ -104,17 +106,20 @@ const pills = [
 <style is:global>
   :where(svg.wsi) { display: block; width: 100%; height: auto; }
   @media (prefers-reduced-motion: no-preference) {
-    @keyframes wsi-docs-lift { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
-    @keyframes wsi-docs-drift {
-      0%, 100% { transform: translate(0, 0) rotate(0deg); }
-      33% { transform: translate(-1.5px, -4px) rotate(-0.8deg); }
-      66% { transform: translate(1.5px, -2px) rotate(0.6deg); }
-    }
+    @keyframes wsi-docs-breathe { 0%, 100% { translate: 0 0; } 50% { translate: 0 calc(var(--lift) * -1); } }
+    @keyframes wsi-docs-shade { 0%, 100% { scale: 1; opacity: 1; } 50% { scale: 0.92; opacity: 0.7; } }
     @keyframes wsi-docs-draw { from { stroke-dashoffset: 100; } to { stroke-dashoffset: 0; } }
-    .wsi-docs-f1, .wsi-docs-f2, .wsi-docs-f3 { transform-box: fill-box; transform-origin: center; will-change: transform; }
-    .wsi-docs-f1 { animation: wsi-docs-lift 7s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
-    .wsi-docs-f2 { animation: wsi-docs-drift 6.5s cubic-bezier(0.45, 0, 0.55, 1) -2s infinite; }
-    .wsi-docs-f3 { animation: wsi-docs-drift 8s cubic-bezier(0.45, 0, 0.55, 1) -4s infinite; }
+    .wsi-docs-base, .wsi-docs-s1, .wsi-docs-s2, .wsi-docs-s3, .wsi-docs-s4, .wsi-docs-f1, .wsi-docs-f2, .wsi-docs-f3, .wsi-docs-shadow {
+      transform-box: fill-box;
+      transform-origin: center;
+      will-change: translate, scale;
+    }
+    .wsi-docs-base { --lift: 2px; animation: wsi-docs-breathe 8s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+    .wsi-docs-s1, .wsi-docs-s2, .wsi-docs-s3, .wsi-docs-s4 { animation: wsi-docs-breathe 7s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+    .wsi-docs-f1 { --lift: 9px; animation: wsi-docs-breathe 7s cubic-bezier(0.45, 0, 0.55, 1) 0.6s infinite; }
+    .wsi-docs-f2 { --lift: 12px; animation: wsi-docs-breathe 6.5s cubic-bezier(0.45, 0, 0.55, 1) 0.8s infinite; }
+    .wsi-docs-f3 { --lift: 14px; animation: wsi-docs-breathe 7.5s cubic-bezier(0.45, 0, 0.55, 1) 1.2s infinite; }
+    .wsi-docs-shadow { animation: wsi-docs-shade 7s cubic-bezier(0.45, 0, 0.55, 1) 0.3s infinite; }
     .wsi-docs-sign {
       stroke-dasharray: 100;
       stroke-dashoffset: 100;

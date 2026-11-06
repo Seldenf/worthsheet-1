@@ -8,16 +8,54 @@
   interpolate-size: allow-keywords;
 }
 
+/* ---------- Section reveal (JS-gated: main > section, tagged by motion.ts) ---------- */
+html.js [data-section-reveal] {
+  opacity: 0;
+  translate: 0 40px;
+  filter: blur(6px);
+  transition:
+    opacity 900ms var(--ease-out),
+    translate 900ms var(--ease-out),
+    filter 900ms var(--ease-out),
+    scale 900ms var(--ease-out);
+}
+
+html.js [data-section-reveal]:where(.tone-paper, .tone-surface, .tone-blue, .tone-green, .tone-yellow, .tone-cream) {
+  scale: 0.98;
+}
+
+html.js [data-section-reveal].is-in {
+  opacity: 1;
+  translate: 0 0;
+  filter: none;
+  scale: 1;
+}
+
+/* CtaBand box settles with the section. */
+html.js [data-section-reveal] .cta-band {
+  scale: 0.98;
+  transition: scale 900ms var(--ease-out);
+}
+
+html.js [data-section-reveal].is-in .cta-band {
+  scale: 1;
+}
+
 /* ---------- Scroll reveal (JS-gated: tagged by src/scripts/motion.ts) ---------- */
 html.js [data-reveal] {
   opacity: 0;
-  transform: translateY(12px);
+  transform: translateY(16px);
   filter: blur(4px);
   transition:
     opacity 0.7s var(--ease-out),
     transform 0.7s var(--ease-out),
     filter 0.7s var(--ease-out);
   transition-delay: calc(var(--reveal-i, 0) * 70ms);
+}
+
+/* Children of a revealing section cascade 150ms after the section begins. */
+html.js [data-section-reveal] [data-reveal] {
+  transition-delay: calc(150ms + var(--reveal-i, 0) * 70ms);
 }
 
 html.js [data-reveal].is-in {
@@ -166,9 +204,15 @@ html.js details > summary > svg {
 /* ---------- Reduced motion: no movement, reveals instant ---------- */
 @media (prefers-reduced-motion: reduce) {
   html.js [data-reveal],
-  html.js [data-reveal].is-in {
+  html.js [data-reveal].is-in,
+  html.js [data-section-reveal],
+  html.js [data-section-reveal].is-in,
+  html.js [data-section-reveal] .cta-band,
+  html.js [data-section-reveal].is-in .cta-band {
     opacity: 1;
     transform: none;
+    translate: none;
+    scale: none;
     filter: none;
     transition: none;
   }
