@@ -68,15 +68,18 @@ const inStyle = (d: number, dur: number, y: number, s: number) => `--in-d:${d}ms
     </g>
   ))}
   {steps.map((t, i) => (
+    <g class={i > 0 ? 'wsi-extra' : undefined}>
     <g class={`wsi-steps-n${i + 1}`}>
       <g class="wsi-in" style={inStyle(tIn(i), 620, 0, 0.92)}>
         <g class="wsi-steps-sh-mid" style={lag(0.4 + i * 0.4)}><g transform={iso(t.x + 4, t.y + GAP + 6, S)}><rect width={S} height={S} rx="10" fill="#f5f3f2"></rect><rect width={S} height={S} rx="10" fill={C.ink} fill-opacity=".1"></rect></g></g>
       </g>
     </g>
+    </g>
   ))}
 
 
   {steps.map((t, i) => (
+    <g class={i > 0 ? 'wsi-extra' : undefined}>
     <g class={`wsi-steps-n${i + 1}`} data-step={i + 1} style="cursor:pointer">
       <g class="wsi-in" style={inStyle(tIn(i), 620, 22, 0.9)}>
         <g class="wsi-breathe wsi-steps-mid" style={lag(0.4 + i * 0.4)}>
@@ -96,6 +99,7 @@ const inStyle = (d: number, dur: number, y: number, s: number) => `--in-d:${d}ms
           </g>
         </g>
       </g>
+    </g>
     </g>
   ))}
 </svg>

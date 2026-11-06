@@ -41,6 +41,8 @@ const tiles = [
   { x: 560, y: 252, s: 34, fill: C.tB, side: '#b9dcee', ink: '#3f9cc9', icon: 'percent', z: 40, f: 3, d: 0.3, enter: intro(640, 520, -12, 0.9) },
   { x: 78, y: 254, s: 34, fill: C.tC, side: '#ecd9a8', ink: '#a8730a', icon: '$', z: 40, f: 1, d: 0.25, enter: intro(900, 480, -16, 0.9) },
 ];
+// Index of the centre bank tile in `tiles`: the only tile left visible at rest (wsi-extra on every other tile + its shadow).
+const MAIN_TILE = 3;
 const lines = Array.from({ length: 7 }, (_, i) => `M0 ${(i + 1) * 32.75}H262M${(i + 1) * 32.75} 0V262`).join('');
 ---
 
@@ -71,13 +73,13 @@ const lines = Array.from({ length: 7 }, (_, i) => `M0 ${(i + 1) * 32.75}H262M${(
 
   <!-- tile ground shadows (inverse to tile lift) -->
   <g fill={C.ink} fill-opacity=".08" filter="url(#wsi-tiles-blur)">
-    {tiles.map((t, i) => <g class="wsi-tiles-sh-mid" style={lag(0.4 + jit(i, 0.2))}><g class="wsi-in" style={t.enter}><g transform={iso(t.x + 8, t.y + t.z * 0.7 + 8, t.s)}><rect width={t.s} height={t.s} rx={t.s * 0.17}></rect></g></g></g>)}
+    {tiles.map((t, i) => <g class={i === MAIN_TILE ? undefined : 'wsi-extra'}><g class="wsi-tiles-sh-mid" style={lag(0.4 + jit(i, 0.2))}><g class="wsi-in" style={t.enter}><g transform={iso(t.x + 8, t.y + t.z * 0.7 + 8, t.s)}><rect width={t.s} height={t.s} rx={t.s * 0.17}></rect></g></g></g></g>)}
   </g>
 
   {tiles.map((t, i) => {
     const k = (t.s * 0.58) / 24;
     return (
-      <>
+      <g class={i === MAIN_TILE ? undefined : 'wsi-extra'}>
         <g class="wsi-in" style={t.enter}>
         <g class="wsi-pt" style={`--d:${t.d}`}>
         <g class={`wsi-breathe wsi-tiles-mid wsi-tiles-f${t.f}`} style={lag(0.4 + jit(i, 0.2))}>
@@ -103,7 +105,7 @@ const lines = Array.from({ length: 7 }, (_, i) => `M0 ${(i + 1) * 32.75}H262M${(
         </g>
         </g>
         </g>
-      </>
+      </g>
     );
   })}
 </svg>

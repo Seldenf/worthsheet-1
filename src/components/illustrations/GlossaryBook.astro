@@ -62,6 +62,7 @@ const pills = [
   </g></g></g>
 
   <!-- top layer: pills -->
+  <g class="wsi-extra">
   {pills.map((p) => (
     <g class="wsi-in" style={inStyle(p.ent[0], p.ent[1], p.ent[2])}><g class="wsi-pt" style={`--d:${p.dep}`}><g transform={`translate(${p.x} ${p.y})`}>
       <g class={`wsi-book-${p.cls} wsi-breathe`} style={`--lift:${p.lift}px;animation-delay:${p.d}s`}>
@@ -73,6 +74,7 @@ const pills = [
     </g>
     </g></g>
   ))}
+  </g>
 </svg>
 
 <style is:global>

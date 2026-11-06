@@ -85,11 +85,13 @@ const arc = `M${pt(arcR, arcA0)}A${arcR} ${arcR} 0 0 1 ${pt(arcR, arcA1)}`;
     <g>
       <path class="wsi-draw" pathLength="100" d={arc} fill="none" stroke={segs[level].dark} stroke-width="4" stroke-linecap="round" style="--draw-d:900ms"></path>
     </g>
+    <g class="wsi-extra">
     <g class="wsi-in" style={inStyle(900, 480, 10)}><g font-size="14" font-weight="600" fill={C.ink}>
       {labels.map((l, i) => (
         <text x={l.x} y={l.y} text-anchor={l.anchor} fill-opacity={i === level ? 1 : 0.6}>{l.t}</text>
       ))}
     </g></g>
+    </g>
     <path d={`M${tip}L${baseA}L${baseB}z`} fill={C.ink} stroke={C.ink} stroke-width="4" stroke-linejoin="round"></path>
     <circle cx={CX} cy={CY} r="18" fill={C.ink} stroke="#fff" stroke-width="4"></circle>
     <circle cx={CX} cy={CY} r="5" fill="#fff"></circle>

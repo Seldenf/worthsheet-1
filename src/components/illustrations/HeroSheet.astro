@@ -53,11 +53,11 @@ const tiles = [
 
 // ---- pills (top layer) ----
 const pills = [
-  { x: 690, y: 150, l: 'Assets', v: '$412,500', dot: C.green, fs: 15, cls: 'f2', d: 0.55, enter: intro(600, 450, 14, 0.95) },
-  { x: 224, y: 470, l: 'Liabilities', v: '$186,200', dot: C.yellow, fs: 15, cls: 'f3', d: 1.05, enter: intro(720, 450, -14, 0.95) },
-  { x: 706, y: 536, l: 'Net worth', v: '$226,300', dot: C.blue, fs: 18, cls: 'f1', big: true, d: 1.4, enter: intro(840, 450, 16, 0.94) },
+  { x: 700.5, y: 150, l: 'Assets', v: '$412,500', dot: C.green, fs: 15, cls: 'f2', d: 0.55, enter: intro(600, 450, 14, 0.95) },
+  { x: 237, y: 470, l: 'Liabilities', v: '$186,200', dot: C.yellow, fs: 15, cls: 'f3', d: 1.05, enter: intro(720, 450, -14, 0.95) },
+  { x: 719.5, y: 536, l: 'Net worth', v: '$226,300', dot: C.blue, fs: 18, cls: 'f1', big: true, d: 1.4, enter: intro(840, 450, 16, 0.94) },
 ].map((p) => {
-  const w = Math.round((p.l.length + 1 + p.v.length) * p.fs * 0.54) + 44;
+  const w = Math.round((p.l.length + 1 + p.v.length) * p.fs * 0.6) + 52;
   return { ...p, w, h: p.big ? 48 : 38 };
 });
 ---
@@ -120,20 +120,23 @@ const pills = [
   </g></g>
 
   <!-- leaders (base) -->
+  <g class="wsi-extra">
   <g class="wsi-breathe wsi-hero-base" stroke={C.ink} stroke-opacity=".3" stroke-width="1.5" stroke-dasharray="2 6" stroke-linecap="round" fill="none">
     <path d="M440 168 340 296"></path>
+  </g>
   </g>
   </g>
 
   <!-- tile ground shadows (inverse to tile lift) -->
   <g fill={C.ink} fill-opacity=".1" filter="url(#wsi-hero-blur)">
     {tiles.map((t, i) => (
-      <g class="wsi-hero-sh-mid" style={lag(0.4 + jit(i, 0.2))}><g class="wsi-in" style={t.enter}><g transform={iso(t.x + 6, t.y + t.z, t.s)}><rect width={t.s} height={t.s} rx="12"></rect></g></g></g>
+      <g class="wsi-extra"><g class="wsi-hero-sh-mid" style={lag(0.4 + jit(i, 0.2))}><g class="wsi-in" style={t.enter}><g transform={iso(t.x + 6, t.y + t.z, t.s)}><rect width={t.s} height={t.s} rx="12"></rect></g></g></g></g>
     ))}
   </g>
 
   <!-- floating tiles (mid) -->
   {tiles.map((t, i) => (
+    <g class="wsi-extra">
     <g class="wsi-in" style={t.enter}>
     <g class="wsi-pt" style={`--d:${t.d}`}>
     <g class={`wsi-breathe wsi-hero-mid wsi-hero-${t.cls}`} style={lag(0.4 + jit(i, 0.2))}>
@@ -161,9 +164,11 @@ const pills = [
     </g>
     </g>
     </g>
+    </g>
   ))}
 
   <!-- verified check (top) -->
+  <g class="wsi-extra">
   <g class="wsi-in" style={intro(950, 450, 12, 0.8)}>
   <g class="wsi-pt" style="--d:0.25">
   <g class="wsi-breathe wsi-hero-top wsi-hero-f2" style={lag(0.8 + jit(7, 0.5))}>
@@ -173,8 +178,10 @@ const pills = [
   </g>
   </g>
   </g>
+  </g>
 
   <!-- =SUM() chip (top) -->
+  <g class="wsi-extra">
   <g class="wsi-in" style={intro(500, 500, -22, 0.95)}>
   <g class="wsi-pt" style="--d:0.7">
   <g transform="translate(430 144)">
@@ -188,9 +195,11 @@ const pills = [
   </g>
   </g>
   </g>
+  </g>
 
   <!-- pills (top) -->
   {pills.map((p, i) => (
+    <g class="wsi-extra">
     <g class="wsi-in" style={p.enter}>
     <g class="wsi-pt" style={`--d:${p.d}`}>
     <g transform={`translate(${p.x} ${p.y})`}>
@@ -201,8 +210,9 @@ const pills = [
         <text x={-p.w / 2 + 38} y={p.fs * 0.35} font-size={p.fs} fill={C.ink}>
           <tspan fill-opacity=".66" font-weight="500">{p.l}</tspan> <tspan font-weight="700">{p.v}</tspan>
         </text>
-        {p.big && <path class="wsi-draw" pathLength="100" fill="none" stroke={C.blue} stroke-width="2.5" stroke-linecap="round" style="--draw-d:1000ms" d={`M${-p.w / 2 + 38 + (p.l.length + 1) * p.fs * 0.54} 16H${-p.w / 2 + 38 + (p.l.length + 1 + p.v.length) * p.fs * 0.54}`}></path>}
+        {p.big && <path class="wsi-draw" pathLength="100" fill="none" stroke={C.blue} stroke-width="2.5" stroke-linecap="round" style="--draw-d:1000ms" d={`M${-p.w / 2 + 38 + (p.l.length + 1) * p.fs * 0.6} 16H${-p.w / 2 + 38 + (p.l.length + 1 + p.v.length) * p.fs * 0.6}`}></path>}
       </g>
+    </g>
     </g>
     </g>
     </g>

@@ -93,12 +93,60 @@ const tint = TINTS[KEYS.indexOf(key) % TINTS.length];
   }
 
   @media (hover: hover) and (pointer: fine) {
-    :is(a, .card, .post-card):is(:hover, :focus-visible) .post-cover {
+    :global(:is(a, .card, .post-card):is(:hover, :focus-visible)) .post-cover {
       background-color: var(--cover-tint);
     }
 
-    :is(a, .card, .post-card):is(:hover, :focus-visible) .post-cover :global(svg.wsi *) {
+    :global(:is(a, .card, .post-card):is(:hover, :focus-visible)) .post-cover :global(svg.wsi *) {
       animation-play-state: running;
+    }
+
+    /* Card covers rest bare: extras (.wsi-extra) and strokes (.wsi-draw) stay hidden until the card is hovered or focused.
+       Touch devices never match this block, so they keep the full illustration. */
+    .post-cover:not(.post-cover-wide) :global(svg.wsi .wsi-extra),
+    .post-cover:not(.post-cover-wide) :global(svg.wsi .wsi-draw) {
+      opacity: 0;
+      transition:
+        opacity 420ms cubic-bezier(0.23, 1, 0.32, 1) calc(var(--i, 0) * 60ms),
+        translate 420ms cubic-bezier(0.23, 1, 0.32, 1) calc(var(--i, 0) * 60ms),
+        stroke-dashoffset 600ms cubic-bezier(0.23, 1, 0.32, 1) 200ms;
+    }
+
+    /* Stagger index: nth-of-type fallbacks 1-8 (an inline --i still wins). */
+    .post-cover:not(.post-cover-wide) :global(svg.wsi :is(.wsi-extra, .wsi-draw):nth-of-type(1)) { --i: 1; }
+    .post-cover:not(.post-cover-wide) :global(svg.wsi :is(.wsi-extra, .wsi-draw):nth-of-type(2)) { --i: 2; }
+    .post-cover:not(.post-cover-wide) :global(svg.wsi :is(.wsi-extra, .wsi-draw):nth-of-type(3)) { --i: 3; }
+    .post-cover:not(.post-cover-wide) :global(svg.wsi :is(.wsi-extra, .wsi-draw):nth-of-type(4)) { --i: 4; }
+    .post-cover:not(.post-cover-wide) :global(svg.wsi :is(.wsi-extra, .wsi-draw):nth-of-type(5)) { --i: 5; }
+    .post-cover:not(.post-cover-wide) :global(svg.wsi :is(.wsi-extra, .wsi-draw):nth-of-type(6)) { --i: 6; }
+    .post-cover:not(.post-cover-wide) :global(svg.wsi :is(.wsi-extra, .wsi-draw):nth-of-type(7)) { --i: 7; }
+    .post-cover:not(.post-cover-wide) :global(svg.wsi :is(.wsi-extra, .wsi-draw):nth-of-type(8)) { --i: 8; }
+
+    :global(:is(a, .card, .post-card):is(:hover, :focus-visible)) .post-cover:not(.post-cover-wide) :global(svg.wsi .wsi-extra),
+    :global(:is(a, .card, .post-card):is(:hover, :focus-visible)) .post-cover:not(.post-cover-wide) :global(svg.wsi .wsi-draw) {
+      opacity: 1;
+      translate: 0 0;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      /* Cancel the global .wsi-draw intro on card covers so the hover transition owns the stroke. */
+      .post-cover:not(.post-cover-wide) :global(svg.wsi.is-in .wsi-draw) {
+        animation: none;
+      }
+
+      .post-cover:not(.post-cover-wide) :global(svg.wsi .wsi-extra),
+      .post-cover:not(.post-cover-wide) :global(svg.wsi .wsi-draw) {
+        translate: 0 6px;
+      }
+
+      .post-cover:not(.post-cover-wide) :global(svg.wsi .wsi-draw) {
+        stroke-dasharray: 100;
+        stroke-dashoffset: 100;
+      }
+
+      :global(:is(a, .card, .post-card):is(:hover, :focus-visible)) .post-cover:not(.post-cover-wide) :global(svg.wsi .wsi-draw) {
+        stroke-dashoffset: 0;
+      }
     }
   }
 </style>

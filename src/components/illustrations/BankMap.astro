@@ -76,6 +76,7 @@ const pills = [
       {cells.map((c) => <rect x={c.x} y={c.y} width="24" height="24" rx="6" fill={c.fill}></rect>)}
       <path class="wsi-draw" pathLength="100" d={ROUTE} fill="none" stroke="#3f9cc9" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="3 4" style="--draw-d:1000ms"></path>
     </g>
+    <g class="wsi-extra">
     {pins.map((p) => (
       <ellipse class="wsi-map-pshadow" style={`animation-delay:${p.d}s`} cx={p.x} cy={p.y} rx="15" ry="6" fill={C.ink} fill-opacity=".18"></ellipse>
     ))}
@@ -88,9 +89,11 @@ const pills = [
         <circle cy="-26" r="5.5" fill="#fff"></circle>
       </g>
     ))}
+    </g>
   </g></g></g>
 
   <!-- top layer: pills -->
+  <g class="wsi-extra">
   {pills.map((p) => (
     <g class="wsi-in" style={inStyle(p.ent[0], p.ent[1], p.ent[2])}><g class="wsi-pt" style={`--d:${p.dep}`}><g transform={`translate(${p.x} ${p.y})`}>
       <g class={`wsi-map-${p.cls} wsi-breathe`} style={`--lift:${p.lift}px;animation-delay:${p.d}s`}>
@@ -102,6 +105,7 @@ const pills = [
     </g>
     </g></g>
   ))}
+  </g>
 </svg>
 
 <style is:global>

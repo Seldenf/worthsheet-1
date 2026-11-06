@@ -36,6 +36,8 @@ const tiles: Tile[] = [
   { x: 536, y: 300, s: 76, h: 12, fill: C.tP, side: '#e8bde0', ink: '#b5388f', icon: 'card' },
   { x: 330, y: 352, s: 66, h: 10, fill: C.yellow, side: '#d9a02a', ink: '#fff', icon: 'coins' },
 ];
+// Index of the big Sheets tile in `tiles`: the only tile left visible at rest (wsi-extra on every other tile + its shadow).
+const MAIN_TILE = 3;
 
 // Per-tile intro [delay ms, duration ms, start y px (negative = from above), start scale], by tiles index.
 const IN: [number, number, number, number][] = [
@@ -78,7 +80,7 @@ const inStyle = (d: number, dur: number, y: number, s: number) => `--in-d:${d}ms
 
   <!-- ground shadows (inverse to tile lift) -->
   <g fill={C.ink} fill-opacity=".09" filter="url(#wsi-cta-blur)">
-    {tiles.map((t, i) => <g class="wsi-in" style={inStyle(IN[i][0], IN[i][1], 0, 0.92)}><g class="wsi-cta-sh-mid" style={lag(0.4 + jit(i, 0.2))}><g transform={iso(t.x + 8, t.y + t.h + 8, t.s)}><rect width={t.s} height={t.s} rx={t.s * 0.17}></rect></g></g></g>)}
+    {tiles.map((t, i) => <g class={i === MAIN_TILE ? undefined : 'wsi-extra'}><g class="wsi-in" style={inStyle(IN[i][0], IN[i][1], 0, 0.92)}><g class="wsi-cta-sh-mid" style={lag(0.4 + jit(i, 0.2))}><g transform={iso(t.x + 8, t.y + t.h + 8, t.s)}><rect width={t.s} height={t.s} rx={t.s * 0.17}></rect></g></g></g></g>)}
   </g>
 
   {tiles.map((t, i) => {
@@ -102,10 +104,11 @@ const inStyle = (d: number, dur: number, y: number, s: number) => `--in-d:${d}ms
       </g>
     );
     const wrapped = <g class="wsi-in" style={inStyle(...IN[i])}>{body}</g>;
-    return t.pt ? <g class="wsi-pt" style={`--d:${t.pt}`}>{wrapped}</g> : wrapped;
+    return <g class={i === MAIN_TILE ? undefined : 'wsi-extra'}>{t.pt ? <g class="wsi-pt" style={`--d:${t.pt}`}>{wrapped}</g> : wrapped}</g>;
   })}
 
   <!-- =SUM() chip -->
+  <g class="wsi-extra">
   <g class="wsi-in" style={inStyle(860, 480, -26, 0.92)}>
   <g class="wsi-pt" style="--d:0.6">
     <g transform="translate(210 92)">
@@ -119,8 +122,10 @@ const inStyle = (d: number, dur: number, y: number, s: number) => `--in-d:${d}ms
     </g>
   </g>
   </g>
+  </g>
 
   <!-- Net worth pill -->
+  <g class="wsi-extra">
   <g class="wsi-in" style={inStyle(900, 500, 14, 0.94)}>
   <g class="wsi-pt" style="--d:1.4">
     <g transform="translate(506 376)">
@@ -132,6 +137,7 @@ const inStyle = (d: number, dur: number, y: number, s: number) => `--in-d:${d}ms
         <path class="wsi-draw" pathLength="100" fill="none" stroke={C.blue} stroke-width="2.5" stroke-linecap="round" style="--draw-d:1100ms" d="M-70 28 H0"></path>
       </g>
     </g>
+  </g>
   </g>
   </g>
 </svg>

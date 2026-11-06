@@ -31,13 +31,53 @@ const links = [
 const current = Astro.url.pathname;
 const isCurrent = (path: string) => current === url(path);
 const calculatorsActive = [...calculators, featured].some((c) => current.startsWith(url(c.path)));
+
+const logoRows = Array.from({ length: 16 }, (_, k) => {
+  const palette = [
+    { fill: '#fdfcfa', opacity: 1 },
+    { fill: '#40aa4a', opacity: 0.9 },
+    { fill: '#6cbee4', opacity: 1 },
+    { fill: '#fdfcfa', opacity: 0.9 },
+  ];
+  return { y: 14 + k * 20, ...palette[k % 4] };
+});
 ---
 
 <header class="site-header" data-header>
   <div class="container header-inner">
     <a class="logo" href={url('/')} aria-label={`${SITE_NAME} home`}>
       <svg class="logo-mark" viewBox="0 0 64 64" width="32" height="32" aria-hidden="true">
+        <defs>
+          <clipPath id="ws-logo-clip">
+            <rect width="64" height="64" rx="16"></rect>
+          </clipPath>
+        </defs>
         <rect width="64" height="64" rx="16" fill="#2e2926"></rect>
+        <g clip-path="url(#ws-logo-clip)">
+          <g class="logo-stage">
+            <g class="logo-rows">
+              {
+                logoRows.map((r) => (
+                  <g class="logo-row">
+                    <rect x="14" y={r.y} width="36" height="16" rx="4" fill={r.fill} fill-opacity={r.opacity}></rect>
+                    <rect x="26" y={r.y} width="1" height="16" fill="#2e2926" fill-opacity="0.22"></rect>
+                    <rect x="38" y={r.y} width="1" height="16" fill="#2e2926" fill-opacity="0.22"></rect>
+                  </g>
+                ))
+              }
+            </g>
+            <g class="logo-calc">
+              <rect class="logo-sweep" x="6" y="12" width="2.5" height="40" fill="#fdfcfa" fill-opacity="0.75"></rect>
+              <rect x="22" y="22" width="20" height="20" rx="5" fill="#2e2926"></rect>
+              <text x="32" y="38.5" text-anchor="middle" font-size="18" fill="#fdfcfa">Σ</text>
+              {
+                [[19, 19], [46, 20], [45, 46], [18, 45]].map(([cx, cy]) => (
+                  <circle class="logo-spark" cx={cx} cy={cy} r="1.2" fill="#fdfcfa"></circle>
+                ))
+              }
+            </g>
+          </g>
+        </g>
         <rect class="sq sq-tl" x="14" y="14" width="16" height="16" rx="4" fill="#40aa4a"></rect>
         <rect class="sq sq-tr" x="34" y="14" width="16" height="16" rx="4" fill="#fdfcfa"></rect>
         <rect class="sq sq-br" x="34" y="34" width="16" height="16" rx="4" fill="#6cbee4"></rect>
@@ -187,10 +227,20 @@ const calculatorsActive = [...calculators, featured].some((c) => current.startsW
     transform: scale(0.96);
   }
 
+  .logo-stage {
+    display: none;
+  }
+
   @media (prefers-reduced-motion: no-preference) {
-    .logo-mark .sq {
-      transform-box: fill-box;
-      transform-origin: 0 0;
+    :global(html.js) .logo-stage {
+      display: inline;
+    }
+
+    .logo-mark .sq,
+    .logo-stage,
+    .logo-calc {
+      transform-box: view-box;
+      transform-origin: 32px 32px;
     }
   }
 
@@ -715,49 +765,114 @@ const calculatorsActive = [...calculators, featured].some((c) => current.startsW
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   if (logo && logoMark && !reduceMotion) {
-    const squares = Array.from(logoMark.querySelectorAll<SVGRectElement>('.sq'));
-    const EASE = 'cubic-bezier(0.65, 0, 0.35, 1)';
-    // Spreadsheet rows inside the 64-unit tile: 48 wide, 8 high, 4 gap, stacked from y=10.
-    const ROW_X = 8;
-    const ROW_W = 48;
-    const ROW_H = 8;
-    const ROW_Y0 = 10;
-    const ROW_GAP = 4;
+    // One shared 2400ms timeline. Every animation is created once, paused at 0, fill both.
+    const DUR = 2400;
+    const EASE_OUT = 'cubic-bezier(0.23, 1, 0.32, 1)';
+    const EASE_IO = 'cubic-bezier(0.65, 0, 0.35, 1)';
+    const EASE_ACCEL = 'cubic-bezier(0.55, 0, 1, 0.45)';
+    const EASE_LAND = 'cubic-bezier(0.16, 1, 0.3, 1)';
+    const el = (sel: string) => logoMark.querySelector(sel) as Element;
 
-    // One animation per square, paused at 0 with fill both; direction is driven by playbackRate.
-    const anims = squares.map((sq, i) => {
-      const x0 = Number(sq.getAttribute('x'));
-      const y0 = Number(sq.getAttribute('y'));
-      const size = Number(sq.getAttribute('width'));
-      const glow = `brightness(1.25) drop-shadow(0 0 3px ${sq.getAttribute('fill')})`;
-      const rowY = ROW_Y0 + i * (ROW_H + ROW_GAP);
-      const rest = 'translate(0px, 0px) scale(1, 1)';
-      const row = `translate(${ROW_X - x0}px, ${rowY - y0}px) scale(${ROW_W / size}, ${ROW_H / size})`;
-      const anim = sq.animate(
-        [
-          { offset: 0, transform: rest, filter: 'none', easing: EASE },
-          { offset: 0.45, transform: row, filter: 'none', easing: EASE },
-          { offset: 0.8, transform: rest, filter: 'none', easing: EASE },
-          { offset: 0.9, transform: rest, filter: glow, easing: EASE },
-          { offset: 1, transform: rest, filter: 'none' },
-        ],
-        { duration: 1400, fill: 'both' },
-      );
+    type Frame = { t: number } & Record<string, string | number>;
+    const all: Animation[] = [];
+    function track(target: Element, frames: Frame[]) {
+      const keyframes = frames.map(({ t, ...rest }) => ({ ...rest, offset: t / DUR }));
+      const anim = target.animate(keyframes as Keyframe[], { duration: DUR, fill: 'both' });
       anim.pause();
       anim.currentTime = 0;
-      return anim;
+      all.push(anim);
+    }
+
+    // Squares: shrink into the centre (0–220ms), then swirl back out from the centre, staggered 40ms.
+    logoMark.querySelectorAll('.sq').forEach((sq, i) => {
+      const s = 2000 + i * 40;
+      track(sq, [
+        { t: 0, transform: 'rotate(0deg) scale(1)', opacity: 1, easing: EASE_OUT },
+        { t: 220, transform: 'rotate(0deg) scale(0.6)', opacity: 0 },
+        { t: s - 1, transform: 'rotate(0deg) scale(0.6)', opacity: 0 },
+        { t: s, transform: 'rotate(-180deg) scale(0)', opacity: 0, easing: EASE_OUT },
+        { t: DUR, transform: 'rotate(0deg) scale(1)', opacity: 1 },
+      ]);
     });
+
+    // Rows: row 0 in slot 1 (220–420ms), row 1 in slot 2 (420–600ms), later rows enter below and scroll up.
+    logoMark.querySelectorAll('.logo-row').forEach((row, k) => {
+      if (k === 0) {
+        track(row, [
+          { t: 0, opacity: 0, transform: 'translateY(6px)' },
+          { t: 220, opacity: 0, transform: 'translateY(6px)', easing: EASE_OUT },
+          { t: 420, opacity: 1, transform: 'translateY(0px)' },
+        ]);
+      } else if (k === 1) {
+        track(row, [
+          { t: 0, opacity: 0, transform: 'translateY(6px)' },
+          { t: 420, opacity: 0, transform: 'translateY(6px)', easing: EASE_OUT },
+          { t: 600, opacity: 1, transform: 'translateY(0px)' },
+        ]);
+      } else {
+        track(row, [
+          { t: 0, opacity: 0, transform: 'translateY(0px)' },
+          { t: 600, opacity: 0, transform: 'translateY(0px)' },
+          { t: 601, opacity: 1, transform: 'translateY(0px)' },
+          { t: DUR, opacity: 1, transform: 'translateY(0px)' },
+        ]);
+      }
+    });
+
+    // Stack scrolls up 280 units (16 rows − 2 visible slots × 20) with accelerate, then ease-out landing.
+    track(el('.logo-rows'), [
+      { t: 0, transform: 'translateY(0px)', filter: 'blur(0px)' },
+      { t: 600, transform: 'translateY(0px)', filter: 'blur(0px)', easing: EASE_ACCEL },
+      { t: 1150, transform: 'translateY(-140px)', filter: 'blur(1.2px)', easing: EASE_LAND },
+      { t: 1700, transform: 'translateY(-280px)', filter: 'blur(0px)' },
+      { t: DUR, transform: 'translateY(-280px)', filter: 'blur(0px)' },
+    ]);
+
+    // Magic calculation: Σ pops in at 1700–2000ms.
+    track(el('.logo-calc'), [
+      { t: 0, transform: 'scale(0.6)', opacity: 0 },
+      { t: 1700, transform: 'scale(0.6)', opacity: 0, easing: EASE_OUT },
+      { t: 1830, transform: 'scale(1.1)', opacity: 1, easing: EASE_IO },
+      { t: 2000, transform: 'scale(1)', opacity: 1 },
+      { t: DUR, transform: 'scale(1)', opacity: 1 },
+    ]);
+    track(el('.logo-sweep'), [
+      { t: 0, transform: 'translateX(-14px)' },
+      { t: 1700, transform: 'translateX(-14px)', easing: EASE_IO },
+      { t: 2000, transform: 'translateX(78px)' },
+      { t: DUR, transform: 'translateX(78px)' },
+    ]);
+    logoMark.querySelectorAll('.logo-spark').forEach((spark, j) => {
+      const d = j * 30;
+      track(spark, [
+        { t: 0, opacity: 0 },
+        { t: 1700 + d, opacity: 0 },
+        { t: 1760 + d, opacity: 1 },
+        { t: 1820 + d, opacity: 0.2 },
+        { t: 1880 + d, opacity: 1 },
+        { t: 1980 + d, opacity: 0 },
+        { t: DUR, opacity: 0 },
+      ]);
+    });
+
+    // Vortex 2000–2400ms: whole stage spins into the centre and fades out.
+    track(el('.logo-stage'), [
+      { t: 0, transform: 'rotate(0deg) scale(1)', opacity: 1 },
+      { t: 2000, transform: 'rotate(0deg) scale(1)', opacity: 1, easing: EASE_OUT },
+      { t: DUR, transform: 'rotate(-90deg) scale(0.2)', opacity: 0 },
+    ]);
 
     let hovered = false;
     let focused = false;
     let active = false;
 
+    // Boomerang: forward plays to the magic moment and rest; reverse rewinds to the original logo at 0.
     function sync() {
       const want = hovered || focused;
       if (want === active) return;
       active = want;
-      for (const anim of anims) {
-        anim.playbackRate = want ? 1 : -1;
+      for (const anim of all) {
+        anim.playbackRate = want ? 1 : -1.6;
         anim.play();
       }
     }
@@ -772,7 +887,7 @@ const calculatorsActive = [...calculators, featured].some((c) => current.startsW
       sync();
     });
     logo.addEventListener('focus', () => {
-      focused = true;
+      focused = logo.matches(':focus-visible');
       sync();
     });
     logo.addEventListener('blur', () => {

@@ -58,6 +58,7 @@ const pills = [
   </g></g></g>
 
   <!-- top layer: check -->
+  <g class="wsi-extra">
   <g class="wsi-in" style={inStyle(800, 500, -18, 0.9)}><g class="wsi-pt" style="--d:1.6"><g transform="translate(436 150)">
     <g class="wsi-calc-f2 wsi-breathe" style="--lift:-10px;animation-delay:.3s">
       <circle r="27" fill={C.ink} fill-opacity=".08" transform="translate(0 8)"></circle>
@@ -66,8 +67,10 @@ const pills = [
     </g>
   </g>
   </g></g>
+  </g>
 
   <!-- top layer: pills -->
+  <g class="wsi-extra">
   {pills.map((p) => (
     <g class="wsi-in" style={inStyle(p.ent[0], p.ent[1], p.ent[2])}><g class="wsi-pt" style={`--d:${p.dep}`}><g transform={`translate(${p.x} ${p.y})`}>
       <g class={`wsi-calc-${p.cls} wsi-breathe`} style={`--lift:${p.lift}px;animation-delay:${p.d}s`}>
@@ -81,6 +84,7 @@ const pills = [
     </g>
     </g></g>
   ))}
+  </g>
 </svg>
 
 <style is:global>
