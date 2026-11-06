@@ -88,6 +88,7 @@ const calculatorsActive = [...calculators, featured].some((c) => current.startsW
                   <li>
                     <a
                       class="mega-item iso-hover"
+                      data-tone={c.tone}
                       href={url(c.path)}
                       aria-label={c.name}
                       title={c.name}
@@ -187,73 +188,13 @@ const calculatorsActive = [...calculators, featured].some((c) => current.startsW
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    /* Four squares travel clockwise around the 2x2 grid as one rigid ring. Cells are 20 user units apart.
-       Each 1.6s cycle: hold at a corner 0–8%, move to the next corner 8–25%, repeat. */
     .logo-mark .sq {
-      animation-duration: 1.6s;
-      animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1);
-      animation-iteration-count: infinite;
-      animation-play-state: paused;
+      transition: translate 260ms cubic-bezier(0.65, 0, 0.35, 1);
     }
 
-    .logo-mark .sq-tl {
-      animation-name: logo-fly-tl;
+    .logo-mark[data-speed='slow'] .sq {
+      transition-duration: 600ms;
     }
-
-    .logo-mark .sq-tr {
-      animation-name: logo-fly-tr;
-    }
-
-    .logo-mark .sq-br {
-      animation-name: logo-fly-br;
-    }
-
-    .logo-mark .sq-bl {
-      animation-name: logo-fly-bl;
-    }
-
-    @media (hover: hover) and (pointer: fine) {
-      .logo:hover .logo-mark .sq {
-        animation-play-state: running;
-      }
-    }
-
-    .logo:focus-visible .logo-mark .sq {
-      animation-play-state: running;
-    }
-  }
-
-  /* Paths: TL(0,0) → TR(20,0) → BR(20,20) → BL(0,20) → TL, expressed relative to each square's start corner. */
-  @keyframes logo-fly-tl {
-    0%, 8% { translate: 0 0; }
-    25%, 33% { translate: 20px 0; }
-    50%, 58% { translate: 20px 20px; }
-    75%, 83% { translate: 0 20px; }
-    100% { translate: 0 0; }
-  }
-
-  @keyframes logo-fly-tr {
-    0%, 8% { translate: 0 0; }
-    25%, 33% { translate: 0 20px; }
-    50%, 58% { translate: -20px 20px; }
-    75%, 83% { translate: -20px 0; }
-    100% { translate: 0 0; }
-  }
-
-  @keyframes logo-fly-br {
-    0%, 8% { translate: 0 0; }
-    25%, 33% { translate: -20px 0; }
-    50%, 58% { translate: -20px -20px; }
-    75%, 83% { translate: 0 -20px; }
-    100% { translate: 0 0; }
-  }
-
-  @keyframes logo-fly-bl {
-    0%, 8% { translate: 0 0; }
-    25%, 33% { translate: 0 -20px; }
-    50%, 58% { translate: 20px -20px; }
-    75%, 83% { translate: 20px 0; }
-    100% { translate: 0 0; }
   }
 
   .site-nav {
@@ -336,6 +277,7 @@ const calculatorsActive = [...calculators, featured].some((c) => current.startsW
     grid-row: 1;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
     gap: 4px;
     margin: 0;
     padding: 0;
@@ -344,6 +286,7 @@ const calculatorsActive = [...calculators, featured].some((c) => current.startsW
 
   .dropdown .mega-grid > li {
     min-width: 0;
+    display: flex;
   }
 
   .dropdown .mega-item {
@@ -351,7 +294,9 @@ const calculatorsActive = [...calculators, featured].some((c) => current.startsW
     align-items: center;
     justify-content: flex-start;
     gap: 12px;
-    padding: 12px;
+    padding: 16px;
+    flex: 1 1 auto;
+    height: 100%;
     border-radius: 14px;
     background: transparent;
     color: var(--ink);
@@ -501,9 +446,29 @@ const calculatorsActive = [...calculators, featured].some((c) => current.startsW
     }
   }
 
+  .dropdown .mega-item[data-tone='blue'] {
+    --item-tint: rgba(108, 190, 228, 0.14);
+  }
+
+  .dropdown .mega-item[data-tone='green'] {
+    --item-tint: rgba(64, 170, 74, 0.12);
+  }
+
+  .dropdown .mega-item[data-tone='yellow'] {
+    --item-tint: rgba(250, 195, 68, 0.16);
+  }
+
+  .dropdown .mega-item[data-tone='pink'] {
+    --item-tint: rgba(243, 166, 210, 0.18);
+  }
+
+  .dropdown .mega-item:focus-visible {
+    background: var(--item-tint, var(--surface));
+  }
+
   @media (hover: hover) and (pointer: fine) {
     .dropdown .mega-item:hover {
-      background: var(--surface);
+      background: var(--item-tint, var(--surface));
     }
 
     .dropdown .mega-foot-link:hover {
@@ -730,4 +695,97 @@ const calculatorsActive = [...calculators, featured].some((c) => current.startsW
   window.matchMedia('(min-width: 900px)').addEventListener('change', (e) => {
     if (e.matches) setMenu(false);
   });
+
+  const logo = header?.querySelector<HTMLAnchorElement>('.logo');
+  const logoMark = logo?.querySelector<SVGElement>('.logo-mark');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (logo && logoMark && !reduceMotion) {
+    const mark: SVGElement = logoMark;
+    const squares = Array.from(mark.querySelectorAll<SVGRectElement>('.sq'));
+    // Clockwise ring of corners; square i starts at corner i (TL, TR, BR, BL).
+    const corners = [
+      [0, 0],
+      [20, 0],
+      [20, 20],
+      [0, 20],
+    ];
+    const FAST = 260;
+    const SLOW = 600;
+    const CYCLE = 1100;
+
+    let step = 0;
+    let hovered = false;
+    let focused = false;
+    let looping = false;
+    let interval: number | undefined;
+    let timer: number | undefined;
+    let lastStart = 0;
+    let lastDur = 0;
+
+    function advance(speed: 'fast' | 'slow') {
+      step += 1;
+      lastStart = performance.now();
+      lastDur = speed === 'fast' ? FAST : SLOW;
+      mark.dataset.speed = speed;
+      squares.forEach((sq, i) => {
+        const [cx, cy] = corners[(i + step) % 4];
+        const [ox, oy] = corners[i];
+        sq.style.translate = `${cx - ox}px ${cy - oy}px`;
+      });
+    }
+
+    function start() {
+      window.clearTimeout(timer);
+      window.clearInterval(interval);
+      advance('fast');
+      interval = window.setInterval(() => advance('slow'), CYCLE);
+    }
+
+    // Walk the ring home: only whole fast steps, never stopping mid-way.
+    function settle() {
+      timer = undefined;
+      if (step % 4 === 0) return;
+      advance('fast');
+      timer = window.setTimeout(settle, FAST);
+    }
+
+    function stop() {
+      window.clearInterval(interval);
+      interval = undefined;
+      window.clearTimeout(timer);
+      // Let the move in progress finish before walking home.
+      const wait = Math.max(0, lastStart + lastDur - performance.now());
+      timer = window.setTimeout(settle, wait);
+    }
+
+    function sync() {
+      const active = hovered || focused;
+      if (active && !looping) {
+        looping = true;
+        start();
+      } else if (!active && looping) {
+        looping = false;
+        stop();
+      }
+    }
+
+    logo.addEventListener('pointerenter', () => {
+      if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+      hovered = true;
+      sync();
+    });
+    logo.addEventListener('pointerleave', () => {
+      hovered = false;
+      sync();
+    });
+    logo.addEventListener('focus', () => {
+      focused = true;
+      sync();
+    });
+    logo.addEventListener('blur', () => {
+      focused = false;
+      sync();
+    });
+  }
 </script>

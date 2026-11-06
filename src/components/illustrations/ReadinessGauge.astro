@@ -48,6 +48,12 @@ const nd = 180 - 36 * level - 18;
 const tip = pt(R_IN - 18, nd);
 const baseA = pt(11, nd + 90);
 const baseB = pt(11, nd - 90);
+
+// active-segment underline: an arc just inside the ring, spanning the active sector
+const arcR = R_IN - 10;
+const arcA0 = 180 - 36 * level - GAP / 2 - 1.2;
+const arcA1 = 180 - 36 * (level + 1) + GAP / 2 + 1.2;
+const arc = `M${pt(arcR, arcA0)}A${arcR} ${arcR} 0 0 1 ${pt(arcR, arcA1)}`;
 ---
 
 <svg
@@ -64,10 +70,11 @@ const baseB = pt(11, nd - 90);
     <filter id={`${idPrefix}-blur`} x="-20%" y="-30%" width="140%" height="160%"><feGaussianBlur stdDeviation="8"></feGaussianBlur></filter>
   </defs>
 
-  <g class="wsi-in" style={inStyle(0, 1000, 10, 0.96)}><g class="wsi-gauge-base"><g transform={iso(CX, CY + 40, 196)}><rect width="196" height="196" rx="26" fill={C.tB} fill-opacity=".6" stroke="#fff" stroke-width="2"></rect></g></g></g>
-  <g class="wsi-in" style={inStyle(100, 900, 10, 0.96)}><g class="wsi-gauge-base"><g transform={iso(CX, CY + 40, 150)}><rect width="150" height="150" rx="22" fill={C.tG} fill-opacity=".7" stroke="#fff" stroke-width="2"></rect></g></g></g>
+  <g class="wsi-in" style={inStyle(0, 1000, 10, 0.96)}><g class="wsi-pt" style="--d:0.25"><g class="wsi-gauge-base"><g transform={iso(CX, CY + 40, 196)}><rect width="196" height="196" rx="26" fill={C.tB} fill-opacity=".6" stroke="#fff" stroke-width="2"></rect></g></g></g></g>
+  <g class="wsi-in" style={inStyle(100, 900, 10, 0.96)}><g class="wsi-pt" style="--d:0.25"><g class="wsi-gauge-base"><g transform={iso(CX, CY + 40, 150)}><rect width="150" height="150" rx="22" fill={C.tG} fill-opacity=".7" stroke="#fff" stroke-width="2"></rect></g></g></g></g>
   <g class="wsi-in" style={inStyle(200, 1000, 0, 0.9)}><ellipse class="wsi-gauge-shadow" cx={CX} cy={CY + 40} rx="170" ry="26" fill={C.ink} fill-opacity=".07" filter={`url(#${idPrefix}-blur)`}></ellipse></g>
 
+  <g class="wsi-pt" style="--d:1.2">
   <g class="wsi-gauge-f1">
     {segs.map((s, i) => (
       <g class="wsi-in" style={inStyle(300 + i * 80, 520, 12, 0.94)} opacity={i === level ? 1 : 0.4}>
@@ -75,6 +82,9 @@ const baseB = pt(11, nd - 90);
         <path d={sector(i)} fill={s.fill} stroke={s.fill} stroke-width={INSET * 2} stroke-linejoin="round"></path>
       </g>
     ))}
+    <g>
+      <path class="wsi-draw" pathLength="100" d={arc} fill="none" stroke={segs[level].dark} stroke-width="4" stroke-linecap="round" style="--draw-d:900ms"></path>
+    </g>
     <g class="wsi-in" style={inStyle(900, 480, 10)}><g font-size="14" font-weight="600" fill={C.ink}>
       {labels.map((l, i) => (
         <text x={l.x} y={l.y} text-anchor={l.anchor} fill-opacity={i === level ? 1 : 0.6}>{l.t}</text>
@@ -84,6 +94,7 @@ const baseB = pt(11, nd - 90);
     <circle cx={CX} cy={CY} r="18" fill={C.ink} stroke="#fff" stroke-width="4"></circle>
     <circle cx={CX} cy={CY} r="5" fill="#fff"></circle>
     <g class="wsi-in" style={inStyle(900, 480, 10)}><text x={CX} y={CY + 62} font-size="24" font-weight="700" fill={C.ink} text-anchor="middle">{segs[level].name}</text></g>
+  </g>
   </g>
 </svg>
 

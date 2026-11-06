@@ -44,11 +44,11 @@ const SLAB = 5;
 const CX = 26;
 const CY = 18;
 const iso = (cy: number) => `matrix(1 -0.5 1 0.5 ${CX - S} ${cy})`;
-// Glyph box ≈ 45% of tile width (2S = 48 → 21.6 units) on the 24 grid.
-const G = 0.9;
-const glyphTransform = `translate(${(CX - 12 * G).toFixed(2)} ${(CY - 12 * G).toFixed(2)}) scale(${G})`;
-// Stroke 2 viewBox units at default size (glyph group scale compensated).
-const glyphStroke = (2 / G).toFixed(2);
+// Glyph lies flat on the top face: 24-grid glyph centred on the face square, side G·S.
+const G = 0.7;
+const glyphTransform = `translate(${S / 2} ${S / 2}) scale(${G}) translate(-12 -12)`;
+// ~1.8 viewBox units after the iso projection (its linear map has mean scale ≈1).
+const glyphStroke = (1.8 / G).toFixed(2);
 const delayStyle = `animation-delay:${delay}s`;
 ---
 
@@ -72,20 +72,18 @@ const delayStyle = `animation-delay:${delay}s`;
     </g>
     <g transform={iso(CY)}>
       <rect width={S} height={S} rx={S * 0.17} fill={t.fill} stroke={t.edge} stroke-width={t.edgeWidth}></rect>
+      <g
+        class="iso-ico-glyph"
+        transform={glyphTransform}
+        color={t.ink}
+        stroke="currentColor"
+        stroke-width={glyphStroke}
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        fill="none"
+        set:html={ICONS[icon]}
+      ></g>
     </g>
-  </g>
-
-  <g class="iso-ico-glyph" style={delayStyle}>
-    <g
-      transform={glyphTransform}
-      color={t.ink}
-      stroke="currentColor"
-      stroke-width={glyphStroke}
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      fill="none"
-      set:html={ICONS[icon]}
-    ></g>
   </g>
 </svg>
 
@@ -107,8 +105,7 @@ const delayStyle = `animation-delay:${delay}s`;
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    .iso-ico-tile,
-    .iso-ico-glyph {
+    .iso-ico-tile {
       transform-box: fill-box;
       transform-origin: center;
       will-change: transform, translate;
@@ -130,10 +127,6 @@ const delayStyle = `animation-delay:${delay}s`;
       transform: scale(0.85);
       opacity: 0.6;
     }
-
-    .iso-hover:focus-visible .iso-ico-glyph {
-      transform: translate(0, -5px);
-    }
   }
 
   @media (prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine) {
@@ -144,10 +137,6 @@ const delayStyle = `animation-delay:${delay}s`;
     .iso-hover:hover .iso-ico-shadow {
       transform: scale(0.85);
       opacity: 0.6;
-    }
-
-    .iso-hover:hover .iso-ico-glyph {
-      transform: translate(0, -5px);
     }
   }
 </style>

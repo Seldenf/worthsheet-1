@@ -1031,6 +1031,15 @@ const jsonLd = [
       });
     });
 
+    art.querySelectorAll<SVGElement>('[data-step]').forEach((tile) => {
+      const i = Number(tile.getAttribute('data-step')) - 1;
+      if (!Number.isInteger(i) || i < 0 || i >= items.length) return;
+      tile.addEventListener('pointerenter', () => {
+        pointerOver = true;
+        pin(i);
+      });
+    });
+
     section.addEventListener('pointerleave', () => {
       pointerOver = false;
       if (!focusWithin) release();

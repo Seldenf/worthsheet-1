@@ -35,7 +35,7 @@ const order = cards.map((c, i) => ({ ...c, i })).reverse();
 
 const pillW = (text: string, fs: number) => Math.round(text.length * fs * 0.54) + 44;
 const pills = [
-  { x: 652, y: 104, l: 'Assets', v: '27 categories', dot: C.green, cls: 'f1', d: 1.15, enter: intro(900, 480, -18, 0.95) },
+  { x: 652, y: 104, l: 'Assets', v: '27 categories', dot: C.green, cls: 'f1', d: 1.6, enter: intro(900, 480, -18, 0.95) },
   { x: 652, y: 392, l: 'Liabilities', v: '13 categories', dot: C.yellow, cls: 'f3', d: 0.7, enter: intro(820, 460, 16, 0.95) },
 ].map((p) => ({ ...p, w: pillW(`${p.l} ${p.v}`, 14) }));
 
@@ -53,7 +53,8 @@ const menu = ['Checking', 'Savings', 'Retirement'];
 >
   {title && <title>{title}</title>}
 
-  <!-- stacked cards (mid): one shared phase so the stack lifts as a unit -->
+  <!-- stacked cards (mid): one shared phase and one depth so the stack lifts as a unit -->
+  <g class="wsi-pt" style="--d:0.3">
   {order.map((c) => (
     <g class="wsi-cats-card" style={`animation-delay:${(c.i * 0.11).toFixed(2)}s`}>
     <g class="wsi-cats-mid" style={lag(0.4)}>
@@ -68,6 +69,16 @@ const menu = ['Checking', 'Savings', 'Retirement'];
     </g>
     </g>
   ))}
+
+  <!-- Savings outline: same phase as its card, traced around it on top of the stack -->
+  <g class="wsi-cats-card" style={`animation-delay:${(1 * 0.11).toFixed(2)}s`}>
+    <g class="wsi-cats-mid" style={lag(0.4)}>
+      <g transform={stripT(1)}>
+        <rect class="wsi-draw" pathLength="100" x="-6" y="-6" width={W + 12} height={H + 12} rx="19" fill="none" stroke={C.green} stroke-width="2" style="--draw-d:1100ms"></rect>
+      </g>
+    </g>
+  </g>
+  </g>
 
   <!-- leaders (base) -->
   <g class="wsi-cats-base" stroke={C.ink} stroke-opacity=".3" stroke-width="1.5" stroke-dasharray="2 6" stroke-linecap="round" fill="none">
@@ -108,7 +119,7 @@ const menu = ['Checking', 'Savings', 'Retirement'];
       <g font-size="14" fill={C.ink} font-weight="500">
         {menu.map((m, i) => <text x="20" y={80 + i * 36}>{m}</text>)}
       </g>
-      <path d="m118 109 5 5 9-10" stroke="#3f9cc9" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
+      <path class="wsi-draw" pathLength="100" d="m118 109 5 5 9-10" stroke="#3f9cc9" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none" style="--draw-d:1200ms"></path>
     </g>
   </g>
   </g>

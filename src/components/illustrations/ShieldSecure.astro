@@ -17,8 +17,8 @@ const SH = 'M0-88 72-62V8C72 50 42 76 0 92-42 76-72 50-72 8v-70z';
 const T = 190;
 const lines = Array.from({ length: 5 }, (_, i) => `M0 ${34 + i * 31.2}H${T}`).join('') + [38, 78, 118, 154].map((x) => `M${x} 0V${T}`).join('');
 const pills = [
-  { x: 112, y: 214, l: 'Your own copy', dot: C.green, cls: 'f2', d: 1.2, enter: intro(920, 470, 16, 0.95) },
-  { x: 458, y: 150, l: 'Free template', dot: C.blue, cls: 'f3', d: 0.8, enter: intro(800, 460, -14, 0.95) },
+  { x: 112, y: 214, l: 'Your own copy', dot: C.green, cls: 'f2', d: 1.6, enter: intro(920, 470, 16, 0.95) },
+  { x: 458, y: 150, l: 'Free template', dot: C.blue, cls: 'f3', d: 1.0, enter: intro(800, 460, -14, 0.95) },
 ].map((p) => ({ ...p, w: Math.round(p.l.length * 14 * 0.54) + 48 }));
 ---
 
@@ -44,7 +44,7 @@ const pills = [
   </g>
 
   <!-- sheet tile (base) with its ground shadow -->
-  <g class="wsi-in" style={intro(200, 760, 20, 0.92)}>
+  <g class="wsi-in" style={intro(200, 760, 20, 0.92)}><g class="wsi-pt" style="--d:0.25">
   <g class="wsi-shield-sh-base"><g transform={iso(280, 408, T)}><rect width={T} height={T} rx="16" fill={C.ink} fill-opacity=".14" filter="url(#wsi-shield-blur)"></rect></g></g>
   <g class="wsi-shield-base"><g transform={iso(280, 394, T)}><rect width={T} height={T} rx="16" fill="#cfcdcb"></rect></g></g>
   <g class="wsi-shield-base"><g transform={iso(280, 384, T)}>
@@ -58,6 +58,7 @@ const pills = [
     </g>
   </g></g>
   </g>
+  </g>
 
   <!-- shield shadow on tile (inverse to shield lift) -->
   <g class="wsi-in" style={intro(560, 640, 0, 0.98)}>
@@ -65,7 +66,7 @@ const pills = [
   </g>
 
   <!-- shield (mid) -->
-  <g class="wsi-in" style={intro(560, 640, -24, 0.94)}>
+  <g class="wsi-in" style={intro(560, 640, -24, 0.94)}><g class="wsi-pt" style="--d:0.6">
   <g transform="translate(280 184)">
     <g class="wsi-shield-mid" style={lag(0.4)}>
       <path d={SH} fill="#2f8a39" transform="translate(8 11)"></path>
@@ -75,7 +76,9 @@ const pills = [
       <rect x="-26" y="-8" width="52" height="42" rx="10" fill="#fff"></rect>
       <circle cx="0" cy="10" r="5.5" fill={C.green}></circle>
       <rect x="-2.5" y="12" width="5" height="12" rx="2.5" fill={C.green}></rect>
+      <g transform="matrix(1.08 0 0 1.08 0 -0.16)"><path class="wsi-draw" pathLength="100" d={SH} fill="none" stroke={C.blue} stroke-width="1.6" style="--draw-d:900ms"></path></g>
     </g>
+  </g>
   </g>
   </g>
 

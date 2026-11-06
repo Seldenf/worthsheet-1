@@ -140,11 +140,11 @@ function headerScroll(el: HTMLElement) {
   update();
 }
 
-// Pointer parallax + edge glow for every illustration. Runs only on fine hover pointers
-// (gated by the caller); each svg gets its own lerp loop that stops once settled.
+// Pointer parallax for every illustration. Runs only on fine hover pointers (gated by the
+// caller); each svg gets its own lerp loop that stops once settled.
 // Writes --px (-1..1) and --py (-1..0) on the svg; motion.css offsets .wsi-pt by them.
 const PARALLAX_VARS = ['--px', '--py'];
-const PARALLAX_LERP = 0.1;
+const PARALLAX_LERP = 0.07;
 
 function parallax(svg: SVGElement, area: HTMLElement) {
   let tpx = 0, tpy = 0, px = 0, py = 0, raf = 0;
@@ -164,10 +164,6 @@ function parallax(svg: SVGElement, area: HTMLElement) {
   const kick = () => {
     if (!raf) raf = requestAnimationFrame(step);
   };
-  area.addEventListener('pointerenter', (e) => {
-    if (e.pointerType === 'touch') return;
-    svg.classList.add('is-pointer');
-  });
   area.addEventListener(
     'pointermove',
     (e) => {
@@ -184,11 +180,52 @@ function parallax(svg: SVGElement, area: HTMLElement) {
   );
   area.addEventListener('pointerleave', (e) => {
     if (e.pointerType === 'touch') return;
-    svg.classList.remove('is-pointer');
     tpx = 0;
     tpy = 0;
     kick();
   });
+}
+
+// Spreadsheet reveal: each section with an illustration gets an isometric cell grid (::before in
+// motion.css) that is unmasked around the pointer. Writes --mx/--my (px within the section);
+// .sheet-on is set while the pointer is over the section.
+function sheet(section: HTMLElement) {
+  section.classList.add('has-sheet');
+  section.addEventListener('pointerenter', (e) => {
+    if (e.pointerType === 'touch') return;
+    section.classList.add('sheet-on');
+  });
+  section.addEventListener(
+    'pointermove',
+    (e) => {
+      if (e.pointerType === 'touch') return;
+      const r = section.getBoundingClientRect();
+      section.style.setProperty('--mx', `${(e.clientX - r.left).toFixed(1)}px`);
+      section.style.setProperty('--my', `${(e.clientY - r.top).toFixed(1)}px`);
+    },
+    { passive: true },
+  );
+  section.addEventListener('pointerleave', (e) => {
+    if (e.pointerType === 'touch') return;
+    section.classList.remove('sheet-on');
+  });
+}
+
+// Edge light: the cursor position inside a button, card or menu tile drives a rim highlight
+// (::after in motion.css). Fine pointers only; the caller gates it.
+const EDGE_SELECTOR = '.btn, .card, .mega-item, .mega-feature, .post-card';
+
+function edgeLight(el: HTMLElement) {
+  el.addEventListener(
+    'pointermove',
+    (e) => {
+      if (e.pointerType === 'touch') return;
+      const r = el.getBoundingClientRect();
+      el.style.setProperty('--ex', `${(e.clientX - r.left).toFixed(1)}px`);
+      el.style.setProperty('--ey', `${(e.clientY - r.top).toFixed(1)}px`);
+    },
+    { passive: true },
+  );
 }
 
 if (main) {
@@ -207,6 +244,10 @@ if (main) {
         const area = svg.closest<HTMLElement>('section') ?? svg.parentElement;
         if (area) parallax(svg, area);
       });
+      main.querySelectorAll<HTMLElement>('section').forEach((section) => {
+        if (section.querySelector('svg.wsi')) sheet(section);
+      });
+      document.querySelectorAll<HTMLElement>(EDGE_SELECTOR).forEach(edgeLight);
     }
   }
 }

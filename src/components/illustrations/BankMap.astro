@@ -5,7 +5,7 @@ interface Props {
 }
 const { class: className, title } = Astro.props;
 
-const C = { ink: '#2e2926', beige: '#e8e7e5', blue: '#6cbee4', green: '#40aa4a', yellow: '#fac344', tB: '#e2f2f9', tG: '#e2f9e9', tC: '#f9f2e2' };
+const C = { ink: '#2e2926', beige: '#e8e7e5', surface: '#f5f3f2', blue: '#6cbee4', green: '#40aa4a', yellow: '#fac344', tB: '#e2f2f9', tG: '#e2f9e9', tC: '#f9f2e2' };
 
 // Abstract tile-grid "map": one rounded cell per region, [row, col]. A diagram, not a geographic trace.
 const grid: [number, number][] = [
@@ -33,17 +33,20 @@ const cells = grid.map(([r, c]) => ({
   fill: pinCells[`${r},${c}`] ?? tints[(r + c * 2) % 3],
   pin: pinCells[`${r},${c}`],
 }));
+// Pins are glued to the tile: they share its wrapper, so they move with its face.
 const pins = cells
   .filter((c) => c.pin)
   .map((c, i) => {
     const lx = c.x + 12;
     const ly = c.y + 12;
-    return { x: OX + lx + ly, y: OY + (ly - lx) / 2, fill: c.pin, d: +(0.3 + i * 0.3).toFixed(1), dep: [0.9, 1.3, 0.7, 1.1][i] };
+    return { x: OX + lx + ly, y: OY + (ly - lx) / 2, fill: c.pin, d: +(0.3 + i * 0.3).toFixed(1) };
   });
+// Dashed route between the first two pins, drawn in tile-face coordinates (pin cells at local 26,134 and 107,215).
+const ROUTE = 'M26 134Q62 150 107 215';
 const PIN = 'M0 0C-9-12-14-17-14-26a14 14 0 1 1 28 0c0 9-5 14-14 26z';
 const pills = [
-  { x: 118, y: 96, l: 'Find banks by ZIP', dot: C.blue, cls: 'f2', lift: 12, d: 0.8, dep: 1.2, ent: [880, 460, 14] },
-  { x: 540, y: 410, l: 'FDIC-insured', dot: C.green, cls: 'f3', lift: 14, d: 1.2, dep: 0.8, ent: [920, 460, -16] },
+  { x: 118, y: 96, l: 'Find banks by ZIP', dot: C.blue, cls: 'f2', lift: 12, d: 0.8, dep: 1.5, ent: [880, 460, 14] },
+  { x: 540, y: 410, l: 'FDIC-insured', dot: C.green, cls: 'f3', lift: 14, d: 1.2, dep: 0.9, ent: [920, 460, -16] },
 ].map((p) => ({ ...p, w: Math.round(p.l.length * 14 * 0.54) + 48 }));
 ---
 
@@ -64,30 +67,28 @@ const pills = [
   <!-- base layer: plain wrappers carry the animation; matrix groups keep their attribute transform -->
   <g class="wsi-in" style={inStyle(0, 900, 10, 0.96)}><g class="wsi-map-base"><g transform={T}><rect x="-34" y="-34" width={PW + 68} height={PH + 68} rx="30" fill={C.tB} fill-opacity=".55" stroke="#fff" stroke-width="2"></rect></g></g></g>
   <g class="wsi-in" style={inStyle(120, 800, 0, 0.9)}><g class="wsi-map-shadow"><g transform={`matrix(1 -.5 1 .5 ${OX} ${OY + 22})`}><rect width={PW} height={PH} rx="20" fill={C.ink} fill-opacity=".14" filter="url(#wsi-map-blur)"></rect></g></g></g>
-  <g class="wsi-in" style={inStyle(150, 700, 20, 0.94)}><g class="wsi-map-base"><g transform={`matrix(1 -.5 1 .5 ${OX} ${OY + 11})`}><rect width={PW} height={PH} rx="20" fill="#cfcdcb"></rect></g></g></g>
-  <g class="wsi-in" style={inStyle(150, 700, 20, 0.94)}><g class="wsi-map-base"><g transform={T}>
-    <rect width={PW} height={PH} rx="20" fill="#fff" stroke={C.ink} stroke-opacity=".2"></rect>
-    {cells.map((c) => <rect x={c.x} y={c.y} width="24" height="24" rx="6" fill={c.fill}></rect>)}
-  </g></g></g>
+  <g class="wsi-in" style={inStyle(150, 700, 20, 0.94)}><g class="wsi-pt" style="--d:0.3"><g class="wsi-map-base"><g transform={`matrix(1 -.5 1 .5 ${OX} ${OY + 11})`}><rect width={PW} height={PH} rx="20" fill="#cfcdcb"></rect></g></g></g></g>
 
-  <!-- ground shadows and pulse rings under pins -->
-  {pins.map((p, i) => (
-    <g class="wsi-in" style={inStyle(420 + i * 90, 500, 0)}><ellipse class="wsi-map-pshadow" style={`animation-delay:${p.d}s`} cx={p.x} cy={p.y} rx="15" ry="6" fill={C.ink} fill-opacity=".18"></ellipse></g>
-  ))}
-  {pins.map((p, i) => (i === 0 || i === 2 ? (
-    <g class="wsi-in" style={inStyle(420 + i * 90, 500, 0)}><g class="wsi-pt" style={`--d:${p.dep}`}><ellipse class="wsi-map-ring" style={i === 2 ? 'animation-delay:-3s' : undefined} cx={p.x} cy={p.y} rx="15" ry="6" fill="none" stroke={p.fill} stroke-width="2"></ellipse></g></g>
-  ) : null))}
-
-  <!-- top layer: pins -->
-  {pins.map((p, i) => (
-    <g class="wsi-in" style={inStyle(420 + i * 90, 500, -20)}><g class="wsi-pt" style={`--d:${p.dep}`}><g class="wsi-map-pin" style={`animation-delay:${p.d}s`}>
+  <!-- tile face with route, pins, ground shadows and pulse rings: one shared wrapper so everything on it moves together -->
+  <g class="wsi-in" style={inStyle(150, 700, 20, 0.94)}><g class="wsi-pt" style="--d:0.3"><g class="wsi-map-base">
+    <g transform={T}>
+      <rect width={PW} height={PH} rx="20" fill="#fff" stroke={C.ink} stroke-opacity=".2"></rect>
+      {cells.map((c) => <rect x={c.x} y={c.y} width="24" height="24" rx="6" fill={c.fill}></rect>)}
+      <path class="wsi-draw" pathLength="100" d={ROUTE} fill="none" stroke="#3f9cc9" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="3 4" style="--draw-d:1000ms"></path>
+    </g>
+    {pins.map((p) => (
+      <ellipse class="wsi-map-pshadow" style={`animation-delay:${p.d}s`} cx={p.x} cy={p.y} rx="15" ry="6" fill={C.ink} fill-opacity=".18"></ellipse>
+    ))}
+    {pins.map((p, i) => (i === 0 || i === 2 ? (
+      <ellipse class="wsi-map-ring" style={i === 2 ? 'animation-delay:-3s' : undefined} cx={p.x} cy={p.y} rx="15" ry="6" fill="none" stroke={p.fill} stroke-width="2"></ellipse>
+    ) : null))}
+    {pins.map((p) => (
       <g transform={`translate(${p.x} ${p.y})`}>
         <path d={PIN} fill={p.fill} stroke="#fff" stroke-width="3" stroke-linejoin="round"></path>
         <circle cy="-26" r="5.5" fill="#fff"></circle>
       </g>
-    </g>
-    </g></g>
-  ))}
+    ))}
+  </g></g></g>
 
   <!-- top layer: pills -->
   {pills.map((p) => (
@@ -112,14 +113,13 @@ const pills = [
       0% { scale: 0.9; opacity: 0.7; }
       100% { scale: 1.15; opacity: 0; }
     }
-    .wsi-map-base, .wsi-map-pin, .wsi-map-f2, .wsi-map-f3, .wsi-map-shadow, .wsi-map-pshadow, .wsi-map-ring {
+    .wsi-map-base, .wsi-map-f2, .wsi-map-f3, .wsi-map-shadow, .wsi-map-pshadow, .wsi-map-ring {
       transform-box: fill-box;
       transform-origin: center;
       will-change: translate, scale;
     }
     .wsi-map-base { --lift: 2px; animation: wsi-map-breathe 8s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
     .wsi-map-shadow { animation: wsi-map-shade 8s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
-    .wsi-map-pin { --lift: 12px; animation: wsi-map-breathe 6.5s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
     .wsi-map-pshadow { animation: wsi-map-shade 6.5s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
     .wsi-map-ring { animation: wsi-map-ring 6s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
     .wsi-map-f2 { --lift: 12px; animation: wsi-map-breathe 6.5s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
