@@ -1,0 +1,59 @@
+---
+// Temporary comparison page for logo hover concepts. Delete after a variant is chosen.
+import Base from '../../layouts/Base.astro';
+import SelectRange from '../../components/logo-lab/SelectRange.astro';
+import Autofill from '../../components/logo-lab/Autofill.astro';
+import GridHeaders from '../../components/logo-lab/GridHeaders.astro';
+import SortCalc from '../../components/logo-lab/SortCalc.astro';
+
+const variants = [
+  { id: 'A', name: 'Select range', note: 'Selection outline grows from A1 to the A1:B2 range.', C: SelectRange },
+  { id: 'B', name: 'Autofill', note: 'Fill handle drags across; cells flip as they fill.', C: Autofill },
+  { id: 'C', name: 'Grid headers', note: 'Tile becomes a sheet: gridlines, A/B and 1/2 headers, cell cursor.', C: GridHeaders },
+  { id: 'D', name: 'Sort / recalc', note: 'Cells re-sort with a quick FLIP and settle back.', C: SortCalc },
+];
+---
+
+<Base title="Logo animation lab | WorthSheet" description="Internal comparison of logo hover animation concepts for WorthSheet. Not part of the public site." path="/lab/logo/" noindex>
+  <section class="section">
+    <div class="container stack">
+      <h1>Logo animation lab</h1>
+      <p class="lead">Hover each logo (or Tab to it). Moving the pointer away mid-animation rewinds it to the original logo.</p>
+      <div class="lab-grid">
+        {
+          variants.map(({ id, name, note, C }) => (
+            <article class="card lab-card">
+              <p class="eyebrow">Variant {id}</p>
+              <div class="lab-stage">
+                <C />
+              </div>
+              <h2 class="lab-name">{name}</h2>
+              <p class="muted">{note}</p>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .lab-grid {
+    display: grid;
+    gap: 24px;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  }
+  .lab-stage {
+    display: grid;
+    place-items: center;
+    min-height: 140px;
+    border-radius: 14px;
+    background: var(--surface);
+    transform: scale(1.6);
+    transform-origin: center;
+  }
+  .lab-name {
+    font-size: 1.125rem;
+    margin-top: 12px;
+  }
+</style>

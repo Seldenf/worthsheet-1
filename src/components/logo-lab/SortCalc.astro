@@ -1,0 +1,190 @@
+<a class="lab-logo sc-logo" href="#" data-lab-variant="sortcalc">
+  <svg class="sc-mark" viewBox="0 0 64 64" width="32" height="32" aria-hidden="true">
+    <rect width="64" height="64" rx="16" fill="#2e2926" />
+    <rect class="sc-sq sc-s0" x="14" y="14" width="16" height="16" rx="4" fill="#40aa4a" />
+    <rect class="sc-sq sc-s1" x="34" y="14" width="16" height="16" rx="4" fill="#fdfcfa" />
+    <rect class="sc-sq sc-s2" x="34" y="34" width="16" height="16" rx="4" fill="#6cbee4" />
+    <rect class="sc-sq sc-s3" x="14" y="34" width="16" height="16" rx="4" fill="#fdfcfa" />
+    <text class="sc-glyph" x="32" y="33" text-anchor="middle" dominant-baseline="central">Σ</text>
+  </svg>
+  <span class="sc-word"><span class="sc-text">WorthSheet</span><span class="sc-cursor" aria-hidden="true"></span></span>
+</a>
+
+<style>
+  .sc-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    text-decoration: none;
+    color: #2e2926;
+    border-radius: 12px;
+  }
+  .sc-logo:focus-visible {
+    outline: 2px solid #6cbee4;
+    outline-offset: 4px;
+  }
+  .sc-mark {
+    display: block;
+    flex: none;
+    overflow: visible;
+  }
+  .sc-sq {
+    transform-box: view-box;
+  }
+  .sc-glyph {
+    font-family: "Geist", system-ui, sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+    fill: #fdfcfa;
+    opacity: 0;
+    transform-box: view-box;
+    transform-origin: 32px 32px;
+  }
+  .sc-word {
+    position: relative;
+    display: inline-block;
+    font-family: "Geist", system-ui, sans-serif;
+    font-size: 1.05rem;
+    font-weight: 580;
+    line-height: 1.2;
+    color: #2e2926;
+  }
+  .sc-cursor {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -0.14em;
+    height: 2px;
+    border-radius: 1px;
+    background: #40aa4a;
+    opacity: 0;
+    transform: scaleX(0);
+    transform-origin: 0 50%;
+  }
+</style>
+
+<script>
+  // SortCalc: squares rotate one cell clockwise (a "sort" step) with staggered
+  // arcs, a Σ pops in the centre gap, then everything travels home.
+  // Boomerang: hover/focus-visible plays forward from the current progress,
+  // leaving reverses from wherever it is. Rest state == original logo.
+
+  const STAGGER = 50; // ms between squares
+  const SQ_DURATION = 760;
+  const GLYPH_DELAY = 240;
+  const GLYPH_DURATION = 480;
+  const TOTAL = 910; // last square ends at 3 * STAGGER + SQ_DURATION
+  const TRAVEL = "cubic-bezier(0.65,0,0.35,1)";
+  const UI = "cubic-bezier(0.23,1,0.32,1)";
+
+  // d = displacement to the next cell, p = arc offset (perpendicular bulge).
+  const SQUARES: { sel: string; d: [number, number]; p: [number, number] }[] = [
+    { sel: ".sc-s0", d: [20, 0], p: [0, -7] },  // TL -> TR, arc up
+    { sel: ".sc-s1", d: [0, 20], p: [7, 0] },   // TR -> BR, arc right
+    { sel: ".sc-s2", d: [-20, 0], p: [0, 7] },  // BR -> BL, arc down
+    { sel: ".sc-s3", d: [0, -20], p: [-7, 0] }, // BL -> TL, arc left
+  ];
+
+  const tr = (x: number, y: number) => `translate(${x}px, ${y}px)`;
+
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
+
+  document
+    .querySelectorAll<HTMLElement>('a.sc-logo[data-lab-variant="sortcalc"]')
+    .forEach((root) => {
+      if (reduceMotion.matches) return;
+
+      const anims: Animation[] = [];
+
+      SQUARES.forEach(({ sel, d, p }, i) => {
+        const el = root.querySelector<SVGElement>(sel);
+        if (!el) return;
+        const [dx, dy] = d;
+        const [px, py] = p;
+        const anim = el.animate(
+          [
+            { offset: 0, transform: tr(0, 0), easing: TRAVEL },
+            // out along the arc
+            { offset: 0.22, transform: tr(dx / 2 + px, dy / 2 + py), easing: TRAVEL },
+            // settle in the neighbouring cell
+            { offset: 0.44, transform: tr(dx, dy), easing: TRAVEL },
+            { offset: 0.66, transform: tr(dx, dy), easing: TRAVEL },
+            // return on a softer, opposite-side arc
+            { offset: 0.84, transform: tr(dx / 2 - px * 0.5, dy / 2 - py * 0.5), easing: TRAVEL },
+            { offset: 1, transform: tr(0, 0) },
+          ],
+          { duration: SQ_DURATION, delay: i * STAGGER, fill: "both" },
+        );
+        anim.pause();
+        anims.push(anim);
+      });
+
+      const glyph = root.querySelector<SVGElement>(".sc-glyph");
+      if (glyph) {
+        const a = glyph.animate(
+          [
+            { offset: 0, opacity: 0, transform: "scale(0.4)", easing: UI },
+            { offset: 0.35, opacity: 1, transform: "scale(1.12)", easing: UI },
+            { offset: 0.7, opacity: 1, transform: "scale(1)", easing: UI },
+            { offset: 1, opacity: 0, transform: "scale(0.6)" },
+          ],
+          { duration: GLYPH_DURATION, delay: GLYPH_DELAY, fill: "both" },
+        );
+        a.pause();
+        anims.push(a);
+      }
+
+      const cursor = root.querySelector<HTMLElement>(".sc-cursor");
+      if (cursor) {
+        const a = cursor.animate(
+          [
+            { offset: 0, opacity: 0, transform: "scaleX(0)", easing: UI },
+            { offset: 0.2, opacity: 1, transform: "scaleX(1)", easing: UI },
+            { offset: 0.8, opacity: 1, transform: "scaleX(1)", easing: UI },
+            { offset: 1, opacity: 0, transform: "scaleX(0)" },
+          ],
+          { duration: TOTAL, delay: 0, fill: "both" },
+        );
+        a.pause();
+        anims.push(a);
+      }
+
+      const drive = (rate: 1 | -1) => {
+        for (const a of anims) {
+          a.playbackRate = rate;
+          a.play();
+        }
+      };
+
+      let hover = false;
+      let focus = false;
+      let on = false;
+      const sync = () => {
+        const want = hover || focus;
+        if (want === on) return;
+        on = want;
+        drive(on ? 1 : -1);
+      };
+
+      root.addEventListener("pointerenter", (e) => {
+        if (e.pointerType === "touch" || !finePointer.matches) return;
+        hover = true;
+        sync();
+      });
+      root.addEventListener("pointerleave", () => {
+        hover = false;
+        sync();
+      });
+      root.addEventListener("focusin", () => {
+        if (root.matches(":focus-visible")) {
+          focus = true;
+          sync();
+        }
+      });
+      root.addEventListener("focusout", () => {
+        focus = false;
+        sync();
+      });
+    });
+</script>

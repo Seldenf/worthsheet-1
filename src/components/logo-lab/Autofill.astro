@@ -1,0 +1,214 @@
+---
+// Autofill logo lab variant: fill-handle drag across the 2x2 mark, cells "filled" in series.
+const id = `autofill-${Math.random().toString(36).slice(2, 8)}`;
+---
+
+<a class="lab-logo laf-root" href="#" data-laf-autofill={id} aria-label="WorthSheet">
+  <svg class="laf-mark" viewBox="0 0 64 64" width="32" height="32" aria-hidden="true">
+    <rect width="64" height="64" rx="16" fill="#2e2926" />
+    <rect class="laf-cell laf-tl" x="14" y="14" width="16" height="16" rx="4" fill="#40aa4a" />
+    <rect class="laf-cell laf-tr" x="34" y="14" width="16" height="16" rx="4" fill="#fdfcfa" />
+    <rect class="laf-cell laf-br" x="34" y="34" width="16" height="16" rx="4" fill="#6cbee4" />
+    <rect class="laf-cell laf-bl" x="14" y="34" width="16" height="16" rx="4" fill="#fdfcfa" />
+    <rect class="laf-fill laf-tr-fill" x="34" y="14" width="16" height="16" rx="4" fill="#40aa4a" />
+    <rect class="laf-fill laf-br-fill" x="34" y="34" width="16" height="16" rx="4" fill="#40aa4a" />
+    <rect class="laf-fill laf-bl-fill" x="14" y="34" width="16" height="16" rx="4" fill="#40aa4a" />
+    <rect class="laf-marquee" x="10" y="10" width="44" height="44" rx="3" />
+    <g class="laf-handle-pos">
+      <circle class="laf-handle" cx="34" cy="34" r="3.2" fill="#fdfcfa" stroke="#40aa4a" stroke-width="1.4" />
+    </g>
+  </svg>
+  <span class="laf-wm">WorthSheet<span class="laf-underline" aria-hidden="true"></span></span>
+</a>
+
+<style>
+  .laf-root {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    text-decoration: none;
+    color: #2e2926;
+    font-family: "Geist", system-ui, sans-serif;
+    font-weight: 580;
+    font-size: 1.05rem;
+    line-height: 1;
+    border-radius: 12px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .laf-root:focus-visible {
+    outline: 2px solid #40aa4a;
+    outline-offset: 4px;
+  }
+  .laf-mark {
+    width: 32px;
+    height: 32px;
+    flex: none;
+    overflow: visible;
+  }
+  /* Rest state: overlays, marquee and handle hidden; cells untouched. */
+  .laf-fill,
+  .laf-marquee,
+  .laf-handle {
+    opacity: 0;
+  }
+  .laf-cell,
+  .laf-fill,
+  .laf-handle {
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  .laf-marquee {
+    fill: none;
+    stroke: #fdfcfa;
+    stroke-width: 1.5;
+    stroke-dasharray: 4 3;
+    vector-effect: non-scaling-stroke;
+    transform-box: view-box;
+    transform-origin: 10px 10px;
+  }
+  .laf-wm {
+    position: relative;
+    display: inline-block;
+  }
+  .laf-underline {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -4px;
+    height: 1.5px;
+    border-radius: 1px;
+    background: #40aa4a;
+    transform: scaleX(0);
+    transform-origin: 0 50%;
+  }
+</style>
+
+<script>
+  // Timeline (ms): handle in 0–80 · marquee in 80 · drag X 160–460, Y 460–760 ·
+  // underline 160–636 · cell flips TR 400, BR 500, BL 600 (300 each) ·
+  // handle out 760–880 · marquee out 920–1060.
+  const TRAVEL = "cubic-bezier(0.65, 0, 0.35, 1)";
+  const UI = "cubic-bezier(0.23, 1, 0.32, 1)";
+  const TOTAL = 1060;
+  const FLIP = 300;
+
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const fine = window.matchMedia("(hover: hover) and (pointer: fine)");
+
+  function build(root: HTMLElement) {
+    const q = (s: string) => root.querySelector<SVGElement>(s);
+    const anims: Animation[] = [];
+
+    const add = (el: Element | null, keyframes: Keyframe[], opts: KeyframeAnimationOptions) => {
+      if (!el) return;
+      const a = el.animate(keyframes, { fill: "both", ...opts });
+      a.pause();
+      a.currentTime = 0;
+      anims.push(a);
+    };
+
+    // Drag: marquee grows right (X phase) then down (Y phase); handle rides its corner.
+    add(q(".laf-marquee"), [
+      { transform: "scale(0.545, 0.545)" },
+      { transform: "scale(1, 0.545)", offset: 0.5 },
+      { transform: "scale(1, 1)" },
+    ], { duration: 600, delay: 160, easing: TRAVEL });
+
+    add(q(".laf-handle-pos"), [
+      { transform: "translate(0px, 0px)" },
+      { transform: "translate(20px, 0px)", offset: 0.5 },
+      { transform: "translate(20px, 20px)" },
+    ], { duration: 600, delay: 160, easing: TRAVEL });
+
+    // Marquee + handle visibility across the whole sequence.
+    add(q(".laf-marquee"), [
+      { opacity: 0 },
+      { opacity: 1, offset: 0.075 },
+      { opacity: 1, offset: 0.868 },
+      { opacity: 0 },
+    ], { duration: TOTAL, easing: UI });
+
+    add(q(".laf-handle"), [
+      { opacity: 0, transform: "scale(0.4)" },
+      { opacity: 1, transform: "scale(1)", offset: 0.075 },
+      { opacity: 1, transform: "scale(1)", offset: 0.72 },
+      { opacity: 0, transform: "scale(0.4)", offset: 0.83 },
+      { opacity: 0, transform: "scale(0.4)" },
+    ], { duration: TOTAL, easing: UI });
+
+    // Marching ants.
+    add(q(".laf-marquee"), [
+      { strokeDashoffset: 0 },
+      { strokeDashoffset: -14 },
+    ], { duration: 900, delay: 160, easing: "linear" });
+
+    // Cell fills: each cell squeezes to a line, shows the series green, re-expands into its own colour.
+    const cells: [string, string, number][] = [
+      [".laf-tr", ".laf-tr-fill", 400],
+      [".laf-br", ".laf-br-fill", 500],
+      [".laf-bl", ".laf-bl-fill", 600],
+    ];
+    for (const [cellSel, fillSel, delay] of cells) {
+      add(q(cellSel), [
+        { transform: "scaleY(1)" },
+        { transform: "scaleY(0)", offset: 0.5 },
+        { transform: "scaleY(1)" },
+      ], { duration: FLIP, delay, easing: TRAVEL });
+
+      add(q(fillSel), [
+        { transform: "scaleY(1)", opacity: 0 },
+        { transform: "scaleY(0)", opacity: 1, offset: 0.5 },
+        { transform: "scaleY(1)", opacity: 0 },
+      ], { duration: FLIP, delay, easing: UI });
+    }
+
+    // Wordmark cell-cursor underline tracks the selection.
+    add(q(".laf-underline"), [
+      { transform: "scaleX(0)", opacity: 1 },
+      { transform: "scaleX(0)", opacity: 1, offset: 0.15 },
+      { transform: "scaleX(1)", opacity: 1, offset: 0.6 },
+      { transform: "scaleX(1)", opacity: 1, offset: 0.85 },
+      { transform: "scaleX(1)", opacity: 0 },
+    ], { duration: TOTAL, easing: TRAVEL });
+
+    // Boomerang: play forward from current progress, or reverse from wherever we are.
+    const endOf = (a: Animation) => Number(a.effect?.getComputedTiming().endTime ?? 0);
+    const run = (dir: 1 | -1) => {
+      for (const a of anims) {
+        const t = Number(a.currentTime ?? 0);
+        if (dir > 0 && t >= endOf(a)) continue;
+        if (dir < 0 && t <= 0) continue;
+        a.playbackRate = dir;
+        a.play();
+      }
+    };
+
+    let hover = false;
+    let keyboard = false;
+    const sync = () => run(hover || keyboard ? 1 : -1);
+
+    root.addEventListener("pointerenter", () => {
+      if (!fine.matches) return;
+      hover = true;
+      sync();
+    });
+    root.addEventListener("pointerleave", () => {
+      hover = false;
+      sync();
+    });
+    root.addEventListener("focus", () => {
+      if (!root.matches(":focus-visible")) return;
+      keyboard = true;
+      sync();
+    });
+    root.addEventListener("blur", () => {
+      keyboard = false;
+      sync();
+    });
+  }
+
+  document.querySelectorAll<HTMLElement>("[data-laf-autofill]").forEach((root) => {
+    if (reduce.matches) return;
+    build(root);
+  });
+</script>

@@ -60,7 +60,8 @@ const tint = TINTS[KEYS.indexOf(key) % TINTS.length];
     place-items: center;
     width: 100%;
     aspect-ratio: 16 / 10;
-    background: var(--cover-tint);
+    background-color: var(--cover-tint);
+    transition: background-color 400ms cubic-bezier(0.23, 1, 0.32, 1);
     border-radius: var(--radius) var(--radius) 0 0;
     overflow: hidden;
   }
@@ -77,5 +78,27 @@ const tint = TINTS[KEYS.indexOf(key) % TINTS.length];
     max-height: 320px;
     margin-inline: auto;
     border-radius: var(--radius-lg);
+  }
+
+  /* Card covers rest muted; the article hero (wide) stays full tint. */
+  .post-cover:not(.post-cover-wide) {
+    background-color: color-mix(in srgb, var(--cover-tint) 55%, #f5f3f2);
+  }
+
+  /* Looping animations stay paused at rest. :where keeps specificity at zero
+     so the hover rule below can override it. */
+  .post-cover:not(.post-cover-wide)
+    :global(:where(svg.wsi *:not(.wsi-in):not(.wsi-draw):not(.wsi-cats-card):not(.wsi-docs-enter))) {
+    animation-play-state: paused;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    :is(a, .card, .post-card):is(:hover, :focus-visible) .post-cover {
+      background-color: var(--cover-tint);
+    }
+
+    :is(a, .card, .post-card):is(:hover, :focus-visible) .post-cover :global(svg.wsi *) {
+      animation-play-state: running;
+    }
   }
 </style>

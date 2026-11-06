@@ -54,6 +54,11 @@ const inStyle = (d: number, dur: number, y: number, s: number) => `--in-d:${d}ms
 >
   {title && <title>{title}</title>}
 
+  <g class="wsi-in" style={inStyle(900, 500, 0, 1)}>
+  <path class="wsi-steps-path" d={path} stroke={C.ink} stroke-opacity=".35" stroke-width="2.5" stroke-dasharray="8 10" stroke-linecap="round" fill="none"></path>
+  </g>
+  <!-- progress: solid overlay on the dashed base; its length is driven by --p (0–100) set on <svg> by the page script -->
+  <path class="wsi-steps-progress" d={path} pathLength="100" stroke={C.ink} stroke-opacity="1" stroke-width="2.5" stroke-linecap="round" fill="none"></path>
   <!-- pads (base) -->
   {steps.map((t, i) => (
     <g class="wsi-in" style={inStyle(i * 60, 900, 10, 0.95)}>
@@ -65,16 +70,11 @@ const inStyle = (d: number, dur: number, y: number, s: number) => `--in-d:${d}ms
   {steps.map((t, i) => (
     <g class={`wsi-steps-n${i + 1}`}>
       <g class="wsi-in" style={inStyle(tIn(i), 620, 0, 0.92)}>
-        <g class="wsi-steps-sh-mid" style={lag(0.4 + i * 0.4)}><g transform={iso(t.x + 4, t.y + GAP + 6, S)}><rect width={S} height={S} rx="10" fill={C.ink} fill-opacity=".1"></rect></g></g>
+        <g class="wsi-steps-sh-mid" style={lag(0.4 + i * 0.4)}><g transform={iso(t.x + 4, t.y + GAP + 6, S)}><rect width={S} height={S} rx="10" fill="#f5f3f2"></rect><rect width={S} height={S} rx="10" fill={C.ink} fill-opacity=".1"></rect></g></g>
       </g>
     </g>
   ))}
 
-  <g class="wsi-in" style={inStyle(900, 500, 0, 1)}>
-  <path class="wsi-steps-path" d={path} stroke={C.ink} stroke-opacity=".35" stroke-width="2.5" stroke-dasharray="8 10" stroke-linecap="round" fill="none"></path>
-  </g>
-  <!-- progress: solid overlay on the dashed base; its length is driven by --p (0–100) set on <svg> by the page script -->
-  <path class="wsi-steps-progress" d={path} pathLength="100" stroke={C.ink} stroke-opacity="1" stroke-width="2.5" stroke-linecap="round" fill="none"></path>
 
   {steps.map((t, i) => (
     <g class={`wsi-steps-n${i + 1}`} data-step={i + 1} style="cursor:pointer">
