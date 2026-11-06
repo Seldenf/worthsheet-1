@@ -238,7 +238,7 @@ const menus: Record<View, string[]> = {
   function wire(svg: SVGSVGElement) {
     const cards = Array.from(svg.querySelectorAll<SVGGElement>('.wsi-cats-card'))
       .sort((a, b) => Number(a.dataset.i) - Number(b.dataset.i)); // top card first
-    const fades = Array.from(svg.querySelectorAll<SVGGElement>('.wsi-cats-pill, .wsi-cats-f2'));
+    const fades = Array.from(svg.querySelectorAll<SVGGElement>('.wsi-cats-pill, .wsi-cats-f2, .wsi-cats-base'));
     const n = cards.length;
     let seq = 0;
     let live: Animation[] = [];

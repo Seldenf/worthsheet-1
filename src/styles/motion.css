@@ -257,8 +257,9 @@ html.js details > summary > svg {
   transition-duration: 150ms;
 }
 
-/* Primary button: the ring stays, with a wider outer glow on hover (fine pointers only). */
+/* Primary button: a delicate white edge ring on hover (fine pointers only). */
 .btn-primary {
+  --edge: rgba(255, 255, 255, 0.95);
   transition:
     transform 200ms var(--ease-out),
     background-color 200ms var(--ease-out),
@@ -269,9 +270,9 @@ html.js details > summary > svg {
 @media (hover: hover) and (pointer: fine) {
   .btn-primary:hover {
     box-shadow:
-      0 0 0 1px rgba(150, 140, 133, 0.5),
-      0 8px 28px -6px rgba(46, 41, 38, 0.35),
-      0 0 22px -2px rgba(150, 140, 133, 0.45);
+      0 0 0 1px rgba(255, 255, 255, 0.55) inset,
+      0 0 0 1px rgba(255, 255, 255, 0.35),
+      0 4px 14px -8px rgba(46, 41, 38, 0.35);
   }
 }
 
