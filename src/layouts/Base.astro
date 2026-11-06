@@ -4,7 +4,6 @@ import geistLatinUrl from '@fontsource-variable/geist/files/geist-latin-wght-nor
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import ConsentBanner from '../components/ConsentBanner.astro';
-import Breadcrumbs from '../components/Breadcrumbs.astro';
 import { SITE_NAME } from '../config';
 import { url } from '../lib/url';
 import {
@@ -125,22 +124,9 @@ const structuredData = [
     <a class="skip-link" href="#main">Skip to content</a>
     <Header />
     <main id="main">
-      {
-        crumbs.length > 0 && (
-          <div class="container crumbs">
-            <Breadcrumbs items={crumbs} />
-          </div>
-        )
-      }
       <slot />
     </main>
     <Footer />
     <ConsentBanner />
   </body>
 </html>
-
-<style>
-  .crumbs {
-    padding-top: 20px;
-  }
-</style>
