@@ -1,0 +1,36 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+import { url } from '../lib/url';
+
+interface Props extends Omit<HTMLAttributes<'a'>, 'href'> {
+  /** Route path without base (`/download/`), or an absolute URL. Omit to render a `<button>`. */
+  href?: string;
+  variant?: 'primary' | 'secondary' | 'ghost';
+  size?: 'sm' | 'md' | 'lg';
+  type?: 'button' | 'submit' | 'reset';
+  disabled?: boolean;
+}
+
+const { href, variant = 'primary', size = 'md', type = 'button', disabled, class: className, ...rest } =
+  Astro.props;
+
+const classes = ['btn', `btn-${variant}`, size !== 'md' && `btn-${size}`, className];
+const isExternal = href !== undefined && /^https?:\/\//i.test(href);
+---
+
+{
+  href !== undefined ? (
+    <a
+      href={url(href)}
+      class:list={classes}
+      {...(isExternal ? { target: '_blank', rel: 'noopener' } : {})}
+      {...rest}
+    >
+      <slot />
+    </a>
+  ) : (
+    <button type={type} disabled={disabled} class:list={classes} {...(rest as Record<string, unknown>)}>
+      <slot />
+    </button>
+  )
+}

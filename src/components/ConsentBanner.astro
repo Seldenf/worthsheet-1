@@ -1,0 +1,134 @@
+---
+import { url } from '../lib/url';
+---
+
+<div
+  class="consent"
+  role="region"
+  aria-label="Cookie consent"
+  tabindex="-1"
+  data-consent-banner
+  hidden
+>
+  <p class="consent-text">
+    We use Google Analytics cookies to understand how people use WorthSheet. Nothing is loaded
+    until you accept.
+    <a href={url('/privacy-policy/')}>Privacy policy</a>
+  </p>
+  <div class="consent-actions">
+    <button type="button" class="btn btn-secondary btn-sm" data-consent-choice="denied">
+      Decline
+    </button>
+    <button type="button" class="btn btn-primary btn-sm" data-consent-choice="granted">
+      Accept
+    </button>
+  </div>
+</div>
+
+<style>
+  .consent {
+    position: fixed;
+    z-index: 60;
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    max-width: 560px;
+    padding: 18px 20px;
+    background: var(--white);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    box-shadow: 0 18px 48px -12px rgba(46, 41, 38, 0.3);
+    font-size: 0.9375rem;
+    line-height: 1.5;
+  }
+
+  .consent-actions {
+    display: flex;
+    gap: 10px;
+  }
+
+  .consent-actions .btn {
+    flex: 1;
+  }
+
+  @media (min-width: 640px) {
+    .consent {
+      left: 24px;
+      right: auto;
+      bottom: 24px;
+    }
+  }
+</style>
+
+<script>
+  import { GA_ID } from '../config';
+
+  const KEY = 'ws-consent';
+
+  function readChoice(): string | null {
+    try {
+      return localStorage.getItem(KEY);
+    } catch {
+      return null;
+    }
+  }
+
+  function storeChoice(value: 'granted' | 'denied') {
+    try {
+      localStorage.setItem(KEY, value);
+    } catch {
+      /* storage unavailable: choice applies to this page view only */
+    }
+  }
+
+  let gaLoaded = false;
+
+  function grant() {
+    window.gtag?.('consent', 'update', { analytics_storage: 'granted' });
+    if (gaLoaded) return;
+    gaLoaded = true;
+    window.gtag?.('js', new Date());
+    window.gtag?.('config', GA_ID);
+    const script = document.createElement('script');
+    script.async = true;
+    script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_ID}`;
+    document.head.appendChild(script);
+    window.__wsGa = true;
+  }
+
+  function deny() {
+    window.gtag?.('consent', 'update', { analytics_storage: 'denied' });
+    window.__wsGa = false;
+  }
+
+  const banner = document.querySelector<HTMLElement>('[data-consent-banner]');
+
+  function showBanner(focus: boolean) {
+    if (!banner) return;
+    banner.hidden = false;
+    if (focus) banner.focus();
+  }
+
+  function choose(value: 'granted' | 'denied') {
+    storeChoice(value);
+    if (value === 'granted') grant();
+    else deny();
+    if (banner) banner.hidden = true;
+  }
+
+  const stored = readChoice();
+  if (stored === 'granted') grant();
+  else if (stored !== 'denied') showBanner(false);
+
+  banner?.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest<HTMLElement>('[data-consent-choice]');
+    if (btn) choose(btn.dataset.consentChoice === 'granted' ? 'granted' : 'denied');
+  });
+
+  document.addEventListener('click', (e) => {
+    if ((e.target as HTMLElement).closest('[data-consent-open]')) showBanner(true);
+  });
+</script>

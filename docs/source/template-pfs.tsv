@@ -1,0 +1,141 @@
+B2		Personal Financial Statement of:
+B3		Insert your name here
+F3		Net Worth
+G3	=C6-F6	0
+B4		As of mm/dd/yyyy
+B6		Assets
+C6	=C32+C29+C26+C22+C18+C14+C11+C8	0
+E6		Liabilities
+F6	=F26+F23+F20+F16+F12+F8	0
+B8		CHECKING ACCOUNTS
+C8	=SUM(C9:C10)	0
+E8		CREDIT CARDS
+F8	=SUM(F9:F10)	0
+B9		Insert bank name
+C9		0.0
+E9		Insert credit card name
+F9		0.0
+E10		Insert credit card name
+F10		0.0
+B11		SAVINGS ACCOUNTS
+C11	=SUM(C12:C13)	0
+B12		Insert bank name
+C12		0.0
+E12		HOME LOANS
+F12	=SUM(F13:F14)	0
+E13		Insert mortgage bank name
+F13		0.0
+B14		RETIREMENT ACCOUNTS
+C14	=SUM(C15:C16)	0
+E14		Insert HELOC bank name
+F14		0.0
+B15		Insert 401(k) name
+C15		0.0
+B16		Insert IRA broker name
+C16		0.0
+E16		STUDENT LOANS
+F16	=SUM(F17:F18)	0
+E17		Subsidized
+F17		0.0
+B18		INVESTMENT ACCOUNTS
+C18	=SUM(C19:C20)	0
+E18		Non-subsidized
+F18		0.0
+B19		Insert broker name
+C19		0.0
+B20		Insert broker name
+C20		0.0
+E20		AUTO, BOAT, RV LOANS
+F20	=SUM(F21:F22)	0
+E21		Insert auto loan bank name
+F21		0.0
+B22		REAL ESTATE
+C22	=SUM(C23:C24)	0
+B23		Primary Residence Address
+C23		0.0
+E23		NOTES PAYABLE
+F23	=SUM(F24:F25)	0
+B24		Additional Property Address
+C24		0.0
+E24		Insert note payable
+F24		0.0
+B26		AUTO, BOAT, RV
+C26	=SUM(C27:C33)	0
+E26		OTHER OBLIGATIONS
+F26	=SUM(F27:F28)	0
+B27		Name & Mileage
+C27		0.0
+E27		Insert other obligations
+F27		0.0
+B29		PRIVATE BUSINESS INTEREST
+C29	=SUM(C30:C40)	0
+B30		Name of Business
+C30		0.0
+B32		OTHER
+C32	=SUM(C33:C43)	0
+B33		Name of Property (insurance, valuable)
+C33		0.0
+B34		Name of Property (insurance, valuable)
+C34		0.0
+B39		Signature:
+B40		Date:
+G42		Print
+B47		Instructions & Account Type Examples
+B49		Instructions Personal Financial Statement (PFS) is a statement of an individual's Net Worth. This documents includes all Assets & Liabilities with associated account information. Follow the below instructions for completing a PFS: 1) Gather financial account statements - See Checklist below for examples of types of accounts. 2) Enter the name of the bank/financial institution and the most recent value in the relevant section under each sub-header (e.g. Checking). 3) Add a new row if there are additional accounts under the sub-header. Make sure the sum total of the category includes all accounts. 4) Print, review, sign, and date the PFS. Calculation notes: Assets & Liabilities totals are derived from the section sub-headers, please ensure the sub-headers include a sum of all accounts.
+B51		Account Types Checklist
+B53		Assets
+E53		Liabilities
+B55		CHECKING ACCOUNTS
+E55		CREDIT CARDS
+B56		Checking Account
+E56		Credit card
+B58		SAVINGS ACCOUNTS
+E58		HOME LOANS
+B59		Savings Account
+E59		Mortgage
+E60		HELOC
+B61		RETIREMENT ACCOUNTS
+B62		401(k)
+E62		STUDENT LOANS
+B63		403(b)
+E63		Subsidized
+B64		IRA - Sep, Traditional, Roth
+E64		Non-subsidized
+B65		Pension
+B66		Social Security Benefits (annual)
+E66		AUTO, BOAT, RV LOANS
+E67		Auto Loan
+B68		INVESTMENT ACCOUNTS
+E68		Boat Loan
+B69		Brokerage or Mutual Fund Account
+E69		RV Loan
+B70		CDs
+B71		Money Market
+E71		NOTES PAYABLE
+B72		Government Bonds
+E72		Personal Loan
+B73		Crypto
+E73		Business Loan (personal guarantee)
+B74		Company Restricted Stock
+E74		Other Property Loan
+B76		REAL ESTATE
+E76		OTHER OBLIGATIONS
+B77		Primary Residence
+E77		Personal Bankruptcy Obligations
+B78		Non-Primary Residence
+E78		Alimony and/or Child Support
+B79		Investment Property
+B81		AUTO, BOAT, RV
+B82		Personal vehicle
+B83		Boat
+B84		RV
+B86		PRIVATE BUSINESS INTEREST
+B87		Name of Business
+B89		OTHER
+B90		HSA
+B91		529
+B92		Annuity
+B93		Term Life
+B94		Whole Life
+B95		Arts & Collectibles
+B96		Other

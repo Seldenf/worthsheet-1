@@ -1,0 +1,76 @@
+---
+interface Props {
+  items: { q: string; a: string }[];
+  class?: string;
+}
+
+const { items, class: className } = Astro.props;
+---
+
+<div class:list={['faq', className]}>
+  {
+    items.map((item) => (
+      <details class="faq-item">
+        <summary>
+          <span>{item.q}</span>
+          <svg viewBox="0 0 12 8" width="14" height="10" aria-hidden="true">
+            <path
+              d="M1 1.5l5 5 5-5"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </summary>
+        <p>{item.a}</p>
+      </details>
+    ))
+  }
+</div>
+
+<style>
+  .faq {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--line-strong);
+  }
+
+  .faq-item {
+    border-bottom: 1px solid var(--line-strong);
+  }
+
+  summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 20px 4px;
+    cursor: pointer;
+    list-style: none;
+    font-size: 1.125rem;
+    font-weight: 540;
+    letter-spacing: -0.015em;
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  summary svg {
+    flex: none;
+    transition: transform 0.2s ease;
+  }
+
+  details[open] > summary svg {
+    transform: rotate(180deg);
+  }
+
+  .faq-item p {
+    padding: 0 4px 24px;
+    max-width: 44em;
+    color: var(--muted);
+    text-wrap: pretty;
+  }
+</style>

@@ -1,0 +1,157 @@
+---
+import { SITE_NAME } from '../config';
+import { url } from '../lib/url';
+
+const columns = [
+  {
+    title: 'Template',
+    links: [
+      { name: 'Free PFS template', path: '/download/' },
+      { name: 'SBA Form 413', path: '/sba-form-413/' },
+      { name: 'PFS Example', path: '/personal-financial-statement-example/' },
+      { name: 'What is a PFS?', path: '/what-is-a-personal-financial-statement/' },
+    ],
+  },
+  {
+    title: 'Calculators',
+    links: [
+      { name: 'Mortgage Calculator', path: '/mortgage-calculator/' },
+      { name: 'Net Worth Calculator', path: '/net-worth-calculator/' },
+      { name: 'Debt-to-Income Calculator', path: '/debt-to-income-ratio-calculator/' },
+      { name: 'Home Affordability', path: '/how-much-house-can-i-afford/' },
+      { name: 'Mortgage Readiness', path: '/mortgage-readiness-assessment/' },
+    ],
+  },
+  {
+    title: 'Learn',
+    links: [
+      { name: 'Banks by State', path: '/banks/' },
+      { name: 'Glossary', path: '/glossary/' },
+      { name: 'Blog', path: '/blog/' },
+    ],
+  },
+];
+
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a class="logo" href={url('/')}>{SITE_NAME}</a>
+        <p class="muted">
+          A free personal financial statement template for Google Sheets and Excel.
+        </p>
+      </div>
+      {
+        columns.map((col) => (
+          <nav class="footer-col" aria-label={col.title}>
+            <p class="footer-title">{col.title}</p>
+            <ul>
+              {col.links.map((l) => (
+                <li>
+                  <a href={url(l.path)}>{l.name}</a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        ))
+      }
+      <nav class="footer-col" aria-label="Legal">
+        <p class="footer-title">Legal</p>
+        <ul>
+          <li><a href={url('/privacy-policy/')}>Privacy Policy</a></li>
+          <li><button type="button" class="link-button" data-consent-open>Cookie settings</button></li>
+        </ul>
+      </nav>
+    </div>
+
+    <div class="footer-bottom">
+      <p>© {year} {SITE_NAME}</p>
+      <p>{SITE_NAME} provides educational tools, not financial, legal or tax advice.</p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    padding-block: clamp(48px, 7vw, 88px) 32px;
+    background: var(--surface);
+    border-top: 1px solid var(--line);
+    font-size: 0.9375rem;
+  }
+
+  .footer-grid {
+    display: grid;
+    gap: 40px 32px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .footer-brand {
+    grid-column: 1 / -1;
+    max-width: 22em;
+  }
+
+  .logo {
+    display: inline-block;
+    margin-bottom: 12px;
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    text-decoration: none;
+  }
+
+  .footer-title {
+    margin-bottom: 14px;
+    font-size: 0.8125rem;
+    font-weight: 560;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .footer-col ul {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    list-style: none;
+  }
+
+  .footer-col a,
+  .link-button {
+    padding: 0;
+    border: 0;
+    background: none;
+    font-size: inherit;
+    text-decoration: none;
+    color: var(--ink);
+  }
+
+  .footer-col a:hover,
+  .link-button:hover {
+    text-decoration: underline;
+  }
+
+  .footer-bottom {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 8px 24px;
+    margin-top: clamp(40px, 6vw, 72px);
+    padding-top: 24px;
+    border-top: 1px solid var(--line-strong);
+    color: var(--muted);
+    font-size: 0.875rem;
+  }
+
+  @media (min-width: 900px) {
+    .footer-grid {
+      grid-template-columns: 1.4fr repeat(4, minmax(0, 1fr));
+    }
+
+    .footer-brand {
+      grid-column: auto;
+    }
+  }
+</style>

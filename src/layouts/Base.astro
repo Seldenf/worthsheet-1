@@ -1,0 +1,146 @@
+---
+import '../styles/global.css';
+import geistLatinUrl from '@fontsource-variable/geist/files/geist-latin-wght-normal.woff2?url';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import ConsentBanner from '../components/ConsentBanner.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import { SITE_NAME } from '../config';
+import { url } from '../lib/url';
+import {
+  abs,
+  breadcrumbLd,
+  DEFAULT_OG_IMAGE,
+  isNoindex,
+  ldString,
+  ogImageUrl,
+  organizationLd,
+  websiteLd,
+} from '../lib/seo';
+
+interface Props {
+  /** Full <title>, pattern "{Page} | WorthSheet". */
+  title: string;
+  /** Meta description, 140–160 chars. */
+  description: string;
+  /** Route path WITHOUT base, e.g. `/mortgage-calculator/`. */
+  path: string;
+  /** OG image path (default `/og/default.png`). */
+  image?: string;
+  jsonLd?: object[];
+  noindex?: boolean;
+  /** Breadcrumb trail after Home (Home is prepended automatically). */
+  breadcrumbs?: { name: string; path: string }[];
+  ogType?: 'website' | 'article';
+}
+
+const {
+  title,
+  description,
+  path,
+  image,
+  jsonLd = [],
+  noindex = false,
+  breadcrumbs,
+  ogType = 'website',
+} = Astro.props;
+
+const canonical = abs(path);
+const ogImage = ogImageUrl(image);
+const isDefaultImage = (image ?? DEFAULT_OG_IMAGE) === DEFAULT_OG_IMAGE;
+const robots = noindex || isNoindex() ? 'noindex, nofollow' : 'index, follow, max-image-preview:large';
+
+const crumbs =
+  breadcrumbs && breadcrumbs.length > 0
+    ? breadcrumbs[0].path === '/'
+      ? breadcrumbs
+      : [{ name: 'Home', path: '/' }, ...breadcrumbs]
+    : [];
+
+const structuredData = [
+  organizationLd(),
+  websiteLd(),
+  ...(crumbs.length > 0 ? [breadcrumbLd(crumbs)] : []),
+  ...jsonLd,
+];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="robots" content={robots} />
+    <link rel="canonical" href={canonical} />
+    <meta name="theme-color" content="#f5f3f2" />
+    <link rel="icon" href={url('/favicon.svg')} type="image/svg+xml" />
+
+    <meta property="og:site_name" content={SITE_NAME} />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    {isDefaultImage && <meta property="og:image:width" content="1200" />}
+    {isDefaultImage && <meta property="og:image:height" content="630" />}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    <link
+      rel="preload"
+      href={url(geistLatinUrl)}
+      as="font"
+      type="font/woff2"
+      crossorigin="anonymous"
+    />
+
+    <!-- Google Consent Mode v2: defaults are set BEFORE gtag.js is ever loaded (only after consent, see ConsentBanner). -->
+    <script is:inline>
+      document.documentElement.classList.add('js');
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      window.gtag = gtag;
+      gtag('consent', 'default', {
+        ad_storage: 'denied',
+        ad_user_data: 'denied',
+        ad_personalization: 'denied',
+        analytics_storage: 'denied',
+      });
+    </script>
+
+    {
+      structuredData.map((data) => (
+        <script type="application/ld+json" set:html={ldString(data)} />
+      ))
+    }
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <Header />
+    <main id="main">
+      {
+        crumbs.length > 0 && (
+          <div class="container crumbs">
+            <Breadcrumbs items={crumbs} />
+          </div>
+        )
+      }
+      <slot />
+    </main>
+    <Footer />
+    <ConsentBanner />
+  </body>
+</html>
+
+<style>
+  .crumbs {
+    padding-top: 20px;
+  }
+</style>

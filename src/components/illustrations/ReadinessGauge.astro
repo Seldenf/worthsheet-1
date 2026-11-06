@@ -1,0 +1,93 @@
+---
+interface Props {
+  class?: string;
+  title?: string;
+  /** Active rating: 0 Poor · 1 Fair · 2 Good · 3 Very Good · 4 Excellent */
+  level?: 0 | 1 | 2 | 3 | 4;
+}
+const { class: className, title, level = 3 } = Astro.props;
+
+const C = { ink: '#2e2926', beige: '#e8e7e5', tB: '#e2f2f9', tG: '#e2f9e9' };
+const iso = (cx: number, cy: number, s: number) => `matrix(1 -.5 1 .5 ${cx - s} ${cy})`;
+
+const CX = 300;
+const CY = 276;
+const R_OUT = 200;
+const R_IN = 128;
+const INSET = 4; // stroke of width 2*INSET rounds the corners
+const GAP = 3; // degrees between segments
+const segs = [
+  { name: 'Poor', fill: '#ee9a86', dark: '#d97a64' },
+  { name: 'Fair', fill: '#fac344', dark: '#d9a02a' },
+  { name: 'Good', fill: '#a8d672', dark: '#84b24d' },
+  { name: 'Very Good', fill: '#40aa4a', dark: '#2f8a39' },
+  { name: 'Excellent', fill: '#0f9d58', dark: '#0a7a43' },
+];
+const rad = (d: number) => (d * Math.PI) / 180;
+const pt = (r: number, deg: number) => `${(CX + r * Math.cos(rad(deg))).toFixed(1)} ${(CY - r * Math.sin(rad(deg))).toFixed(1)}`;
+const sector = (i: number) => {
+  const a0 = 180 - 36 * i - GAP / 2 - 1.2;
+  const a1 = 180 - 36 * (i + 1) + GAP / 2 + 1.2;
+  const ro = R_OUT - INSET;
+  const ri = R_IN + INSET;
+  return `M${pt(ro, a0)}A${ro} ${ro} 0 0 1 ${pt(ro, a1)}L${pt(ri, a1)}A${ri} ${ri} 0 0 0 ${pt(ri, a0)}z`;
+};
+const labels = segs.map((s, i) => {
+  const deg = 180 - 36 * i - 18;
+  const x = CX + (R_OUT + 20) * Math.cos(rad(deg));
+  const y = CY - (R_OUT + 20) * Math.sin(rad(deg));
+  const anchor = Math.abs(deg - 90) < 10 ? 'middle' : deg > 90 ? 'end' : 'start';
+  return { t: s.name, x: +x.toFixed(1), y: +(y + (deg > 90 || deg < 90 ? 2 : -2)).toFixed(1), anchor };
+});
+
+// needle
+const nd = 180 - 36 * level - 18;
+const tip = pt(R_IN - 18, nd);
+const baseA = pt(11, nd + 90);
+const baseB = pt(11, nd - 90);
+---
+
+<svg
+  class:list={['wsi', 'wsi-gauge', className]}
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 20 600 410"
+  font-family="inherit"
+  focusable="false"
+  role={title ? 'img' : undefined}
+  aria-hidden={title ? undefined : 'true'}
+>
+  {title && <title>{title}</title>}
+  <defs>
+    <filter id="wsi-gauge-blur" x="-20%" y="-30%" width="140%" height="160%"><feGaussianBlur stdDeviation="8"></feGaussianBlur></filter>
+  </defs>
+
+  <g transform={iso(CX, CY + 40, 196)}><rect width="196" height="196" rx="26" fill={C.tB} fill-opacity=".6" stroke="#fff" stroke-width="2"></rect></g>
+  <g transform={iso(CX, CY + 40, 150)}><rect width="150" height="150" rx="22" fill={C.tG} fill-opacity=".7" stroke="#fff" stroke-width="2"></rect></g>
+  <ellipse cx={CX} cy={CY + 40} rx="170" ry="26" fill={C.ink} fill-opacity=".07" filter="url(#wsi-gauge-blur)"></ellipse>
+
+  <g class="wsi-gauge-f1">
+    {segs.map((s, i) => (
+      <g opacity={i === level ? 1 : 0.4}>
+        <path d={sector(i)} fill={s.dark} stroke={s.dark} stroke-width={INSET * 2} stroke-linejoin="round" transform="translate(0 9)"></path>
+        <path d={sector(i)} fill={s.fill} stroke={s.fill} stroke-width={INSET * 2} stroke-linejoin="round"></path>
+      </g>
+    ))}
+    <g font-size="14" font-weight="600" fill={C.ink}>
+      {labels.map((l, i) => (
+        <text x={l.x} y={l.y} text-anchor={l.anchor} fill-opacity={i === level ? 1 : 0.6}>{l.t}</text>
+      ))}
+    </g>
+    <path d={`M${tip}L${baseA}L${baseB}z`} fill={C.ink} stroke={C.ink} stroke-width="4" stroke-linejoin="round"></path>
+    <circle cx={CX} cy={CY} r="18" fill={C.ink} stroke="#fff" stroke-width="4"></circle>
+    <circle cx={CX} cy={CY} r="5" fill="#fff"></circle>
+    <text x={CX} y={CY + 62} font-size="24" font-weight="700" fill={C.ink} text-anchor="middle">{segs[level].name}</text>
+  </g>
+</svg>
+
+<style is:global>
+  :where(svg.wsi) { display: block; width: 100%; height: auto; }
+  @keyframes wsi-gauge-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+  @media (prefers-reduced-motion: no-preference) {
+    .wsi-gauge-f1 { animation: wsi-gauge-float 7s ease-in-out infinite; }
+  }
+</style>

@@ -1,0 +1,105 @@
+B2		Homebuyer Financial Readiness Are you considering purchasing a home? Are you financially ready? See your readiness score based on 5 key criteria lenders use to approve loans:
+B3		For additional details see "What do banks look for when reviewing a mortgage application"
+E4		Readiness Score
+B6		1) Credit Score
+B8		Enter your Credit Score (300 - 850)
+C8		806.0
+E8	=IF(AND(C8>=1, C8<580), "Poor", IF(AND(C8>=580, C8<670), "Fair", IF(AND(C8>=670, C8<739), "Good", IF(AND(C8>=740, C8<799), "Very Good", IF(AND(C8>=800, C8<1000), "Excellent", "Undefined")))))	Excellent
+B10		For a free credit score click here (AnnualCreditReport.com)
+C10		This is the only official website authorized by the federal government to provide free credit reports.
+B13		2) Income & Employment
+B15		Borrow #1 Annual Income
+C15		175000.0
+B16		Borrow #2 Annual Income
+C16		0.0
+B17		Other Income
+C17		0.0
+D17		Social Security, Pension, other income
+B18		Total Income
+C18	=sum(C15:C17)	175000
+E18	=IF(AND(C18>=1, C18<40000), "Poor", IF(AND(C18>=40000, C18<75000), "Fair", IF(AND(C18>=75000, C18<150000), "Good", IF(AND(C18>=150000, C18<300000), "Very Good", IF(AND(C18>=300000), "Excellent", "Undefined")))))	Very Good
+B21		3) Loan-to-Value Ratio
+B23		Purchase Price
+C23		800000.0
+D23		Loan will be based on appraised value
+B24		Down Payment
+C24		115000.0
+B25		Mortgage Amount
+C25	=C23-C24	685000
+B26		Loan Terms (15 or 30 year)
+C26		30.0
+B27		Interest Rate
+C27		0.065
+B28		Monthly Payment
+C28	=-(PMT(C27/12,12*C26,C25))	4329.665961
+D28		Calculation only
+B29		Loan-to-Value
+C29	=iferror((C23-C24)/C23," ")	0.85625
+D29		Calculation only
+E29	=IF(AND(C29<=100%, C29>92.5%), "Poor", IF(AND(C29<=92.5%, C29>85%), "Fair", IF(AND(C29<=85%, C29>=75%), "Good", IF(AND(C29<=75%, C29>=60%), "Very Good", IF(AND(C29<=60%), "Excellent", "Undefined")))))	Fair
+B32		4) Debt-to-Income Ratio
+B34		Total Current Debt (from PFS)
+C34	='Worthsheet - Personal Finance S'!F6	0
+D34		Complete Worthsheet PFS or enter
+B35		Estimated Current Monthly Debt Payments
+C35		600.0
+D35		Car, student, credit cards, etc. payments
+B36		New Mortgage Monthly Payment
+C36	=C28	4329.665961
+D36		Calculation only
+B37		Front-End DTI (or Housing DTI)
+C37	=C36/(C18/12)	0.2968913802
+D37		Calculation only
+E37	=IF(AND(C37<=100%, C37>28%), "Poor", IF(AND(C37<=28%, C37>20%), "Good", IF(AND(C37<=20%, C37>=10%), "Very Good", IF(AND(C37<=10%), "Excellent", "Undefined"))))	Poor
+B38		Back-End DTI (or Total DTI)
+C38	=(C35+C36)/(C18/12)	0.3380342373
+D38		Calculation only
+E38	=IF(AND(C38<=100%, C38>36%), "Poor", IF(AND(C38<=36%, C38>30%), "Good", IF(AND(C38<=30%, C38>=20%), "Very Good", IF(AND(C38<=20%), "Excellent", "Undefined"))))	Good
+B41		5) Personal Financial Statement
+B43		Net Worth
+C43	='Worthsheet - Personal Finance S'!G3	0
+D43		Complete Worthsheet PFS
+E43	=IF('Worthsheet - Personal Finance S'!G3=0,"Poor","Excellent")	Poor
+B44		Assets
+C44	='Worthsheet - Personal Finance S'!C6	0
+D44		Complete Worthsheet PFS
+B45		Liabilities
+C45	='Worthsheet - Personal Finance S'!F6	0
+D45		Complete Worthsheet PFS
+B50		Reference Notes & Scoring Details
+B52		Credit Score
+B53		Poor (300 – 579): Individuals with scores in this range may find it challenging to qualify for credit or may be offered credit with higher interest rates. It indicates a higher risk of defaulting on loans.
+B55		Fair (580 – 669): While individuals in this range may be eligible for credit, they might still face higher interest rates. It suggests a moderate risk to lenders.
+B57		Good (670 – 739): This range is considered good, and individuals with scores in this category are likely to be offered better interest rates on loans. It indicates a lower risk to lenders.
+B59		Very Good (740 – 799): Scores in this range are considered very good, and individuals are typically offered favorable terms on credit products. They represent a low risk to lenders.
+B61		Excellent (800 – 850): An excellent credit score indicates a very low risk of default. Individuals with scores in this range are likely to qualify for the most favorable terms and interest rates on credit products.
+B63		Income & Employment
+B64		Income is not required for a mortgage approval but is a factor in determining Debt-to-Income. Our readiness assessment for this criteria is based on general U.S. household income ranges. Most importantly income will be reviewed on the basis of stability and proof of income. Finally, income should be judged relative to a cost of living index and the associated affordability factors for the specific area of the loan applicant(s).
+B66		Poor: Under $40,000 in annual income
+B68		Fair: $40,000 to $75,000 in annual income
+B70		Good: $75,000 to $150,000 in annual income
+B72		Very Good: $150,000 to $300,000 in annual income
+B74		Excellent: Greater than $300,000 in annual income
+B76		Loan-to-Value Ratio
+B77		The LTV ratio is the loan amount relative to the appraised value of the property. A lower LTV is generally more favorable, as it indicates that the borrower has more equity in the property. For a readiness analysis it is ok to use the expected purchase price of the house.
+B79		NOTE: A general goal is to have 20% down payment for a loan but the government offers specific programs that permit lower down payments Conventional Mortgages: Lenders often prefer setting a maximum Loan-to-Value (LTV) ratio of 80% or lower. FHA Loans: The Federal Housing Administration (FHA) may allow for higher LTV ratios, FHA loans often have a maximum LTV of 96.5%, meaning borrowers can make a down payment as low as 3.5%. VA Loans: Veterans Affairs (VA) loans are available to eligible military veterans and typically do not require a down payment. As a result, the LTV ratio for VA loans can be 100% or higher. USDA Loans: The U.S. Department of Agriculture (USDA) offers loans with a focus on rural and suburban areas. These loans may also allow for higher LTV ratios. Private Mortgage Insurance (PMI): If a borrower makes a down payment of less than 20% on a conventional mortgage, they may have to pay for private mortgage insurance (PMI).
+B80		Poor: Loan-to-value greater than 92.5%
+B82		Fair: Loan-to-value of 85 - 92.5%
+B84		Good: Loan-to-value of 75 - 85%
+B86		Very Good: Loan-to-value of 60 - 75%
+B88		Excellent: Loan-to-value less than 60%
+B90		Debt-to-Income Ratio
+B91		Front-End DTI (or Housing DTI): This includes the proposed monthly mortgage payment (principal, interest, taxes, and insurance) divided by the borrower’s gross monthly income. Ideally front-end DTI is 28% or lower.
+B93		Poor: Mortgage payment is greater than 28% of gross monthly income
+B95		Good: Mortgage payment is 20 - 28% of gross monthly income
+B97		Very Good: Mortgage payment is 10 - 20% of gross monthly income
+B99		Excellent: Mortgage payment is less than 10% of gross monthly income
+B101		Back-End DTI (or Total DTI): This includes all monthly debt obligations, not just the mortgage, divided by the borrower’s gross monthly income. It typically includes items like credit card payments, car loans, student loans, and other debts. Ideally back-end DTI is 36% or lower.
+B103		Poor: Mortgage payment and other monthly debt payments are greater than 36% of gross monthly income
+B105		Good: Mortgage payment and other monthly debt payments are 30 - 36% of gross monthly income
+B107		Very Good: Mortgage payment and other monthly debt payments are 20 - 30% of gross monthly income
+B109		Excellent: Mortgage payment and other monthly debt payments are less than 20% of gross monthly income
+B111		Personal Financial Statement
+B112		In addition to requesting the above information, the bank will ask you to complete a personal financial statement. A personal financial statement (PFS) is a summary of a person’s financial health. A PFS provides an overview of an individual’s financial position at a specific point in time and includes information about an individual’s assets, liabilities, and net worth. You should update and review your personal financial statement frequently!
+B114		Poor: You have NOT created a Worthsheet Personal Financial Statement
+B116		Excellent: You HAVE created a Worthsheet Personal Financial Statement

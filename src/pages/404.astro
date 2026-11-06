@@ -1,0 +1,29 @@
+---
+import Base from '../layouts/Base.astro';
+import Section from '../components/Section.astro';
+import Button from '../components/Button.astro';
+import Eyebrow from '../components/Eyebrow.astro';
+---
+
+<Base
+  title="Page not found | WorthSheet"
+  description="The page you are looking for does not exist or has moved. Use the links below to get the free personal financial statement template or try our calculators."
+  path="/404/"
+  noindex
+>
+  <Section tone="surface">
+    <div class="stack" style="--stack-gap: 1.25rem; max-width: 36rem">
+      <Eyebrow>Error 404</Eyebrow>
+      <h1>Page not found</h1>
+      <p class="lead">
+        The page you are looking for does not exist or has moved. Start from the free template or
+        try one of our calculators.
+      </p>
+      <div style="display: flex; flex-wrap: wrap; gap: 12px; padding-top: 0.5rem">
+        <Button href="/download/" variant="primary" size="lg">Get the free template</Button>
+        <Button href="/" variant="secondary" size="lg">Back to home</Button>
+        <Button href="/mortgage-calculator/" variant="ghost" size="lg">Mortgage calculator</Button>
+      </div>
+    </div>
+  </Section>
+</Base>
