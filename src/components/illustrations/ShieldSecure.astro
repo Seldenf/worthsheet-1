@@ -39,15 +39,15 @@ const pills = [
 
   <!-- halo frames (base) -->
   <g class="wsi-in" style={intro(0, 1000, 10, 0.96)}>
-  <g class="wsi-shield-base"><g transform={iso(280, 384, 256)}><rect width="256" height="256" rx="26" fill={C.tB} fill-opacity=".55" stroke="#fff" stroke-width="2"></rect></g></g>
-  <g class="wsi-shield-base"><g transform={iso(280, 384, 214)}><rect width="214" height="214" rx="22" fill={C.tG} fill-opacity=".65" stroke="#fff" stroke-width="2"></rect></g></g>
+  <g class="wsi-breathe wsi-shield-base"><g transform={iso(280, 384, 256)}><rect width="256" height="256" rx="26" fill={C.tB} fill-opacity=".55" stroke="#fff" stroke-width="2"></rect></g></g>
+  <g class="wsi-breathe wsi-shield-base"><g transform={iso(280, 384, 214)}><rect width="214" height="214" rx="22" fill={C.tG} fill-opacity=".65" stroke="#fff" stroke-width="2"></rect></g></g>
   </g>
 
   <!-- sheet tile (base) with its ground shadow -->
   <g class="wsi-in" style={intro(200, 760, 20, 0.92)}><g class="wsi-pt" style="--d:0.25">
   <g class="wsi-shield-sh-base"><g transform={iso(280, 408, T)}><rect width={T} height={T} rx="16" fill={C.ink} fill-opacity=".14" filter="url(#wsi-shield-blur)"></rect></g></g>
-  <g class="wsi-shield-base"><g transform={iso(280, 394, T)}><rect width={T} height={T} rx="16" fill="#cfcdcb"></rect></g></g>
-  <g class="wsi-shield-base"><g transform={iso(280, 384, T)}>
+  <g class="wsi-breathe wsi-shield-base"><g transform={iso(280, 394, T)}><rect width={T} height={T} rx="16" fill="#cfcdcb"></rect></g></g>
+  <g class="wsi-breathe wsi-shield-base"><g transform={iso(280, 384, T)}>
     <rect width={T} height={T} rx="16" fill="#fff" stroke={C.ink} stroke-opacity=".2"></rect>
     <g clip-path="url(#wsi-shield-clip)">
       <rect width={T} height="34" fill={C.sheets}></rect>
@@ -68,7 +68,7 @@ const pills = [
   <!-- shield (mid) -->
   <g class="wsi-in" style={intro(560, 640, -24, 0.94)}><g class="wsi-pt" style="--d:0.6">
   <g transform="translate(280 184)">
-    <g class="wsi-shield-mid" style={lag(0.4)}>
+    <g class="wsi-breathe wsi-shield-mid" style={lag(0.4)}>
       <path d={SH} fill="#2f8a39" transform="translate(8 11)"></path>
       <path d={SH} fill={C.green} stroke="#fff" stroke-width="3" stroke-linejoin="round"></path>
       <path d="M0-88 72-62V8C72 50 42 76 0 92z" fill="#fff" fill-opacity=".14"></path>
@@ -86,7 +86,7 @@ const pills = [
     <g class="wsi-in" style={p.enter}>
     <g class="wsi-pt" style={`--d:${p.d}`}>
     <g transform={`translate(${p.x} ${p.y})`}>
-      <g class={`wsi-shield-top wsi-shield-${p.cls}`} style={lag(0.8 + jit(i, 0.5))}>
+      <g class={`wsi-breathe wsi-shield-top wsi-shield-${p.cls}`} style={lag(0.8 + jit(i, 0.5))}>
         <rect class="wsi-shield-sh-top" style={lag(0.8 + jit(i, 0.5))} x={-p.w / 2} y="-15" width={p.w} height="38" rx="19" fill={C.ink} fill-opacity=".1"></rect>
         <rect x={-p.w / 2} y="-19" width={p.w} height="38" rx="19" fill="#fff" stroke={C.beige} stroke-width="1.5"></rect>
         <circle cx={-p.w / 2 + 22} cy="0" r="6" fill={p.dot}></circle>
@@ -100,16 +100,16 @@ const pills = [
 
 <style is:global>
   :where(svg.wsi) { display: block; width: 100%; height: auto; }
-  @keyframes wsi-shield-base { 0%, 100% { translate: 0 0; } 50% { translate: 0 -2px; } }
-  @keyframes wsi-shield-mid { 0%, 100% { translate: 0 0; } 50% { translate: 0 -7px; } }
-  @keyframes wsi-shield-top { 0%, 100% { translate: 0 0; } 50% { translate: 0 -12px; } }
+  @keyframes wsi-shield-base { 0%, 100% { translate: 0 0; } 50% { translate: 0 calc(var(--lift, -2px) * var(--amp, 1)); } }
+  @keyframes wsi-shield-mid { 0%, 100% { translate: 0 0; } 50% { translate: 0 calc(var(--lift, -7px) * var(--amp, 1)); } }
+  @keyframes wsi-shield-top { 0%, 100% { translate: 0 0; } 50% { translate: 0 calc(var(--lift, -12px) * var(--amp, 1)); } }
   @keyframes wsi-shield-shadow { 0%, 100% { scale: 1; opacity: 1; } 50% { scale: .92; opacity: .7; } }
   @media (prefers-reduced-motion: no-preference) {
     .wsi-shield-base, .wsi-shield-mid, .wsi-shield-top { transform-box: fill-box; transform-origin: center; will-change: translate; }
     .wsi-shield-sh-base, .wsi-shield-sh-mid, .wsi-shield-sh-top { transform-box: fill-box; transform-origin: center; will-change: scale, opacity; }
-    .wsi-shield-base { animation: wsi-shield-base 8s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
-    .wsi-shield-mid { animation: wsi-shield-mid 7s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
-    .wsi-shield-top { animation: wsi-shield-top 6s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+    .wsi-shield-base { --lift: -2px; animation: wsi-shield-base 8s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+    .wsi-shield-mid { --lift: -7px; animation: wsi-shield-mid 7s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+    .wsi-shield-top { --lift: -12px; animation: wsi-shield-top 6s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
     .wsi-shield-sh-base { animation: wsi-shield-shadow 8s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
     .wsi-shield-sh-mid { animation: wsi-shield-shadow 7s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
     .wsi-shield-sh-top { animation: wsi-shield-shadow 6s cubic-bezier(0.45, 0, 0.55, 1) infinite; }

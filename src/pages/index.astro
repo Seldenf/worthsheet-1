@@ -205,7 +205,7 @@ const jsonLd = [
 
 <Base title={title} description={description} path="/" jsonLd={jsonLd}>
   <!-- Hero -->
-  <section class="hero tone-paper" aria-labelledby="hero-title">
+  <section class="hero tone-paper" aria-labelledby="hero-title" data-sheet>
     <div class="container hero-grid">
       <div class="hero-copy">
         <Eyebrow>Free template</Eyebrow>
@@ -229,44 +229,48 @@ const jsonLd = [
   </section>
 
   <!-- Saves time -->
-  <Section id="features" tone="surface" aria-labelledby="saves-title">
-    <div class="split">
-      <div class="stack split-copy" style="--stack-gap: 1.25rem">
-        <Eyebrow>WorthSheet™ saves time</Eyebrow>
-        <h2 id="saves-title">Avoid manual calculations and messy bank personal financial statement forms</h2>
-        <p class="lead">The WorthSheet™ template is built to be faster than filling out a blank bank personal financial statement by hand.</p>
-        <ul class="list-check">
-          <li>Time-saving layout for quick financial data organization.</li>
-          <li>Designed for error reduction and accuracy in your personal financial statement.</li>
-          <li>Spreadsheet format that covers what banks typically ask for.</li>
-        </ul>
-        <div>
-          <Button href="/download/" variant="primary">Get the template for free</Button>
+  <section id="features" class="section tone-surface" aria-labelledby="saves-title" data-sheet>
+    <div class="container">
+      <div class="split">
+        <div class="stack split-copy" style="--stack-gap: 1.25rem">
+          <Eyebrow>WorthSheet™ saves time</Eyebrow>
+          <h2 id="saves-title">Avoid manual calculations and messy bank personal financial statement forms</h2>
+          <p class="lead">The WorthSheet™ template is built to be faster than filling out a blank bank personal financial statement by hand.</p>
+          <ul class="list-check">
+            <li>Time-saving layout for quick financial data organization.</li>
+            <li>Designed for error reduction and accuracy in your personal financial statement.</li>
+            <li>Spreadsheet format that covers what banks typically ask for.</li>
+          </ul>
+          <div>
+            <Button href="/download/" variant="primary">Get the template for free</Button>
+          </div>
         </div>
+        <div class="split-art"><IsoTiles /></div>
       </div>
-      <div class="split-art"><IsoTiles /></div>
     </div>
-  </Section>
+  </section>
 
   <!-- Dynamic categories -->
-  <Section id="categories" tone="paper" aria-labelledby="categories-title">
-    <div class="split split-reverse">
-      <div class="stack split-copy" style="--stack-gap: 1.25rem">
-        <Eyebrow>Dynamic categories</Eyebrow>
-        <h2 id="categories-title">Tailored to create a personal financial statement super-fast</h2>
-        <p class="lead">A comprehensive list of categories modeled on common personal financial statement forms, with the flexibility to add your own.</p>
-        <ul class="list-check">
-          <li>{STATS.assetCategories} asset categories</li>
-          <li>{STATS.liabilityCategories} liability categories</li>
-          <li>Dynamic calculation formulas</li>
-        </ul>
-        <div>
-          <Button href="/download/" variant="primary">Get the template for free</Button>
+  <section id="categories" class="section tone-paper" aria-labelledby="categories-title" data-sheet>
+    <div class="container">
+      <div class="split split-reverse">
+        <div class="stack split-copy" style="--stack-gap: 1.25rem">
+          <Eyebrow>Dynamic categories</Eyebrow>
+          <h2 id="categories-title">Tailored to create a personal financial statement super-fast</h2>
+          <p class="lead">A comprehensive list of categories modeled on common personal financial statement forms, with the flexibility to add your own.</p>
+          <ul class="list-check">
+            <li>{STATS.assetCategories} asset categories</li>
+            <li>{STATS.liabilityCategories} liability categories</li>
+            <li>Dynamic calculation formulas</li>
+          </ul>
+          <div>
+            <Button href="/download/" variant="primary">Get the template for free</Button>
+          </div>
         </div>
+        <div class="split-art"><CategoriesStack /></div>
       </div>
-      <div class="split-art"><CategoriesStack /></div>
     </div>
-  </Section>
+  </section>
 
   <!-- How to use -->
   <Section id="how-to-use" tone="surface" aria-labelledby="how-title">
@@ -374,7 +378,7 @@ const jsonLd = [
       {
         tools.map((t) => (
           <li>
-            <a class="card tool iso-hover" href={url(t.href)}>
+            <a class="card tool" data-tone={t.tone} href={url(t.href)}>
               <IsoIcon icon={t.icon} tone={t.tone} size={56} />
               <div class="tool-head">
                 <h3>{t.title}</h3>
@@ -703,9 +707,6 @@ const jsonLd = [
     border-radius: 10px;
     background: var(--tint-bg);
     color: var(--tint);
-    transition:
-      transform 200ms cubic-bezier(0.23, 1, 0.32, 1),
-      box-shadow 200ms cubic-bezier(0.23, 1, 0.32, 1);
   }
 
   .feature-icon svg {
@@ -716,13 +717,6 @@ const jsonLd = [
     stroke-width: 1.75;
     stroke-linecap: round;
     stroke-linejoin: round;
-  }
-
-  @media (hover: hover) and (pointer: fine) {
-    .feature-item:hover .feature-icon {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 14px -4px rgba(46, 41, 38, 0.18);
-    }
   }
 
   .feature-item h3 {
@@ -817,16 +811,25 @@ const jsonLd = [
     font-size: 0.9688rem;
   }
 
+  .tool[data-tone='blue'] {
+    --edge: rgba(108, 190, 228, 0.9);
+  }
+
+  .tool[data-tone='green'] {
+    --edge: rgba(64, 170, 74, 0.85);
+  }
+
+  .tool[data-tone='yellow'] {
+    --edge: rgba(250, 195, 68, 0.95);
+  }
+
+  .tool[data-tone='pink'] {
+    --edge: rgba(224, 127, 184, 0.85);
+  }
+
   .tool-arrow {
     flex: none;
     font-size: 1.25rem;
-    transition: transform 0.25s cubic-bezier(0.23, 1, 0.32, 1);
-  }
-
-  @media (hover: hover) and (pointer: fine) {
-    .tool:hover .tool-arrow {
-      transform: translateX(4px);
-    }
   }
 
   .tools-note {

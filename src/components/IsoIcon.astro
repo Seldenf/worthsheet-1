@@ -38,7 +38,7 @@ const ICONS: Record<Icon, string> = {
 
 const t = TONES[tone];
 // Artwork: iso square of side S (top diamond 2S wide, S tall), slab drops by SLAB.
-// ViewBox 52×44 = artwork bounds + 2 margin, plus 4 headroom above for the hover lift.
+// ViewBox 52×44 = artwork bounds + 2 margin, plus 4 headroom above for the idle rise.
 const S = 24;
 const SLAB = 5;
 const CX = 26;
@@ -94,11 +94,6 @@ const delayStyle = `animation-delay:${delay}s`;
     flex: none;
   }
 
-  .iso-ico-shadow {
-    transform-box: fill-box;
-    transform-origin: center;
-  }
-
   @keyframes iso-ico-breathe {
     0%, 100% { translate: 0 0; }
     50% { translate: 0 -1.5px; }
@@ -108,35 +103,8 @@ const delayStyle = `animation-delay:${delay}s`;
     .iso-ico-tile {
       transform-box: fill-box;
       transform-origin: center;
-      will-change: transform, translate;
+      will-change: translate;
       animation: iso-ico-breathe 6s cubic-bezier(0.45, 0, 0.55, 1) infinite;
-      transition: transform 280ms cubic-bezier(0.23, 1, 0.32, 1);
-    }
-
-    .iso-ico-shadow {
-      will-change: transform, opacity;
-      transition: transform 280ms cubic-bezier(0.23, 1, 0.32, 1), opacity 280ms cubic-bezier(0.23, 1, 0.32, 1);
-    }
-
-    /* Keyboard focus lifts too. */
-    .iso-hover:focus-visible .iso-ico-tile {
-      transform: translate(0, -4px);
-    }
-
-    .iso-hover:focus-visible .iso-ico-shadow {
-      transform: scale(0.85);
-      opacity: 0.6;
-    }
-  }
-
-  @media (prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine) {
-    .iso-hover:hover .iso-ico-tile {
-      transform: translate(0, -4px);
-    }
-
-    .iso-hover:hover .iso-ico-shadow {
-      transform: scale(0.85);
-      opacity: 0.6;
     }
   }
 </style>

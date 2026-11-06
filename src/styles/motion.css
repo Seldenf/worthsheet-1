@@ -122,16 +122,7 @@ main > :first-child .btn {
   transition:
     transform 200ms var(--ease-out),
     background-color 200ms var(--ease-out),
-    border-color 200ms var(--ease-out),
-    box-shadow 200ms var(--ease-out);
-}
-
-/* ---------- Cards ---------- */
-a.card,
-.card.is-link {
-  transition:
-    transform 250ms var(--ease-out),
-    box-shadow 250ms var(--ease-out);
+    border-color 200ms var(--ease-out);
 }
 
 /* ---------- Links in prose ---------- */
@@ -176,42 +167,8 @@ html.js details > summary > svg {
 }
 
 /* ---------- Hover (fine pointers only) ----------
-   Hover glow is a soft white rim plus a cool outer halo; no drop-shadow filters. */
+   No lift and no glow. The cursor-following edge ring (below) is the only hover effect on these. */
 @media (hover: hover) and (pointer: fine) {
-  .btn:hover {
-    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.5), 0 0 18px -4px rgba(108, 190, 228, 0.45);
-  }
-
-  .btn-primary:hover {
-    transform: translateY(-1px);
-    box-shadow:
-      0 10px 24px -12px rgba(46, 41, 38, 0.5),
-      0 0 0 1px rgba(255, 255, 255, 0.5),
-      0 0 18px -4px rgba(108, 190, 228, 0.45);
-  }
-
-  .card:hover {
-    box-shadow:
-      var(--shadow),
-      0 0 0 1px rgba(255, 255, 255, 0.5),
-      0 0 18px -4px rgba(108, 190, 228, 0.45);
-  }
-
-  .mega-item:hover,
-  .mega-feature:hover {
-    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.5), 0 0 18px -4px rgba(108, 190, 228, 0.45);
-  }
-
-  a.card:hover,
-  .card.is-link:hover {
-    transform: translateY(-3px);
-    box-shadow:
-      0 1px 0 var(--line),
-      0 24px 48px -20px rgba(46, 41, 38, 0.28),
-      0 0 0 1px rgba(255, 255, 255, 0.5),
-      0 0 18px -4px rgba(108, 190, 228, 0.45);
-  }
-
   main p a:hover {
     text-decoration-color: currentColor;
   }
@@ -227,15 +184,15 @@ html.js details > summary > svg {
 }
 
 /* ---------- Illustration pointer parallax, spreadsheet reveal, edge light (fine hover pointers, motion allowed) ----------
-   motion.ts sets --px/--py on every svg.wsi, --mx/--my on each section holding an illustration
-   (which also gets .has-sheet), and --ex/--ey on edge-light hosts. Only small floating elements
-   marked .wsi-pt move; the svg itself never transforms. */
+   motion.ts sets --px/--py on every svg.wsi. On each section[data-sheet] (which gets .has-sheet) it sets --sheet (the
+   generated grid), --mx/--my (the lagging mask centre) and .sheet-on while the pointer is over it. --ex/--ey go on
+   edge-light hosts. Only small floating elements marked .wsi-pt move; the svg itself never transforms. */
 @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
   svg.wsi .wsi-pt {
     transform: translate(calc(var(--px, 0) * var(--d, 1) * 4px), calc(var(--py, 0) * var(--d, 1) * 3px));
   }
 
-  /* Isometric spreadsheet grid behind the section, unmasked around the pointer. */
+  /* Opt-in only: sections marked data-sheet get the spreadsheet grid. Opacity tops out at .6. */
   section.has-sheet {
     --mx: 50%;
     --my: 50%;
@@ -250,18 +207,18 @@ html.js details > summary > svg {
     z-index: -1;
     pointer-events: none;
     opacity: 0;
-    transition: opacity 0.5s var(--ease-out);
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='60' viewBox='0 0 120 60'%3E%3Cpath fill='rgba(64,170,74,0.06)' d='M0 15L30 0L60 15L30 30ZM60 15L90 0L120 15L90 30Z'/%3E%3Cpath fill='none' stroke='rgba(46,41,38,0.1)' stroke-width='1' d='M0 15L30 0L60 15L30 30Z M60 15L90 0L120 15L90 30Z M0 45L30 30L60 45L30 60Z M60 45L90 30L120 45L90 60Z M30 30L60 15L90 30L60 45Z M-30 0L0-15L30 0L0 15Z M90 0L120-15L150 0L120 15Z M-30 60L0 45L30 60L0 75Z M90 60L120 45L150 60L120 75Z M30 0L60-15L90 0L60 15Z M30 60L60 45L90 60L60 75Z M-30 30L0 15L30 30L0 45Z M90 30L120 15L150 30L120 45Z'/%3E%3Cg font-family='sans-serif' font-size='7' text-anchor='middle' fill='rgba(46,41,38,0.18)'%3E%3Ctext x='30' y='17.5'%3E$1,240%3C/text%3E%3Ctext x='60' y='32.5'%3E$980%3C/text%3E%3Ctext x='90' y='47.5'%3E=SUM%3C/text%3E%3C/g%3E%3C/svg%3E");
-    background-size: 120px 60px;
-    -webkit-mask-image: radial-gradient(320px circle at var(--mx) var(--my), #000 0%, rgba(0, 0, 0, 0.5) 45%, transparent 75%);
-    mask-image: radial-gradient(320px circle at var(--mx) var(--my), #000 0%, rgba(0, 0, 0, 0.5) 45%, transparent 75%);
+    background-image: var(--sheet);
+    background-repeat: no-repeat;
+    transition: opacity 900ms var(--ease-out);
+    -webkit-mask-image: radial-gradient(280px circle at var(--mx) var(--my), #000 0%, rgba(0, 0, 0, 0.55) 40%, transparent 100%);
+    mask-image: radial-gradient(280px circle at var(--mx) var(--my), #000 0%, rgba(0, 0, 0, 0.55) 40%, transparent 100%);
   }
 
   section.has-sheet.sheet-on::before {
-    opacity: 0.9;
+    opacity: 0.6;
   }
 
-  /* Edge light: rim highlight that follows the cursor (contract C). */
+  /* Edge light: rim highlight that follows the cursor. The ring colour comes from --edge. */
   .btn::after,
   .card::after,
   .mega-item::after,
@@ -274,25 +231,15 @@ html.js details > summary > svg {
     padding: 1px;
     background: radial-gradient(
       160px circle at var(--ex, 50%) var(--ey, 50%),
-      rgba(255, 255, 255, 0.95),
-      rgba(108, 190, 228, 0.55) 35%,
+      var(--edge, rgba(46, 41, 38, 0.28)),
       transparent 70%
     );
     -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
     opacity: 0;
-    transition: opacity 0.3s var(--ease-out);
+    transition: opacity 300ms var(--ease-out);
     pointer-events: none;
-  }
-
-  .btn-primary::after {
-    background: radial-gradient(
-      160px circle at var(--ex, 50%) var(--ey, 50%),
-      rgba(255, 255, 255, 0.7),
-      rgba(255, 255, 255, 0.3) 35%,
-      transparent 70%
-    );
   }
 
   .btn:hover::after,
@@ -434,11 +381,7 @@ ul.list-check > li:nth-child(8) { --i: 7; }
     animation: none;
   }
 
-  .btn:hover,
-  .btn:active,
-  .btn-primary:hover,
-  a.card:hover,
-  .card.is-link:hover {
+  .btn:active {
     transform: none;
   }
 

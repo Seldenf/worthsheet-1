@@ -16,8 +16,8 @@ const keys = labels.map((t, i) => {
   return { t, x: 12 + c * 28, y: 54 + r * 24, op: c === 3, eq: t === '=' };
 });
 const pills = [
-  { x: 108, y: 150, l: 'DTI', v: '28%', dot: C.blue, cls: 'f2', lift: 12, d: 0.8, dep: 1.3, ent: [650, 520, 14] },
-  { x: 462, y: 372, l: 'Net worth', v: '', dot: C.green, cls: 'f3', lift: 14, d: 1.2, dep: 0.9, ent: [880, 480, -16] },
+  { x: 108, y: 150, l: 'DTI', v: '28%', dot: C.blue, cls: 'f2', lift: -12, d: 0.8, dep: 1.3, ent: [650, 520, 14] },
+  { x: 462, y: 372, l: 'Net worth', v: '', dot: C.green, cls: 'f3', lift: -14, d: 1.2, dep: 0.9, ent: [880, 480, -16] },
 ].map((p) => ({ ...p, w: Math.round((p.l.length + p.v.length + 1) * 15 * 0.54) + 48 }));
 ---
 
@@ -36,12 +36,12 @@ const pills = [
   </defs>
 
   <!-- base layer (plain wrappers carry the animation; iso groups keep their attribute transform) -->
-  <g class="wsi-in" style={inStyle(0, 1000, 10, 0.96)}><g class="wsi-pt" style="--d:0.25"><g class="wsi-calc-base"><g transform={iso(280, 300, 240)}><rect width="240" height="240" rx="26" fill={C.tG} fill-opacity=".6" stroke="#fff" stroke-width="2"></rect></g></g></g></g>
-  <g class="wsi-in" style={inStyle(100, 900, 10, 0.96)}><g class="wsi-pt" style="--d:0.25"><g class="wsi-calc-base"><g transform={iso(280, 300, 196)}><rect width="196" height="196" rx="22" fill={C.tB} stroke="#fff" stroke-width="2"></rect></g></g></g></g>
+  <g class="wsi-in" style={inStyle(0, 1000, 10, 0.96)}><g class="wsi-pt" style="--d:0.25"><g class="wsi-calc-base wsi-breathe"><g transform={iso(280, 300, 240)}><rect width="240" height="240" rx="26" fill={C.tG} fill-opacity=".6" stroke="#fff" stroke-width="2"></rect></g></g></g></g>
+  <g class="wsi-in" style={inStyle(100, 900, 10, 0.96)}><g class="wsi-pt" style="--d:0.25"><g class="wsi-calc-base wsi-breathe"><g transform={iso(280, 300, 196)}><rect width="196" height="196" rx="22" fill={C.tB} stroke="#fff" stroke-width="2"></rect></g></g></g></g>
   <g class="wsi-in" style={inStyle(200, 1000, 0, 0.9)}><g class="wsi-calc-shadow"><g transform={iso(280, 320, 170)}><rect width="170" height="170" rx="16" fill={C.ink} fill-opacity=".09" filter="url(#wsi-calc-blur)"></rect></g></g></g>
 
   <!-- mid layer: calculator body (keys and display are part of the body face) -->
-  <g class="wsi-in" style={inStyle(250, 800, 22, 0.94)}><g class="wsi-pt" style="--d:0.6"><g class="wsi-calc-f1">
+  <g class="wsi-in" style={inStyle(250, 800, 22, 0.94)}><g class="wsi-pt" style="--d:0.6"><g class="wsi-calc-f1 wsi-breathe">
     <g transform={iso(280, 266, 130, 1.18)}><rect width="130" height="130" rx="16" fill="#cfcdcb"></rect></g>
     <g transform={iso(280, 252, 130, 1.18)}>
       <rect width="130" height="130" rx="16" fill="#fff" stroke={C.ink} stroke-opacity=".2"></rect>
@@ -59,7 +59,7 @@ const pills = [
 
   <!-- top layer: check -->
   <g class="wsi-in" style={inStyle(800, 500, -18, 0.9)}><g class="wsi-pt" style="--d:1.6"><g transform="translate(436 150)">
-    <g class="wsi-calc-f2" style="--lift:10px;animation-delay:.3s">
+    <g class="wsi-calc-f2 wsi-breathe" style="--lift:-10px;animation-delay:.3s">
       <circle r="27" fill={C.ink} fill-opacity=".08" transform="translate(0 8)"></circle>
       <circle r="25" fill={C.green} stroke="#fff" stroke-width="3"></circle>
       <path class="wsi-draw" pathLength="100" d="m-11 1 8 8 14-16" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none" style="--draw-d:1000ms"></path>
@@ -70,7 +70,7 @@ const pills = [
   <!-- top layer: pills -->
   {pills.map((p) => (
     <g class="wsi-in" style={inStyle(p.ent[0], p.ent[1], p.ent[2])}><g class="wsi-pt" style={`--d:${p.dep}`}><g transform={`translate(${p.x} ${p.y})`}>
-      <g class={`wsi-calc-${p.cls}`} style={`--lift:${p.lift}px;animation-delay:${p.d}s`}>
+      <g class={`wsi-calc-${p.cls} wsi-breathe`} style={`--lift:${p.lift}px;animation-delay:${p.d}s`}>
         <rect x={-p.w / 2} y="-15" width={p.w} height="38" rx="19" fill={C.ink} fill-opacity=".1"></rect>
         <rect x={-p.w / 2} y="-19" width={p.w} height="38" rx="19" fill="#fff" stroke={C.beige} stroke-width="1.5"></rect>
         <circle cx={-p.w / 2 + 22} cy="0" r="6" fill={p.dot}></circle>
@@ -86,7 +86,7 @@ const pills = [
 <style is:global>
   :where(svg.wsi) { display: block; width: 100%; height: auto; }
   @media (prefers-reduced-motion: no-preference) {
-    @keyframes wsi-calc-breathe { 0%, 100% { translate: 0 0; } 50% { translate: 0 calc(var(--lift) * -1); } }
+    @keyframes wsi-breathe { 0%, 100% { translate: 0 0; } 50% { translate: 0 calc(var(--lift, -6px) * var(--amp, 1)); } }
     @keyframes wsi-calc-shade { 0%, 100% { scale: 1; opacity: 1; } 50% { scale: 0.92; opacity: 0.7; } }
     @keyframes wsi-calc-tap { 0%, 100% { opacity: 1; } 50% { opacity: 0.86; } }
     .wsi-calc-base, .wsi-calc-f1, .wsi-calc-f2, .wsi-calc-f3, .wsi-calc-shadow {
@@ -94,10 +94,11 @@ const pills = [
       transform-origin: center;
       will-change: translate, scale;
     }
-    .wsi-calc-base { --lift: 2px; animation: wsi-calc-breathe 8s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
-    .wsi-calc-f1 { --lift: 7px; animation: wsi-calc-breathe 7s cubic-bezier(0.45, 0, 0.55, 1) 0.4s infinite; }
-    .wsi-calc-f2 { --lift: 12px; animation: wsi-calc-breathe 6.5s cubic-bezier(0.45, 0, 0.55, 1) 0.8s infinite; }
-    .wsi-calc-f3 { --lift: 14px; animation: wsi-calc-breathe 7.5s cubic-bezier(0.45, 0, 0.55, 1) 1.2s infinite; }
+    .wsi-breathe { animation: wsi-breathe 7s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+    .wsi-calc-base { --lift: -2px; }
+    .wsi-calc-f1 { --lift: -7px; }
+    .wsi-calc-f2 { --lift: -12px; }
+    .wsi-calc-f3 { --lift: -14px; }
     .wsi-calc-shadow { animation: wsi-calc-shade 7s cubic-bezier(0.45, 0, 0.55, 1) 0.4s infinite; }
     .wsi-calc-display { animation: wsi-calc-tap 6s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
     .wsi-calc-key { animation: wsi-calc-tap 7s cubic-bezier(0.45, 0, 0.55, 1) infinite; }

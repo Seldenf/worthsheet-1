@@ -70,12 +70,12 @@ const arc = `M${pt(arcR, arcA0)}A${arcR} ${arcR} 0 0 1 ${pt(arcR, arcA1)}`;
     <filter id={`${idPrefix}-blur`} x="-20%" y="-30%" width="140%" height="160%"><feGaussianBlur stdDeviation="8"></feGaussianBlur></filter>
   </defs>
 
-  <g class="wsi-in" style={inStyle(0, 1000, 10, 0.96)}><g class="wsi-pt" style="--d:0.25"><g class="wsi-gauge-base"><g transform={iso(CX, CY + 40, 196)}><rect width="196" height="196" rx="26" fill={C.tB} fill-opacity=".6" stroke="#fff" stroke-width="2"></rect></g></g></g></g>
-  <g class="wsi-in" style={inStyle(100, 900, 10, 0.96)}><g class="wsi-pt" style="--d:0.25"><g class="wsi-gauge-base"><g transform={iso(CX, CY + 40, 150)}><rect width="150" height="150" rx="22" fill={C.tG} fill-opacity=".7" stroke="#fff" stroke-width="2"></rect></g></g></g></g>
+  <g class="wsi-in" style={inStyle(0, 1000, 10, 0.96)}><g class="wsi-pt" style="--d:0.25"><g class="wsi-gauge-base wsi-breathe"><g transform={iso(CX, CY + 40, 196)}><rect width="196" height="196" rx="26" fill={C.tB} fill-opacity=".6" stroke="#fff" stroke-width="2"></rect></g></g></g></g>
+  <g class="wsi-in" style={inStyle(100, 900, 10, 0.96)}><g class="wsi-pt" style="--d:0.25"><g class="wsi-gauge-base wsi-breathe"><g transform={iso(CX, CY + 40, 150)}><rect width="150" height="150" rx="22" fill={C.tG} fill-opacity=".7" stroke="#fff" stroke-width="2"></rect></g></g></g></g>
   <g class="wsi-in" style={inStyle(200, 1000, 0, 0.9)}><ellipse class="wsi-gauge-shadow" cx={CX} cy={CY + 40} rx="170" ry="26" fill={C.ink} fill-opacity=".07" filter={`url(#${idPrefix}-blur)`}></ellipse></g>
 
   <g class="wsi-pt" style="--d:1.2">
-  <g class="wsi-gauge-f1">
+  <g class="wsi-gauge-f1 wsi-breathe">
     {segs.map((s, i) => (
       <g class="wsi-in" style={inStyle(300 + i * 80, 520, 12, 0.94)} opacity={i === level ? 1 : 0.4}>
         <path d={sector(i)} fill={s.dark} stroke={s.dark} stroke-width={INSET * 2} stroke-linejoin="round" transform="translate(0 9)"></path>
@@ -101,7 +101,7 @@ const arc = `M${pt(arcR, arcA0)}A${arcR} ${arcR} 0 0 1 ${pt(arcR, arcA1)}`;
 <style is:global>
   :where(svg.wsi) { display: block; width: 100%; height: auto; }
   @media (prefers-reduced-motion: no-preference) {
-    @keyframes wsi-gauge-breathe { 0%, 100% { translate: 0 0; } 50% { translate: 0 calc(var(--lift) * -1); } }
+    @keyframes wsi-breathe { 0%, 100% { translate: 0 0; } 50% { translate: 0 calc(var(--lift, -6px) * var(--amp, 1)); } }
     @keyframes wsi-gauge-shade { 0%, 100% { scale: 1; opacity: 1; } 50% { scale: 0.92; opacity: 0.7; } }
     @keyframes wsi-gauge-glow { 0%, 100% { opacity: 1; } 50% { opacity: 0.8; } }
     .wsi-gauge-base, .wsi-gauge-f1, .wsi-gauge-shadow {
@@ -109,8 +109,9 @@ const arc = `M${pt(arcR, arcA0)}A${arcR} ${arcR} 0 0 1 ${pt(arcR, arcA1)}`;
       transform-origin: center;
       will-change: translate, scale;
     }
-    .wsi-gauge-base { --lift: 2px; animation: wsi-gauge-breathe 8s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
-    .wsi-gauge-f1 { --lift: 7px; animation: wsi-gauge-breathe 7s cubic-bezier(0.45, 0, 0.55, 1) 0.4s infinite; }
+    .wsi-breathe { animation: wsi-breathe 7s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+    .wsi-gauge-base { --lift: -2px; }
+    .wsi-gauge-f1 { --lift: -7px; }
     .wsi-gauge-shadow { animation: wsi-gauge-shade 7s cubic-bezier(0.45, 0, 0.55, 1) 0.4s infinite; }
     .wsi-gauge-f1 > g[opacity="1"] > path:last-of-type { animation: wsi-gauge-glow 6s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
   }

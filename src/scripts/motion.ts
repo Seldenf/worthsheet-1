@@ -186,22 +186,118 @@ function parallax(svg: SVGElement, area: HTMLElement) {
   });
 }
 
-// Spreadsheet reveal: each section with an illustration gets an isometric cell grid (::before in
-// motion.css) that is unmasked around the pointer. Writes --mx/--my (px within the section);
-// .sheet-on is set while the pointer is over the section.
-function sheet(section: HTMLElement) {
+// Spreadsheet background for opted-in sections only (`main section[data-sheet]`). Each gets an
+// isometric cell grid generated once at init as an inline SVG data URL in --sheet (motion.css draws
+// it on ::before). Column widths vary per row band (1x / 1.5x / 2x), so it reads as irregular, not
+// tiled. About 1 cell in 18 carries a small value. Seeded per section, so the pattern is stable.
+const SHEET_VALUES = ['$1,240', '$980', '12%', '$4.2k', '=SUM', '28%', '$310'];
+const SHEET_WIDTHS = [1, 1.5, 2];
+const SHEET_HX = 44; // screen half-width of a unit cell in the isometric projection
+const SHEET_HY = 22; // screen half-height of a unit cell
+const SHEET_LERP = 0.12;
+
+// FNV-1a: string to 32-bit seed.
+function hashSeed(text: string) {
+  let h = 2166136261;
+  for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 16777619);
+  return h >>> 0;
+}
+
+// mulberry32: seeded PRNG returning floats in [0, 1).
+function prng(seed: number) {
+  return () => {
+    seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+// Sheet coordinates (s = column, t = row) to screen: x = (s - t) * HX, y = (s + t) * HY.
+const isoPoint = (s: number, t: number): [number, number] => [(s - t) * SHEET_HX, (s + t) * SHEET_HY];
+
+function sheetSvg(width: number, height: number, seed: number) {
+  const rnd = prng(seed);
+  // Invert the projection at the section corners to find the sheet range that covers it.
+  const corners = [[0, 0], [width, 0], [0, height], [width, height]].map(([x, y]) => ({
+    s: (x / SHEET_HX + y / SHEET_HY) / 2,
+    t: (y / SHEET_HY - x / SHEET_HX) / 2,
+  }));
+  const sMin = Math.floor(Math.min(...corners.map((c) => c.s))) - 2;
+  const sMax = Math.ceil(Math.max(...corners.map((c) => c.s))) + 2;
+  const tMin = Math.floor(Math.min(...corners.map((c) => c.t))) - 1;
+  const tMax = Math.ceil(Math.max(...corners.map((c) => c.t))) + 1;
+
+  let edges = '';
+  let labels = '';
+  for (let t = tMin; t < tMax; t++) {
+    // Each row band starts at a random half-step offset and steps by random 1x / 1.5x / 2x columns.
+    let s = sMin - Math.floor(rnd() * 4) * 0.5;
+    while (s < sMax) {
+      const w = SHEET_WIDTHS[Math.floor(rnd() * SHEET_WIDTHS.length)];
+      const pts = [isoPoint(s, t), isoPoint(s + w, t), isoPoint(s + w, t + 1), isoPoint(s, t + 1)];
+      edges += `M${pts.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join('L')}Z`;
+      if (rnd() < 1 / 18) {
+        const cx = pts.reduce((a, p) => a + p[0], 0) / 4;
+        const cy = pts.reduce((a, p) => a + p[1], 0) / 4;
+        const value = SHEET_VALUES[Math.floor(rnd() * SHEET_VALUES.length)];
+        labels += `<text x="${cx.toFixed(1)}" y="${(cy + 2.5).toFixed(1)}">${value}</text>`;
+      }
+      s += w;
+    }
+  }
+  return (
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">` +
+    `<path fill="none" stroke="rgba(46,41,38,.07)" stroke-width="1" d="${edges}"/>` +
+    `<g font-family="sans-serif" font-size="7" text-anchor="middle" fill="rgba(46,41,38,.14)">${labels}</g></svg>`
+  );
+}
+
+// Sets the grid, then a mask centre that lags the pointer (lerp, rAF, stops once settled).
+// On leave only .sheet-on is removed: the CSS opacity fades slowly while the mask keeps drifting.
+function sheet(section: HTMLElement, index: number) {
+  const svg = sheetSvg(
+    Math.max(section.offsetWidth, innerWidth),
+    section.offsetHeight,
+    hashSeed(section.id || `sheet-${index}`),
+  );
+  section.style.setProperty('--sheet', `url("data:image/svg+xml,${encodeURIComponent(svg)}")`);
   section.classList.add('has-sheet');
+
+  let tx = 0, ty = 0, cx = 0, cy = 0, raf = 0;
+  const paint = () => {
+    section.style.setProperty('--mx', `${cx.toFixed(1)}px`);
+    section.style.setProperty('--my', `${cy.toFixed(1)}px`);
+  };
+  const step = () => {
+    cx += (tx - cx) * SHEET_LERP;
+    cy += (ty - cy) * SHEET_LERP;
+    const settled = Math.abs(tx - cx) < 0.2 && Math.abs(ty - cy) < 0.2;
+    if (settled) (cx = tx), (cy = ty);
+    paint();
+    raf = settled ? 0 : requestAnimationFrame(step);
+  };
+  const kick = () => {
+    if (!raf) raf = requestAnimationFrame(step);
+  };
   section.addEventListener('pointerenter', (e) => {
     if (e.pointerType === 'touch') return;
+    const r = section.getBoundingClientRect();
+    tx = e.clientX - r.left;
+    ty = e.clientY - r.top;
+    // Entering from rest starts the mask at the entry point rather than sweeping in from far away.
+    if (!raf) (cx = tx), (cy = ty), paint();
     section.classList.add('sheet-on');
+    kick();
   });
   section.addEventListener(
     'pointermove',
     (e) => {
       if (e.pointerType === 'touch') return;
       const r = section.getBoundingClientRect();
-      section.style.setProperty('--mx', `${(e.clientX - r.left).toFixed(1)}px`);
-      section.style.setProperty('--my', `${(e.clientY - r.top).toFixed(1)}px`);
+      tx = e.clientX - r.left;
+      ty = e.clientY - r.top;
+      kick();
     },
     { passive: true },
   );
@@ -209,8 +305,8 @@ function sheet(section: HTMLElement) {
     if (e.pointerType === 'touch') return;
     section.classList.remove('sheet-on');
   });
-}
-
+ }
+ 
 // Edge light: the cursor position inside a button, card or menu tile drives a rim highlight
 // (::after in motion.css). Fine pointers only; the caller gates it.
 const EDGE_SELECTOR = '.btn, .card, .mega-item, .mega-feature, .post-card';
@@ -228,6 +324,18 @@ function edgeLight(el: HTMLElement) {
   );
 }
 
+// Breathing variety: each .wsi-breathe element gets its own amplitude (--amp), period and phase.
+// Seeded, so the result is stable across loads. Keyframes (in each illustration) scale --lift by --amp.
+function breathe(root: HTMLElement) {
+  const rnd = prng(hashSeed('breathe'));
+  root.querySelectorAll<HTMLElement>('svg.wsi .wsi-breathe').forEach((el) => {
+    const duration = 5 + rnd() * 5;
+    el.style.setProperty('--amp', (0.55 + rnd() * 0.95).toFixed(3));
+    el.style.setProperty('animation-duration', `${duration.toFixed(2)}s`);
+    el.style.setProperty('animation-delay', `${(-rnd() * duration).toFixed(2)}s`);
+  });
+}
+
 if (main) {
   // Header scrolled state is a visual state, not motion: it runs under reduced motion too.
   if (header) headerScroll(header);
@@ -239,14 +347,13 @@ if (main) {
     reveal(main);
     revealIllustrations(main);
     revealChecklists(main, true);
+    breathe(main);
     if (matchMedia('(hover: hover) and (pointer: fine)').matches) {
       main.querySelectorAll<SVGElement>('svg.wsi').forEach((svg) => {
         const area = svg.closest<HTMLElement>('section') ?? svg.parentElement;
         if (area) parallax(svg, area);
       });
-      main.querySelectorAll<HTMLElement>('section').forEach((section) => {
-        if (section.querySelector('svg.wsi')) sheet(section);
-      });
+      main.querySelectorAll<HTMLElement>('section[data-sheet]').forEach((section, i) => sheet(section, i));
       document.querySelectorAll<HTMLElement>(EDGE_SELECTOR).forEach(edgeLight);
     }
   }

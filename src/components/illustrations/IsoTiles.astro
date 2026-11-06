@@ -60,10 +60,10 @@ const lines = Array.from({ length: 7 }, (_, i) => `M0 ${(i + 1) * 32.75}H262M${(
 
   <!-- halo frames (base) -->
   <g class="wsi-in" style={intro(0, 1000, 10, 0.96)}>
-  <g class="wsi-tiles-base"><g transform={iso(320, 300, 310)}>
+  <g class="wsi-breathe wsi-tiles-base"><g transform={iso(320, 300, 310)}>
     <rect width="310" height="310" rx="26" fill={C.tB} fill-opacity=".55" stroke="#fff" stroke-width="2"></rect>
   </g></g>
-  <g class="wsi-tiles-base"><g transform={iso(320, 300, 262)}>
+  <g class="wsi-breathe wsi-tiles-base"><g transform={iso(320, 300, 262)}>
     <rect width="262" height="262" rx="22" fill={C.tG} fill-opacity=".6" stroke="#fff" stroke-width="2"></rect>
     <path d={lines} stroke="#fff" stroke-width="1.5" fill="none"></path>
   </g></g>
@@ -80,7 +80,7 @@ const lines = Array.from({ length: 7 }, (_, i) => `M0 ${(i + 1) * 32.75}H262M${(
       <>
         <g class="wsi-in" style={t.enter}>
         <g class="wsi-pt" style={`--d:${t.d}`}>
-        <g class={`wsi-tiles-mid wsi-tiles-f${t.f}`} style={lag(0.4 + jit(i, 0.2))}>
+        <g class={`wsi-breathe wsi-tiles-mid wsi-tiles-f${t.f}`} style={lag(0.4 + jit(i, 0.2))}>
           <g transform={iso(t.x, t.y + 9, t.s)}><rect width={t.s} height={t.s} rx={t.s * 0.17} fill={t.side}></rect></g>
           <g transform={iso(t.x, t.y, t.s)}>
             <rect width={t.s} height={t.s} rx={t.s * 0.17} fill={t.fill} stroke={t.line ? C.beige : '#fff'} stroke-width="2"></rect>
@@ -110,14 +110,14 @@ const lines = Array.from({ length: 7 }, (_, i) => `M0 ${(i + 1) * 32.75}H262M${(
 
 <style is:global>
   :where(svg.wsi) { display: block; width: 100%; height: auto; }
-  @keyframes wsi-tiles-base { 0%, 100% { translate: 0 0; } 50% { translate: 0 -2px; } }
-  @keyframes wsi-tiles-mid { 0%, 100% { translate: 0 0; } 50% { translate: 0 -7px; } }
+  @keyframes wsi-tiles-base { 0%, 100% { translate: 0 0; } 50% { translate: 0 calc(var(--lift, -2px) * var(--amp, 1)); } }
+  @keyframes wsi-tiles-mid { 0%, 100% { translate: 0 0; } 50% { translate: 0 calc(var(--lift, -7px) * var(--amp, 1)); } }
   @keyframes wsi-tiles-shadow { 0%, 100% { scale: 1; opacity: 1; } 50% { scale: .92; opacity: .7; } }
   @media (prefers-reduced-motion: no-preference) {
     .wsi-tiles-base, .wsi-tiles-mid { transform-box: fill-box; transform-origin: center; will-change: translate; }
     .wsi-tiles-sh-mid { transform-box: fill-box; transform-origin: center; will-change: scale, opacity; }
-    .wsi-tiles-base { animation: wsi-tiles-base 8s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
-    .wsi-tiles-mid { animation: wsi-tiles-mid 7s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+    .wsi-tiles-base { --lift: -2px; animation: wsi-tiles-base 8s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+    .wsi-tiles-mid { --lift: -7px; animation: wsi-tiles-mid 7s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
     .wsi-tiles-sh-mid { animation: wsi-tiles-shadow 7s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
   }
 </style>

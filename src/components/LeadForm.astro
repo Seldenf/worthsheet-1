@@ -18,7 +18,6 @@ const { id = 'lead', class: className } = Astro.props;
     action={LEADS_ENDPOINT}
     method="post"
     data-form
-    data-copy-url={TEMPLATE_COPY_URL}
     data-xlsx-url={TEMPLATE_XLSX_URL}
   >
     <div class="field">
@@ -103,11 +102,16 @@ const { id = 'lead', class: className } = Astro.props;
         stroke-linejoin="round"></path>
     </svg>
     <h2 tabindex="-1" data-success-title>Your template is ready</h2>
-    <p>
-      We’re opening your copy in Google Sheets. If nothing happens, use one of the buttons below.
-    </p>
+    <p>Choose how you want to open it:</p>
     <div class="success-actions">
-      <Button href={TEMPLATE_COPY_URL} variant="primary" size="lg" data-template-link="sheets">
+      <Button
+        href={TEMPLATE_COPY_URL}
+        variant="primary"
+        size="lg"
+        data-template-link="sheets"
+        target="_blank"
+        rel="noopener"
+      >
         Open my copy in Google Sheets
       </Button>
       <Button href={TEMPLATE_XLSX_URL} variant="secondary" size="lg" data-template-link="xlsx">
@@ -201,18 +205,24 @@ const { id = 'lead', class: className } = Astro.props;
 
   .success-actions {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
     gap: 12px;
+  }
+
+  @media (min-width: 40rem) {
+    .success-actions {
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
   }
 </style>
 
 <script>
-  import { LEADS_ENDPOINT, TEMPLATE_COPY_URL } from '../config';
+  import { LEADS_ENDPOINT } from '../config';
   import { track } from '../lib/analytics';
 
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const ZIP_RE = /^\d{5}(-\d{4})?$/;
-  const REDIRECT_DELAY_MS = 600;
 
   type Field = 'name' | 'email' | 'zip' | 'purpose';
   const FIELDS: Field[] = ['name', 'email', 'zip', 'purpose'];
@@ -242,7 +252,6 @@ const { id = 'lead', class: className } = Astro.props;
     form.noValidate = true;
 
     const submitLabel = submit.textContent?.trim() || 'Get the free template';
-    let redirectTimer: number | undefined;
 
     const input = (field: Field) =>
       form.elements.namedItem(field) as HTMLInputElement | HTMLSelectElement;
@@ -297,7 +306,6 @@ const { id = 'lead', class: className } = Astro.props;
       form!.hidden = true;
       success!.hidden = false;
       success!.querySelector<HTMLElement>('[data-success-title]')?.focus();
-      redirectTimer = window.setTimeout(() => location.assign(TEMPLATE_COPY_URL), REDIRECT_DELAY_MS);
     }
 
     form.addEventListener('submit', async (event) => {
@@ -352,8 +360,6 @@ const { id = 'lead', class: className } = Astro.props;
     success.addEventListener('click', (event) => {
       const link = (event.target as HTMLElement).closest<HTMLElement>('[data-template-link]');
       if (!link) return;
-      // The visitor chose a destination; don't also redirect this tab.
-      window.clearTimeout(redirectTimer);
       track('template_open', { format: link.dataset.templateLink === 'xlsx' ? 'xlsx' : 'sheets' });
     });
   }

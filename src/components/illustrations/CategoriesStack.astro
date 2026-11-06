@@ -57,7 +57,7 @@ const menu = ['Checking', 'Savings', 'Retirement'];
   <g class="wsi-pt" style="--d:0.3">
   {order.map((c) => (
     <g class="wsi-cats-card" style={`animation-delay:${(c.i * 0.11).toFixed(2)}s`}>
-    <g class="wsi-cats-mid" style={lag(0.4)}>
+    <g class="wsi-breathe wsi-cats-mid" style={lag(0.4)}>
       <g class="wsi-cats-sh-mid"><g transform={stripT(c.i, 16)}><rect width={W} height={H} rx="14" fill={C.ink} fill-opacity=".07"></rect></g></g>
       <g transform={stripT(c.i, 8)}><rect width={W} height={H} rx="14" fill={c.side}></rect></g>
       <g transform={stripT(c.i)}>
@@ -72,7 +72,7 @@ const menu = ['Checking', 'Savings', 'Retirement'];
 
   <!-- Savings outline: same phase as its card, traced around it on top of the stack -->
   <g class="wsi-cats-card" style={`animation-delay:${(1 * 0.11).toFixed(2)}s`}>
-    <g class="wsi-cats-mid" style={lag(0.4)}>
+    <g class="wsi-breathe wsi-cats-mid" style={lag(0.4)}>
       <g transform={stripT(1)}>
         <rect class="wsi-draw" pathLength="100" x="-6" y="-6" width={W + 12} height={H + 12} rx="19" fill="none" stroke={C.green} stroke-width="2" style="--draw-d:1100ms"></rect>
       </g>
@@ -81,7 +81,7 @@ const menu = ['Checking', 'Savings', 'Retirement'];
   </g>
 
   <!-- leaders (base) -->
-  <g class="wsi-cats-base" stroke={C.ink} stroke-opacity=".3" stroke-width="1.5" stroke-dasharray="2 6" stroke-linecap="round" fill="none">
+  <g class="wsi-breathe wsi-cats-base" stroke={C.ink} stroke-opacity=".3" stroke-width="1.5" stroke-dasharray="2 6" stroke-linecap="round" fill="none">
     <path d="M550 112h-35"></path>
     <path d="M550 392h-52"></path>
   </g>
@@ -91,7 +91,7 @@ const menu = ['Checking', 'Savings', 'Retirement'];
     <g class="wsi-in" style={p.enter}>
     <g class="wsi-pt wsi-cats-late" style={`--d:${p.d}`}>
     <g transform={`translate(${p.x} ${p.y})`}>
-      <g class={`wsi-cats-top wsi-cats-${p.cls}`} style={lag(0.8 + jit(i, 0.5))}>
+      <g class={`wsi-breathe wsi-cats-top wsi-cats-${p.cls}`} style={lag(0.8 + jit(i, 0.5))}>
         <rect class="wsi-cats-sh-top" style={lag(0.8 + jit(i, 0.5))} x={-p.w / 2} y="-15" width={p.w} height="38" rx="19" fill={C.ink} fill-opacity=".1"></rect>
         <rect x={-p.w / 2} y="-19" width={p.w} height="38" rx="19" fill="#fff" stroke={C.beige} stroke-width="1.5"></rect>
         <circle cx={-p.w / 2 + 22} cy="0" r="6" fill={p.dot}></circle>
@@ -108,7 +108,7 @@ const menu = ['Checking', 'Savings', 'Retirement'];
   <g class="wsi-in" style={intro(700, 520, 14, 0.95)}>
   <g class="wsi-pt wsi-cats-late" style="--d:1.25">
   <g transform="translate(40 190)">
-    <g class="wsi-cats-top wsi-cats-f2" style={lag(0.8 + jit(2, 0.5))}>
+    <g class="wsi-breathe wsi-cats-top wsi-cats-f2" style={lag(0.8 + jit(2, 0.5))}>
       <rect class="wsi-cats-sh-top" style={lag(0.8 + jit(2, 0.5))} x="0" y="6" width="150" height="40" rx="20" fill={C.ink} fill-opacity=".1"></rect>
       <rect x="0" y="0" width="150" height="40" rx="20" fill="#fff" stroke={C.blue} stroke-width="2"></rect>
       <text x="18" y="25" font-size="14" font-weight="600" fill={C.ink}>Category</text>
@@ -128,18 +128,18 @@ const menu = ['Checking', 'Savings', 'Retirement'];
 
 <style is:global>
   :where(svg.wsi) { display: block; width: 100%; height: auto; }
-  @keyframes wsi-cats-base { 0%, 100% { translate: 0 0; } 50% { translate: 0 -2px; } }
-  @keyframes wsi-cats-mid { 0%, 100% { translate: 0 0; } 50% { translate: 0 -7px; } }
-  @keyframes wsi-cats-top { 0%, 100% { translate: 0 0; } 50% { translate: 0 -12px; } }
+  @keyframes wsi-cats-base { 0%, 100% { translate: 0 0; } 50% { translate: 0 calc(var(--lift, -2px) * var(--amp, 1)); } }
+  @keyframes wsi-cats-mid { 0%, 100% { translate: 0 0; } 50% { translate: 0 calc(var(--lift, -7px) * var(--amp, 1)); } }
+  @keyframes wsi-cats-top { 0%, 100% { translate: 0 0; } 50% { translate: 0 calc(var(--lift, -12px) * var(--amp, 1)); } }
   @keyframes wsi-cats-shadow { 0%, 100% { scale: 1; opacity: 1; } 50% { scale: .92; opacity: .7; } }
   @keyframes wsi-cats-drop { from { opacity: 0; translate: 0 -28px; } to { opacity: 1; translate: 0 0; } }
   @keyframes wsi-cats-fade { from { opacity: 0; } to { opacity: 1; } }
   @media (prefers-reduced-motion: no-preference) {
     .wsi-cats-base, .wsi-cats-mid, .wsi-cats-top { transform-box: fill-box; transform-origin: center; will-change: translate; }
     .wsi-cats-sh-mid, .wsi-cats-sh-top { transform-box: fill-box; transform-origin: center; will-change: scale, opacity; }
-    .wsi-cats-base { animation: wsi-cats-base 8s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
-    .wsi-cats-mid { animation: wsi-cats-mid 7s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
-    .wsi-cats-top { animation: wsi-cats-top 6s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+    .wsi-cats-base { --lift: -2px; animation: wsi-cats-base 8s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+    .wsi-cats-mid { --lift: -7px; animation: wsi-cats-mid 7s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+    .wsi-cats-top { --lift: -12px; animation: wsi-cats-top 6s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
     .wsi-cats-sh-mid { animation: wsi-cats-shadow 7s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
     .wsi-cats-sh-top { animation: wsi-cats-shadow 6s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
     html.js svg.wsi-cats:not(.is-in) .wsi-cats-card { opacity: 0; translate: 0 -28px; }

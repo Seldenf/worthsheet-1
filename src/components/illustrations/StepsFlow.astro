@@ -57,9 +57,16 @@ const inStyle = (d: number, dur: number, y: number, s: number) => `--in-d:${d}ms
   <!-- pads (base) -->
   {steps.map((t, i) => (
     <g class="wsi-in" style={inStyle(i * 60, 900, 10, 0.95)}>
-      <g class={`wsi-steps-base wsi-steps-n${i + 1}`}><g transform={iso(t.x, t.y + GAP, 88)}>
+      <g class={`wsi-breathe wsi-steps-base wsi-steps-n${i + 1}`}><g transform={iso(t.x, t.y + GAP, 88)}>
         <rect width="88" height="88" rx="14" fill={t.pad} stroke="#fff" stroke-width="2"></rect>
       </g></g>
+    </g>
+  ))}
+  {steps.map((t, i) => (
+    <g class={`wsi-steps-n${i + 1}`}>
+      <g class="wsi-in" style={inStyle(tIn(i), 620, 0, 0.92)}>
+        <g class="wsi-steps-sh-mid" style={lag(0.4 + i * 0.4)}><g transform={iso(t.x + 4, t.y + GAP + 6, S)}><rect width={S} height={S} rx="10" fill={C.ink} fill-opacity=".1"></rect></g></g>
+      </g>
     </g>
   ))}
 
@@ -71,11 +78,8 @@ const inStyle = (d: number, dur: number, y: number, s: number) => `--in-d:${d}ms
 
   {steps.map((t, i) => (
     <g class={`wsi-steps-n${i + 1}`} data-step={i + 1} style="cursor:pointer">
-      <g class="wsi-in" style={inStyle(tIn(i), 620, 0, 0.92)}>
-        <g class="wsi-steps-sh-mid" style={lag(0.4 + i * 0.4)}><g transform={iso(t.x + 4, t.y + GAP + 6, S)}><rect width={S} height={S} rx="10" fill={C.ink} fill-opacity=".1"></rect></g></g>
-      </g>
       <g class="wsi-in" style={inStyle(tIn(i), 620, 22, 0.9)}>
-        <g class="wsi-steps-mid" style={lag(0.4 + i * 0.4)}>
+        <g class="wsi-breathe wsi-steps-mid" style={lag(0.4 + i * 0.4)}>
           <g transform={iso(t.x, t.y + 8, S)}><rect width={S} height={S} rx="10" fill={t.side}></rect></g>
           <g transform={iso(t.x, t.y, S)}>
             <rect width={S} height={S} rx="10" fill={t.fill} stroke="#fff" stroke-width="2"></rect>
@@ -98,15 +102,15 @@ const inStyle = (d: number, dur: number, y: number, s: number) => `--in-d:${d}ms
 
 <style is:global>
   :where(svg.wsi) { display: block; width: 100%; height: auto; }
-  @keyframes wsi-steps-base { 0%, 100% { translate: 0 0; } 50% { translate: 0 -2px; } }
-  @keyframes wsi-steps-mid { 0%, 100% { translate: 0 0; } 50% { translate: 0 -7px; } }
+  @keyframes wsi-steps-base { 0%, 100% { translate: 0 0; } 50% { translate: 0 calc(var(--lift, -2px) * var(--amp, 1)); } }
+  @keyframes wsi-steps-mid { 0%, 100% { translate: 0 0; } 50% { translate: 0 calc(var(--lift, -7px) * var(--amp, 1)); } }
   @keyframes wsi-steps-shadow { 0%, 100% { scale: 1; opacity: 1; } 50% { scale: .92; opacity: .7; } }
   @keyframes wsi-steps-dash { to { stroke-dashoffset: -18; } }
   @media (prefers-reduced-motion: no-preference) {
     .wsi-steps-base, .wsi-steps-mid { transform-box: fill-box; transform-origin: center; will-change: translate; }
     .wsi-steps-sh-mid { transform-box: fill-box; transform-origin: center; will-change: scale, opacity; }
-    .wsi-steps-base { animation: wsi-steps-base 8s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
-    .wsi-steps-mid { animation: wsi-steps-mid 7s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+    .wsi-steps-base { --lift: -2px; animation: wsi-steps-base 8s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+    .wsi-steps-mid { --lift: -7px; animation: wsi-steps-mid 7s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
     .wsi-steps-sh-mid { animation: wsi-steps-shadow 7s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
     .wsi-steps-path { animation: wsi-steps-dash 9s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
   }

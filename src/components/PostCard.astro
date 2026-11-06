@@ -21,9 +21,32 @@ const date = pubDate.toLocaleDateString('en-US', {
   day: 'numeric',
   timeZone: 'UTC',
 });
+
+type Cover = NonNullable<CollectionEntry<'blog'>['data']['cover']>;
+
+const BLUE = 'rgba(108, 190, 228, 0.9)';
+const GREEN = 'rgba(64, 170, 74, 0.85)';
+const PINK = 'rgba(224, 127, 184, 0.85)';
+// Edge ring per cover tint, mirroring PostCover's tint rotation.
+// Cream covers have no edge colour and keep the default.
+const COVER_EDGE: Record<Cover, string | undefined> = {
+  HeroSheet: BLUE,
+  IsoTiles: GREEN,
+  CategoriesStack: undefined,
+  StepsFlow: PINK,
+  ShieldSecure: BLUE,
+  CalculatorTile: GREEN,
+  BankMap: undefined,
+  GlossaryBook: PINK,
+  DocumentStack: BLUE,
+  ReadinessGauge: GREEN,
+  CtaTiles: undefined,
+};
+// Heroed posts show a photo, so no cover tint and no edge override.
+const edge = heroImage ? undefined : COVER_EDGE[cover ?? 'DocumentStack'];
 ---
 
-<article class="post-card card">
+<article class="post-card card" style={edge ? `--edge: ${edge}` : undefined}>
   <a class="post-card-link" href={url(`/${post.id}/`)}>
     <div class="post-card-media">
       {
@@ -57,17 +80,6 @@ const date = pubDate.toLocaleDateString('en-US', {
   .post-card {
     padding: 0;
     overflow: hidden;
-    transition:
-      transform 0.2s ease,
-      box-shadow 0.2s ease;
-  }
-
-  .post-card:hover,
-  .post-card:focus-within {
-    transform: translateY(-2px);
-    box-shadow:
-      0 1px 0 var(--line),
-      0 18px 40px -16px rgba(46, 41, 38, 0.24);
   }
 
   .post-card-link {
@@ -120,15 +132,5 @@ const date = pubDate.toLocaleDateString('en-US', {
     margin-top: auto;
     padding-top: 6px;
     font-size: 0.875rem;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .post-card {
-      transition: none;
-    }
-    .post-card:hover,
-    .post-card:focus-within {
-      transform: none;
-    }
   }
 </style>

@@ -16,8 +16,8 @@ const inStyle = (d: number, dur: number, y: number, s = 1) => `--in-d:${d}ms;--i
 const assets = [['Checking', '$18,400'], ['Savings', '$45,000'], ['Retirement', '$149,100'], ['Real estate', '$200,000']];
 const liabs = [['Mortgage', '$168,000'], ['Student loans', '$11,200'], ['Credit cards', '$7,000']];
 const pills = [
-  { x: 140, y: 120, l: 'Printable PDF', v: '', dot: C.blue, cls: 'f2', lift: 12, d: 0.8, dep: 0.9, ent: [940, 460, 14] },
-  { x: 546, y: 396, l: 'Net worth', v: '$226,300', dot: C.green, cls: 'f3', lift: 14, d: 1.2, dep: 1.4, ent: [960, 440, -16] },
+  { x: 140, y: 120, l: 'Printable PDF', v: '', dot: C.blue, cls: 'f2', lift: -12, d: 0.8, dep: 0.9, ent: [940, 460, 14] },
+  { x: 546, y: 396, l: 'Net worth', v: '$226,300', dot: C.green, cls: 'f3', lift: -14, d: 1.2, dep: 1.4, ent: [960, 440, -16] },
 ].map((p) => ({ ...p, w: Math.round((p.l.length + p.v.length + 1) * 14 * 0.54) + 48 }));
 ---
 
@@ -36,17 +36,17 @@ const pills = [
   </defs>
 
   <!-- base layer: plain wrappers carry the animation; matrix groups keep their attribute transform -->
-  <g class="wsi-in" style={inStyle(0, 1000, 10, 0.96)}><g class="wsi-docs-base"><g transform={at(0)}><rect x="-40" y="-40" width={W + 80} height={H + 80} rx="30" fill={C.tB} fill-opacity=".5" stroke="#fff" stroke-width="2"></rect></g></g></g>
+  <g class="wsi-in" style={inStyle(0, 1000, 10, 0.96)}><g class="wsi-docs-base wsi-breathe"><g transform={at(0)}><rect x="-40" y="-40" width={W + 80} height={H + 80} rx="30" fill={C.tB} fill-opacity=".5" stroke="#fff" stroke-width="2"></rect></g></g></g>
   <g class="wsi-in" style={inStyle(120, 900, 0, 0.9)}><g class="wsi-docs-shadow"><g transform={at(46)}><rect width={W} height={H} rx="12" fill={C.ink} fill-opacity=".14" filter="url(#wsi-docs-blur)"></rect></g></g></g>
 
   <!-- back sheets: lift increases toward the top of the stack -->
-  <g class="wsi-docs-enter" style="--i:0"><g class="wsi-docs-s1" style="--lift:2px;animation-delay:0s"><g transform={at(26)}><rect width={W} height={H} rx="12" fill="#d6d4d2"></rect></g></g></g>
-  <g class="wsi-docs-enter" style="--i:1"><g class="wsi-docs-s2" style="--lift:3px;animation-delay:.1s"><g transform={at(18)}><rect width={W} height={H} rx="12" fill={C.surface} stroke="#fff" stroke-width="2"></rect></g></g></g>
-  <g class="wsi-docs-enter" style="--i:2"><g class="wsi-docs-s3" style="--lift:5px;animation-delay:.2s"><g transform={at(12)}><rect width={W} height={H} rx="12" fill="#d6d4d2"></rect></g></g></g>
-  <g class="wsi-docs-enter" style="--i:3"><g class="wsi-docs-s4" style="--lift:7px;animation-delay:.3s"><g transform={at(6)}><rect width={W} height={H} rx="12" fill="#fff" stroke={C.beige} stroke-width="1.5"></rect></g></g></g>
+  <g class="wsi-docs-enter" style="--i:0"><g class="wsi-docs-s1 wsi-breathe" style="--lift:-2px;animation-delay:0s"><g transform={at(26)}><rect width={W} height={H} rx="12" fill="#d6d4d2"></rect></g></g></g>
+  <g class="wsi-docs-enter" style="--i:1"><g class="wsi-docs-s2 wsi-breathe" style="--lift:-3px;animation-delay:.1s"><g transform={at(18)}><rect width={W} height={H} rx="12" fill={C.surface} stroke="#fff" stroke-width="2"></rect></g></g></g>
+  <g class="wsi-docs-enter" style="--i:2"><g class="wsi-docs-s3 wsi-breathe" style="--lift:-5px;animation-delay:.2s"><g transform={at(12)}><rect width={W} height={H} rx="12" fill="#d6d4d2"></rect></g></g></g>
+  <g class="wsi-docs-enter" style="--i:3"><g class="wsi-docs-s4 wsi-breathe" style="--lift:-7px;animation-delay:.3s"><g transform={at(6)}><rect width={W} height={H} rx="12" fill="#fff" stroke={C.beige} stroke-width="1.5"></rect></g></g></g>
 
   <!-- top sheet -->
-  <g class="wsi-docs-enter" style="--i:4"><g class="wsi-pt" style="--d:0.5"><g class="wsi-docs-f1">
+  <g class="wsi-docs-enter" style="--i:4"><g class="wsi-pt" style="--d:0.5"><g class="wsi-docs-f1 wsi-breathe">
     <g transform={at(0)}>
       <rect width={W} height={H} rx="12" fill="#fff" stroke={C.ink} stroke-opacity=".2"></rect>
       <path d="M0 12a12 12 0 0 1 12-12h176a12 12 0 0 1 12 12v8H0z" fill={C.sheets}></path>
@@ -85,7 +85,7 @@ const pills = [
 
   <!-- top layer: signed check -->
   <g class="wsi-in" style={inStyle(860, 460, -18, 0.9)}><g class="wsi-pt" style="--d:1.6"><g transform="translate(572 168)">
-    <g class="wsi-docs-f2" style="--lift:10px;animation-delay:.5s">
+    <g class="wsi-docs-f2 wsi-breathe" style="--lift:-10px;animation-delay:.5s">
       <circle r="27" fill={C.ink} fill-opacity=".08" transform="translate(0 8)"></circle>
       <circle r="25" fill={C.green} stroke="#fff" stroke-width="3"></circle>
       <path d="m-11 1 8 8 14-16" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
@@ -96,7 +96,7 @@ const pills = [
   <!-- top layer: pills -->
   {pills.map((p) => (
     <g class="wsi-in" style={inStyle(p.ent[0], p.ent[1], p.ent[2])}><g class="wsi-pt" style={`--d:${p.dep}`}><g transform={`translate(${p.x} ${p.y})`}>
-      <g class={`wsi-docs-${p.cls}`} style={`--lift:${p.lift}px;animation-delay:${p.d}s`}>
+      <g class={`wsi-docs-${p.cls} wsi-breathe`} style={`--lift:${p.lift}px;animation-delay:${p.d}s`}>
         <rect x={-p.w / 2} y="-15" width={p.w} height="38" rx="19" fill={C.ink} fill-opacity=".1"></rect>
         <rect x={-p.w / 2} y="-19" width={p.w} height="38" rx="19" fill="#fff" stroke={C.beige} stroke-width="1.5"></rect>
         <circle cx={-p.w / 2 + 22} cy="0" r="6" fill={p.dot}></circle>
@@ -112,18 +112,18 @@ const pills = [
 <style is:global>
   :where(svg.wsi) { display: block; width: 100%; height: auto; }
   @media (prefers-reduced-motion: no-preference) {
-    @keyframes wsi-docs-breathe { 0%, 100% { translate: 0 0; } 50% { translate: 0 calc(var(--lift) * -1); } }
+    @keyframes wsi-breathe { 0%, 100% { translate: 0 0; } 50% { translate: 0 calc(var(--lift, -6px) * var(--amp, 1)); } }
     @keyframes wsi-docs-shade { 0%, 100% { scale: 1; opacity: 1; } 50% { scale: 0.92; opacity: 0.7; } }
     .wsi-docs-base, .wsi-docs-s1, .wsi-docs-s2, .wsi-docs-s3, .wsi-docs-s4, .wsi-docs-f1, .wsi-docs-f2, .wsi-docs-f3, .wsi-docs-shadow {
       transform-box: fill-box;
       transform-origin: center;
       will-change: translate, scale;
     }
-    .wsi-docs-base { --lift: 2px; animation: wsi-docs-breathe 8s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
-    .wsi-docs-s1, .wsi-docs-s2, .wsi-docs-s3, .wsi-docs-s4 { animation: wsi-docs-breathe 7s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
-    .wsi-docs-f1 { --lift: 9px; animation: wsi-docs-breathe 7s cubic-bezier(0.45, 0, 0.55, 1) 0.6s infinite; }
-    .wsi-docs-f2 { --lift: 12px; animation: wsi-docs-breathe 6.5s cubic-bezier(0.45, 0, 0.55, 1) 0.8s infinite; }
-    .wsi-docs-f3 { --lift: 14px; animation: wsi-docs-breathe 7.5s cubic-bezier(0.45, 0, 0.55, 1) 1.2s infinite; }
+    .wsi-breathe { animation: wsi-breathe 7s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+    .wsi-docs-base { --lift: -2px; }
+    .wsi-docs-f1 { --lift: -9px; }
+    .wsi-docs-f2 { --lift: -12px; }
+    .wsi-docs-f3 { --lift: -14px; }
     .wsi-docs-shadow { animation: wsi-docs-shade 7s cubic-bezier(0.45, 0, 0.55, 1) 0.3s infinite; }
 
     @keyframes wsi-docs-land { from { opacity: 0; translate: 0 -24px; } to { opacity: 1; translate: 0 0; } }

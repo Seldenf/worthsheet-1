@@ -67,7 +67,7 @@ const inStyle = (d: number, dur: number, y: number, s: number) => `--in-d:${d}ms
 
   <!-- iso grid plate (base layer, 2px) -->
     <g class="wsi-in" style={inStyle(0, 1000, 10, 0.96)}>
-  <g class="wsi-cta-base">
+  <g class="wsi-breathe wsi-cta-base">
     <g transform={iso(320, 256, 300)}><rect width="300" height="300" rx="36" fill={C.beige}></rect></g>
     <g transform={iso(320, 250, 300)}>
       <rect width="300" height="300" rx="36" fill={C.tB} fill-opacity=".6" stroke="#fff" stroke-width="2"></rect>
@@ -84,7 +84,7 @@ const inStyle = (d: number, dur: number, y: number, s: number) => `--in-d:${d}ms
   {tiles.map((t, i) => {
     const k = (t.s * 0.58) / 24;
     const body = (
-      <g class="wsi-cta-mid" style={lag(0.4 + jit(i, 0.2))}>
+      <g class="wsi-breathe wsi-cta-mid" style={lag(0.4 + jit(i, 0.2))}>
         <g transform={iso(t.x, t.y + t.h, t.s)}><rect width={t.s} height={t.s} rx={t.s * 0.17} fill={t.side}></rect></g>
         <g transform={iso(t.x, t.y, t.s)}>
           <rect width={t.s} height={t.s} rx={t.s * 0.17} fill={t.fill} stroke={t.line ? C.beige : '#fff'} stroke-width="2"></rect>
@@ -109,7 +109,7 @@ const inStyle = (d: number, dur: number, y: number, s: number) => `--in-d:${d}ms
   <g class="wsi-in" style={inStyle(860, 480, -26, 0.92)}>
   <g class="wsi-pt" style="--d:0.6">
     <g transform="translate(210 92)">
-      <g class="wsi-cta-top" style={lag(0.8 + jit(20, 0.5))}>
+      <g class="wsi-breathe wsi-cta-top" style={lag(0.8 + jit(20, 0.5))}>
         <rect class="wsi-cta-sh-top" style={lag(0.8 + jit(20, 0.5))} x="-52" y="-16" width="104" height="36" rx="18" fill={C.ink} fill-opacity=".1"></rect>
         <g class="wsi-cta-pulse">
           <rect x="-52" y="-20" width="104" height="36" rx="18" fill={C.ink}></rect>
@@ -124,7 +124,7 @@ const inStyle = (d: number, dur: number, y: number, s: number) => `--in-d:${d}ms
   <g class="wsi-in" style={inStyle(900, 500, 14, 0.94)}>
   <g class="wsi-pt" style="--d:1.4">
     <g transform="translate(506 376)">
-      <g class="wsi-cta-top" style={lag(0.8 + jit(21, 0.5))}>
+      <g class="wsi-breathe wsi-cta-top" style={lag(0.8 + jit(21, 0.5))}>
         <rect class="wsi-cta-sh-top" style={lag(0.8 + jit(21, 0.5))} x="-105" y="-15" width="210" height="38" rx="19" fill={C.ink} fill-opacity=".1"></rect>
         <rect x="-105" y="-19" width="210" height="38" rx="19" fill="#fff" stroke={C.beige} stroke-width="1.5"></rect>
         <circle cx="-86" cy="0" r="6" fill={C.green}></circle>
@@ -138,17 +138,17 @@ const inStyle = (d: number, dur: number, y: number, s: number) => `--in-d:${d}ms
 
 <style is:global>
   :where(svg.wsi) { display: block; width: 100%; height: auto; }
-  @keyframes wsi-cta-base { 0%, 100% { translate: 0 0; } 50% { translate: 0 -2px; } }
-  @keyframes wsi-cta-mid { 0%, 100% { translate: 0 0; } 50% { translate: 0 -7px; } }
-  @keyframes wsi-cta-top { 0%, 100% { translate: 0 0; } 50% { translate: 0 -12px; } }
+  @keyframes wsi-cta-base { 0%, 100% { translate: 0 0; } 50% { translate: 0 calc(var(--lift, -2px) * var(--amp, 1)); } }
+  @keyframes wsi-cta-mid { 0%, 100% { translate: 0 0; } 50% { translate: 0 calc(var(--lift, -7px) * var(--amp, 1)); } }
+  @keyframes wsi-cta-top { 0%, 100% { translate: 0 0; } 50% { translate: 0 calc(var(--lift, -12px) * var(--amp, 1)); } }
   @keyframes wsi-cta-shadow { 0%, 100% { scale: 1; opacity: 1; } 50% { scale: .92; opacity: .7; } }
   @keyframes wsi-cta-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .85; } }
   @media (prefers-reduced-motion: no-preference) {
     .wsi-cta-base, .wsi-cta-mid, .wsi-cta-top { transform-box: fill-box; transform-origin: center; will-change: translate; }
     .wsi-cta-sh-mid, .wsi-cta-sh-top { transform-box: fill-box; transform-origin: center; will-change: scale, opacity; }
-    .wsi-cta-base { animation: wsi-cta-base 8s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
-    .wsi-cta-mid { animation: wsi-cta-mid 7s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
-    .wsi-cta-top { animation: wsi-cta-top 6s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+    .wsi-cta-base { --lift: -2px; animation: wsi-cta-base 8s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+    .wsi-cta-mid { --lift: -7px; animation: wsi-cta-mid 7s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+    .wsi-cta-top { --lift: -12px; animation: wsi-cta-top 6s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
     .wsi-cta-sh-mid { animation: wsi-cta-shadow 7s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
     .wsi-cta-sh-top { animation: wsi-cta-shadow 6s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
     .wsi-cta-pulse { animation: wsi-cta-pulse 6s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
