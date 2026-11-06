@@ -44,20 +44,11 @@ const grid =
 
 // ---- floating tiles (mid layer) ----
 const tiles = [
-  { x: 262, y: 232, s: 92, fill: C.sheets, side: '#0a7a43', z: 150, cls: 'f1', kind: 'sheets', d: 1.5, enter: intro(200, 700, 20, 0.92) },
-  { x: 872, y: 392, s: 44, fill: C.yellow, side: '#d9a02a', z: 44, cls: 'f3', kind: 'dollar', d: 0.35, enter: intro(320, 500, 14, 0.9) },
+  { x: 262, y: 232, s: 92, fill: C.sheets, side: '#0a7a43', z: 150, cls: 'f1', kind: 'sheets', d: 1.5, enter: intro(200, 700, 20, 0.92), lift: -3.5 },
+  { x: 872, y: 392, s: 44, fill: C.yellow, side: '#d9a02a', z: 44, cls: 'f3', kind: 'dollar', d: 0.35, enter: intro(320, 500, 14, 0.9), lift: -3.5 },
   { x: 104, y: 330, s: 40, fill: C.tB, side: '#b9dcee', z: 40, cls: 'f2', kind: 'bars', d: 0.9, enter: intro(400, 480, 12, 0.92) },
 ];
 
-// ---- pills (top layer) ----
-const pills = [
-  { x: 700.5, y: 150, l: 'Assets', v: '$412,500', dot: C.green, fs: 15, cls: 'f2', d: 0.55, enter: intro(600, 450, 14, 0.95) },
-  { x: 237, y: 470, l: 'Liabilities', v: '$186,200', dot: C.yellow, fs: 15, cls: 'f3', d: 1.05, enter: intro(720, 450, -14, 0.95) },
-  { x: 719.5, y: 536, l: 'Net worth', v: '$226,300', dot: C.blue, fs: 18, cls: 'f1', big: true, d: 1.4, enter: intro(840, 450, 16, 0.94) },
-].map((p) => {
-  const w = Math.round((p.l.length + 1 + p.v.length) * p.fs * 0.6) + 52;
-  return { ...p, w, h: p.big ? 48 : 38 };
-});
 ---
 
 <svg
@@ -74,6 +65,7 @@ const pills = [
   <defs>
     <clipPath id="wsi-hero-clip"><rect width={S} height={S} rx="14"></rect></clipPath>
     <filter id="wsi-hero-blur" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="9"></feGaussianBlur></filter>
+    <filter id="wsi-hero-soft" x="-50%" y="-100%" width="200%" height="300%"><feGaussianBlur stdDeviation="6"></feGaussianBlur></filter>
   </defs>
 
   <g transform="translate(480 346) scale(1.1) translate(-480 -372)">
@@ -135,7 +127,7 @@ const pills = [
     <g class="wsi-extra">
     <g class="wsi-in" style={t.enter}>
     <g class="wsi-pt" style={`--d:${t.d}`}>
-    <g class={`wsi-breathe wsi-hero-mid wsi-hero-${t.cls}`} style={lag(0.4 + jit(i, 0.2))}>
+    <g class={`wsi-breathe wsi-hero-mid wsi-hero-${t.cls}`} style={`${lag(0.4 + jit(i, 0.2))}${t.lift ? `;--lift:${t.lift}px` : ''}`}>
       <g transform={iso(t.x, t.y + 8, t.s)}><rect width={t.s} height={t.s} rx={t.s * 0.17} fill={t.side}></rect></g>
       <g transform={iso(t.x, t.y, t.s)}>
         <rect width={t.s} height={t.s} rx={t.s * 0.17} fill={t.fill} stroke="#fff" stroke-width="2"></rect>
@@ -167,7 +159,7 @@ const pills = [
   <g class="wsi-extra">
   <g class="wsi-in" style={intro(950, 450, 12, 0.8)}>
   <g class="wsi-pt" style="--d:0.25">
-  <g class="wsi-breathe wsi-hero-top wsi-hero-f2" style={lag(0.8 + jit(7, 0.5))}>
+  <g class="wsi-breathe wsi-hero-top wsi-hero-f2" style={`${lag(0.8 + jit(7, 0.5))};--lift:-6px`}>
     <g class="wsi-hero-sh-top" style={lag(0.8 + jit(7, 0.5))}><circle cx="806" cy="262" r="28" fill={C.ink} fill-opacity=".08" transform="translate(0 8)"></circle></g>
     <circle cx="806" cy="262" r="26" fill={C.green} stroke="#fff" stroke-width="3"></circle>
     <path d="M794 263l8 8 15-17" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
@@ -176,43 +168,60 @@ const pills = [
   </g>
   </g>
 
-  <!-- =SUM() chip (top) -->
+  <!-- formula bar (top, drops in above board) -->
   <g class="wsi-extra">
-  <g class="wsi-in" style={intro(500, 500, -22, 0.95)}>
-  <g class="wsi-pt" style="--d:0.7">
-  <g transform="translate(430 144)">
-    <g class="wsi-breathe wsi-hero-top wsi-hero-f3" style={lag(0.8 + jit(8, 0.5))}>
-      <g class="wsi-hero-pulse">
-        <rect class="wsi-hero-sh-top" style={lag(0.8 + jit(8, 0.5))} x="-52" y="-16" width="104" height="36" rx="4" fill={C.ink} fill-opacity=".1"></rect>
-        <rect x="-52" y="-20" width="104" height="36" rx="4" fill={C.ink}></rect>
-        <text x="0" y="3" font-size="16" font-weight="600" fill="#fff" text-anchor="middle">=SUM()</text>
-      </g>
-    </g>
+  <g class="wsi-in" style={intro(560, 520, -16, 0.97)}>
+  <g class="wsi-pt" style="--d:0.45">
+  <g transform="translate(330 118)">
+    <rect x="0" y="4" width="300" height="34" rx="4" fill={C.ink} fill-opacity=".12" filter="url(#wsi-hero-soft)"></rect>
+    <rect width="300" height="34" rx="4" fill="#fff" stroke="#e3e0dd" stroke-width="1"></rect>
+    <path d="M44 0V34" stroke="#e3e0dd" stroke-width="1"></path>
+    <text x="22" y="21.5" text-anchor="middle" font-size="13" font-style="italic" font-weight="500" fill={C.ink} fill-opacity=".45">fx</text>
+    <text x="58" y="21.5" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="13" fill={C.ink}>=SUM(B2:B5) − SUM(B7:B9)</text>
   </g>
   </g>
   </g>
   </g>
-
-  <!-- pills (top) -->
-  {pills.map((p, i) => (
-    <g class="wsi-extra">
-    <g class="wsi-in" style={p.enter}>
-    <g class="wsi-pt" style={`--d:${p.d}`}>
-    <g transform={`translate(${p.x} ${p.y})`}>
-      <g class={`wsi-breathe wsi-hero-top wsi-hero-${p.cls}`} style={lag(0.8 + jit(i + 3, 0.5))}>
-        <rect class="wsi-hero-sh-top" style={lag(0.8 + jit(i + 3, 0.5))} x={-p.w / 2} y={-p.h / 2 + 4} width={p.w} height={p.h} rx="4" fill={C.ink} fill-opacity=".1"></rect>
-        <rect x={-p.w / 2} y={-p.h / 2} width={p.w} height={p.h} rx="4" fill="#fff" stroke="#e3e0dd" stroke-width="1"></rect>
-        <rect x={-p.w / 2 + 18.5} y="-3.5" width="7" height="7" rx="1.5" fill={p.dot}></rect>
-        <text x={-p.w / 2 + 38} y={p.fs * 0.35} font-size={p.fs} fill={C.ink}>
-          <tspan fill-opacity=".66" font-weight="500">{p.l}</tspan> <tspan font-weight="700">{p.v}</tspan>
-        </text>
-        {p.big && <path class="wsi-draw" pathLength="100" fill="none" stroke={C.blue} stroke-width="2.5" stroke-linecap="round" style="--draw-d:1000ms" d={`M${-p.w / 2 + 38 + (p.l.length + 1) * p.fs * 0.6} 16H${-p.w / 2 + 38 + (p.l.length + 1 + p.v.length) * p.fs * 0.6}`}></path>}
-      </g>
+  <!-- formula bar leader to highlighted $412,500 cell -->
+  <g class="wsi-extra">
+  <g class="wsi-in" style={intro(760, 500, 0, 1)}>
+  <path d="M380 152L374 302" stroke={C.ink} stroke-opacity=".3" stroke-width="1.5" stroke-dasharray="2 6" stroke-linecap="round" fill="none"></path>
+  </g>
+  </g>
+  <!-- summary panel (top, slides in from right, overlaps board's top-right edge) -->
+  <g class="wsi-extra">
+  <g class="wsi-in" style={intro(640, 560, 0, 1)}>
+  <g class="wsi-pt" style="--d:0.6">
+  <g class="wsi-hero-slide" style="--in-d:640ms;--in-dur:560ms">
+  <g transform="translate(588 166)">
+    <rect y="8" width="180" height="112" rx="6" fill={C.ink} fill-opacity=".14" filter="url(#wsi-hero-soft)"></rect>
+    <rect width="180" height="112" rx="6" fill="#fff" stroke="#e3e0dd" stroke-width="1"></rect>
+    <path d="M0 6a6 6 0 0 1 6-6h168a6 6 0 0 1 6 6v18H0z" fill={C.surface}></path>
+    <rect y="24" width="180" height="1" fill="#e3e0dd"></rect>
+    <text x="12" y="16" font-size="10" font-weight="600" fill={C.ink} fill-opacity=".5">Summary</text>
+    <g font-size="12" fill={C.ink} style="font-variant-numeric:tabular-nums">
+      <rect x="12" y="36.5" width="7" height="7" rx="1.5" fill={C.green}></rect>
+      <text x="26" y="44" font-weight="500" fill-opacity=".66">Assets</text>
+      <text x="168" y="44" text-anchor="end" font-weight="600">$412,500</text>
+      <rect x="12" y="56.5" width="7" height="7" rx="1.5" fill={C.yellow}></rect>
+      <text x="26" y="64" font-weight="500" fill-opacity=".66">Liabilities</text>
+      <text x="168" y="64" text-anchor="end" font-weight="600">$186,200</text>
     </g>
-    </g>
-    </g>
-    </g>
-  ))}
+    <rect x="12" y="74" width="156" height="1" fill="#e3e0dd"></rect>
+    <rect x="12" y="86.5" width="7" height="7" rx="1.5" fill={C.blue}></rect>
+    <text x="26" y="94" font-size="13" font-weight="700" fill={C.ink}>Net worth</text>
+    <text x="168" y="94" font-size="13" font-weight="700" text-anchor="end" fill={C.ink}>$226,300</text>
+  </g>
+  </g>
+  </g>
+  </g>
+  </g>
+  <!-- summary leader to board total row (Assets, right edge) -->
+  <g class="wsi-extra">
+  <g class="wsi-in" style={intro(800, 500, 0, 1)}>
+  <path d="M588 206L524 228" stroke={C.ink} stroke-opacity=".3" stroke-width="1.5" stroke-dasharray="2 6" stroke-linecap="round" fill="none"></path>
+  </g>
+  </g>
   </g>
 </svg>
 
@@ -223,7 +232,7 @@ const pills = [
   @keyframes wsi-hero-mid { 0%, 100% { translate: 0 0; } 50% { translate: 0 calc(var(--lift, -7px) * var(--amp, 1)); } }
   @keyframes wsi-hero-top { 0%, 100% { translate: 0 0; } 50% { translate: 0 calc(var(--lift, -12px) * var(--amp, 1)); } }
   @keyframes wsi-hero-shadow { 0%, 100% { scale: 1; opacity: 1; } 50% { scale: .92; opacity: .7; } }
-  @keyframes wsi-hero-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .85; } }
+  @keyframes wsi-hero-slide { from { translate: 48px 0; } }
   @media (prefers-reduced-motion: no-preference) {
     .wsi-hero-base, .wsi-hero-mid, .wsi-hero-top { transform-box: fill-box; transform-origin: center; will-change: translate; }
     .wsi-hero-sh-base, .wsi-hero-sh-mid, .wsi-hero-sh-top { transform-box: fill-box; transform-origin: center; will-change: scale, opacity; }
@@ -233,6 +242,6 @@ const pills = [
     .wsi-hero-sh-base { animation: wsi-hero-shadow 8s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
     .wsi-hero-sh-mid { animation: wsi-hero-shadow 7s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
     .wsi-hero-sh-top { animation: wsi-hero-shadow 6s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
-    .wsi-hero-pulse { animation: wsi-hero-pulse 6s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+    svg.wsi.is-in .wsi-hero-slide { animation: wsi-hero-slide var(--in-dur, 700ms) cubic-bezier(0.23, 1, 0.32, 1) var(--in-d, 0ms) backwards; }
   }
 </style>

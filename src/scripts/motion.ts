@@ -144,7 +144,7 @@ function headerScroll(el: HTMLElement) {
 // caller); each svg gets its own lerp loop that stops once settled.
 // Writes --px (-1..1) and --py (-1..0) on the svg; motion.css offsets .wsi-pt by them.
 const PARALLAX_VARS = ['--px', '--py'];
-const PARALLAX_LERP = 0.07;
+const PARALLAX_LERP = 0.05;
 
 function parallax(svg: SVGElement, area: HTMLElement) {
   let tpx = 0, tpy = 0, px = 0, py = 0, raf = 0;
@@ -190,13 +190,7 @@ function parallax(svg: SVGElement, area: HTMLElement) {
 // isometric grid generated once at init as an inline SVG data URL in --sheet (motion.css draws
 // it on ::before). Each column has one width and each row one height for the whole section, so
 // every line runs straight and continuous in the projection. Columns are mostly 1x, sometimes
-// 1.6x or 2.2x. About 1 cell in 18 carries a small value; wider columns get longer values.
-// Seeded per section, so the pattern is stable.
-const SHEET_VALUES = [
-  ['$980', '12%', '$310', '28%'],
-  ['$1,240', '$4.2k', '=SUM'],
-  ['$12,480', '=SUM(C2:C9)', 'Q3 total'],
-];
+// 1.6x or 2.2x. Grid lines only, no values. Seeded per section, so the pattern is stable.
 const SHEET_COL_WIDTHS = [1, 1, 1, 1, 1, 1.6, 2.2];
 const SHEET_ROW_HEIGHTS = [1, 1, 1.5];
 const SHEET_HX = 44; // screen half-width of a unit cell in the isometric projection
@@ -267,21 +261,9 @@ function sheetSvg(width: number, height: number, seed: number) {
     edges += `M${x1.toFixed(1)},${y1.toFixed(1)}L${x2.toFixed(1)},${y2.toFixed(1)}`;
   }
 
-  let labels = '';
-  for (const row of rows) {
-    for (const col of cols) {
-      if (rnd() >= 1 / 18) continue;
-      // Wider columns take longer values.
-      const values = SHEET_VALUES[col.w >= 2.2 ? 2 : col.w >= 1.6 ? 1 : 0];
-      const value = values[Math.floor(rnd() * values.length)];
-      const [cx, cy] = isoPoint(col.s + col.w / 2, row.t + row.h / 2);
-      labels += `<text x="${cx.toFixed(1)}" y="${(cy + 2.5).toFixed(1)}">${value}</text>`;
-    }
-  }
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">` +
-    `<path fill="none" stroke="rgba(46,41,38,.07)" stroke-width="1" d="${edges}"/>` +
-    `<g font-family="sans-serif" font-size="7" text-anchor="middle" fill="rgba(46,41,38,.14)">${labels}</g></svg>`
+    `<path fill="none" stroke="rgba(46,41,38,.07)" stroke-width="1" d="${edges}"/></svg>`
   );
 }
 
@@ -361,8 +343,8 @@ function edgeLight(el: HTMLElement) {
 function breathe(root: HTMLElement) {
   const rnd = prng(hashSeed('breathe'));
   root.querySelectorAll<HTMLElement>('svg.wsi .wsi-breathe').forEach((el) => {
-    const duration = 5 + rnd() * 5;
-    el.style.setProperty('--amp', (0.55 + rnd() * 0.95).toFixed(3));
+    const duration = 7 + rnd() * 5;
+    el.style.setProperty('--amp', (0.35 + rnd() * 0.45).toFixed(3));
     el.style.setProperty('animation-duration', `${duration.toFixed(2)}s`);
     el.style.setProperty('animation-delay', `${(-rnd() * duration).toFixed(2)}s`);
   });

@@ -22,37 +22,41 @@ const OY0 = 150;
 const STEP = 60;
 const stripT = (i: number, dy = 0) => `matrix(1 -.5 1 .5 ${OX} ${OY0 + STEP * i + dy})`;
 
-// Tones: each slot paints an asset face (A) and a liability face (B); CSS cross-fades between them.
 const T = {
   blue: { fill: C.tB, side: '#b9dcee', dot: C.blue },
   green: { fill: C.tG, side: '#b6e2c1', dot: C.green },
   yellow: { fill: C.tC, side: '#ecd9a8', dot: C.yellow },
   pink: { fill: C.tP, side: '#e8bde0', dot: '#e67fc6' },
 };
+// Summary card (slot 0): constant ink-tinted face.
+const SUMMARY = { face: '#e4e1dc', side: '#c9c4bc' };
 
-// Slot 0 is the top card. `fm` = face shown in the mixed view (1 = A, 0 = B).
-const slots = [
-  { A: T.blue, B: T.yellow, fm: 1,
-    mixed: { l: 'Checking', v: '$18,400' }, assets: { l: 'Checking', v: '$18,400' }, liab: { l: 'Credit cards', v: '$7,000' } },
-  { A: T.green, B: T.yellow, fm: 1,
-    mixed: { l: 'Savings', v: '$45,000' }, assets: { l: 'Savings', v: '$45,000' }, liab: { l: 'Mortgage', v: '$168,000' } },
-  { A: T.blue, B: T.yellow, fm: 1,
-    mixed: { l: 'Retirement', v: '$149,100' }, assets: { l: 'Retirement', v: '$149,100' }, liab: { l: 'HELOC', v: '$25,000' } },
-  { A: T.green, B: T.pink, fm: 1,
-    mixed: { l: 'Real estate', v: '$200,000' }, assets: { l: 'Investments', v: '$62,300' }, liab: { l: 'Student loans', v: '$11,200' } },
-  { A: T.green, B: T.yellow, fm: 0,
-    mixed: { l: 'Mortgage', v: '$168,000' }, assets: { l: 'Real estate', v: '$200,000' }, liab: { l: 'Auto loan', v: '$14,800' } },
-  { A: T.blue, B: T.pink, fm: 0,
-    mixed: { l: 'Student loans', v: '$11,200' }, assets: { l: 'Auto', v: '$21,500' }, liab: { l: 'Notes payable', v: '$5,000' } },
+type View = 'mixed' | 'assets' | 'liabilities' | 'formulas';
+const VIEWS: View[] = ['mixed', 'assets', 'liabilities', 'formulas'];
+
+// Lower cards, top → bottom (slots 1–5). `A`/`B` are the two faces; `fm` = face shown in mixed/formulas (1 = A).
+const lower = [
+  { i: 1, A: T.blue, B: T.yellow, fm: 1, rows: {
+    mixed: { l: 'Checking', v: '$18,400' }, assets: { l: 'Checking', v: '$18,400' },
+    liabilities: { l: 'Credit cards', v: '$7,000' }, formulas: { l: 'Checking', v: '=B2*1' } } },
+  { i: 2, A: T.green, B: T.yellow, fm: 1, rows: {
+    mixed: { l: 'Savings', v: '$45,000' }, assets: { l: 'Savings', v: '$45,000' },
+    liabilities: { l: 'Mortgage', v: '$168,000' }, formulas: { l: 'Savings', v: '=B7-B9' } } },
+  { i: 3, A: T.blue, B: T.yellow, fm: 1, rows: {
+    mixed: { l: 'Retirement', v: '$149,100' }, assets: { l: 'Retirement', v: '$149,100' },
+    liabilities: { l: 'HELOC', v: '$25,000' }, formulas: { l: 'Retirement', v: '=C3+C4' } } },
+  { i: 4, A: T.green, B: T.pink, fm: 0, rows: {
+    mixed: { l: 'Mortgage', v: '$168,000' }, assets: { l: 'Investments', v: '$62,300' },
+    liabilities: { l: 'Student loans', v: '$11,200' }, formulas: { l: 'Mortgage', v: '=D5' } } },
+  { i: 5, A: T.blue, B: T.pink, fm: 0, rows: {
+    mixed: { l: 'Student loans', v: '$11,200' }, assets: { l: 'Real estate', v: '$200,000' },
+    liabilities: { l: 'Auto loan', v: '$14,800' }, formulas: { l: 'Student loans', v: '=B9/2' } } },
 ];
+type Lower = (typeof lower)[number];
+const dotFor = (s: Lower, k: View) => (k === 'assets' ? s.A.dot : k === 'liabilities' ? s.B.dot : s.fm ? s.A.dot : s.B.dot);
 
-type Slot = (typeof slots)[number];
-type View = 'mixed' | 'assets' | 'liab';
-const VIEWS: View[] = ['mixed', 'assets', 'liab'];
-const variantDot = (s: Slot, k: View) => (k === 'assets' ? s.A.dot : k === 'liab' ? s.B.dot : s.fm ? s.A.dot : s.B.dot);
-
-// top card first; drawn bottom-up so upper cards overlap lower ones
-const order = slots.map((s, i) => ({ ...s, i })).reverse();
+// Draw bottom-up so upper cards overlap lower ones; the summary (slot 0) is drawn last, on top.
+const drawOrder = [...lower].reverse();
 
 const pillW = (text: string, fs: number) => Math.round(text.length * fs * 0.54) + 44;
 const pills = [
@@ -60,10 +64,12 @@ const pills = [
   { key: 'liab', x: 652, y: 392, l: 'Liabilities', n: '13', v: 'categories', dot: C.yellow, cls: 'f3', d: 0.7, enter: intro(820, 460, 16, 0.95) },
 ].map((p) => ({ ...p, w: pillW(`${p.l} ${p.n} ${p.v}`, 14) }));
 
+const chipLabels: Record<View, string> = { mixed: 'Category', assets: 'Assets', liabilities: 'Liabilities', formulas: 'Formula' };
 const menus: Record<View, string[]> = {
   mixed: ['Checking', 'Savings', 'Retirement'],
-  assets: ['Checking', 'Savings', 'Retirement'],
-  liab: ['Credit cards', 'Mortgage', 'Student loans'],
+  assets: ['Checking', 'Savings', 'Investments'],
+  liabilities: ['Credit cards', 'Mortgage', 'Student loans'],
+  formulas: ['SUM', 'AVERAGE', 'IF'],
 };
 ---
 
@@ -74,9 +80,6 @@ const menus: Record<View, string[]> = {
   font-family="inherit"
   focusable="false"
   data-view="mixed"
-  data-values="on"
-  data-shown-view="mixed"
-  data-shown-values="on"
   role={title ? 'img' : undefined}
   aria-hidden={title ? undefined : 'true'}
 >
@@ -84,8 +87,8 @@ const menus: Record<View, string[]> = {
 
   <!-- stacked cards (mid): one shared phase and one depth so the stack lifts as a unit -->
   <g class="wsi-pt" style="--d:0.3">
-  {order.map((s) => (
-    <g class="wsi-cats-card" data-i={s.i} data-fold-y={STEP * (slots.length - 1 - s.i)} style={`animation-delay:${(s.i * 0.11).toFixed(2)}s;--i:${s.i};--fm:${s.fm}`}>
+  {drawOrder.map((s) => (
+    <g class="wsi-cats-card" data-i={s.i} style={`animation-delay:${(s.i * 0.11).toFixed(2)}s;--i:${s.i};--fm:${s.fm}`}>
     <g class="wsi-breathe wsi-cats-mid" style={lag(0.4)}>
       <g class="wsi-cats-sh-mid"><g transform={stripT(s.i, 16)}><rect width={W} height={H} rx="14" fill={C.ink} fill-opacity=".07"></rect></g></g>
       <g transform={stripT(s.i, 8)}>
@@ -95,17 +98,34 @@ const menus: Record<View, string[]> = {
       <g transform={stripT(s.i)}>
         <rect class="face-a" width={W} height={H} rx="14" fill={s.A.fill} stroke="#fff" stroke-width="2"></rect>
         <rect class="face-b" width={W} height={H} rx="14" fill={s.B.fill} stroke="#fff" stroke-width="2"></rect>
-        {VIEWS.map((k) => (
-          <g class={`v v-${k}`}>
-            <circle cx="30" cy="50" r="10" fill={variantDot(s, k)} stroke="#fff" stroke-width="2.5"></circle>
-            <text x="52" y="55" font-size="15" font-weight="600" fill={C.ink}>{s[k].l}</text>
-            <text class="val" x="206" y="55" font-size="14" font-weight="500" fill={C.ink} fill-opacity=".66" text-anchor="end">{s[k].v}</text>
-          </g>
-        ))}
+        <g class="sw-wrap">
+          {VIEWS.map((k) => (
+            <g class={`sw${k === 'mixed' ? ' on' : ''}`} data-v={k}>
+              <circle cx="30" cy="50" r="10" fill={dotFor(s, k)} stroke="#fff" stroke-width="2.5"></circle>
+              <text x="52" y="55" font-size="15" font-weight="600" fill={C.ink}>{s.rows[k].l}</text>
+              <text x="206" y="55" font-size="14" font-weight="500" font-family={k === 'formulas' ? 'ui-monospace, Menlo, monospace' : undefined} fill={C.ink} fill-opacity=".66" text-anchor="end">{s.rows[k].v}</text>
+            </g>
+          ))}
+        </g>
       </g>
     </g>
     </g>
   ))}
+    <!-- summary card (top, constant except its value in the formulas view) -->
+    <g class="wsi-cats-card" data-i="0" style="animation-delay:0s;--i:0">
+    <g class="wsi-breathe wsi-cats-mid" style={lag(0.4)}>
+      <g class="wsi-cats-sh-mid"><g transform={stripT(0, 16)}><rect width={W} height={H} rx="14" fill={C.ink} fill-opacity=".07"></rect></g></g>
+      <g transform={stripT(0, 8)}><rect width={W} height={H} rx="14" fill={SUMMARY.side}></rect></g>
+      <g transform={stripT(0)}>
+        <rect width={W} height={H} rx="14" fill={SUMMARY.face} stroke="#fff" stroke-width="2"></rect>
+        <text x="24" y="34" font-size="13" font-weight="600" fill={C.ink} fill-opacity=".66">Net worth</text>
+        <g class="sw-wrap" data-summary="true">
+          <g class="sw on" data-v="mixed"><text x="24" y="63" font-size="22" font-weight="700" fill={C.ink}>$226,300</text></g>
+          <g class="sw" data-v="formulas"><text x="24" y="63" font-size="16" font-weight="600" fill={C.ink}>=Assets−Liabilities</text></g>
+        </g>
+      </g>
+    </g>
+    </g>
   </g>
 
   <!-- leaders (base) -->
@@ -128,7 +148,7 @@ const menus: Record<View, string[]> = {
         <rect x={-p.w / 2} y="-19" width={p.w} height="38" rx="4" fill="#fff" stroke={C.beige} stroke-width="1.5"></rect>
         <rect x={-p.w / 2 + 18.5} y="-3.5" width="7" height="7" rx="1.5" fill={p.dot}></rect>
         <text x={-p.w / 2 + 38} y="5" font-size="14" fill={C.ink}>
-          <tspan fill-opacity=".66" font-weight="500">{p.l}</tspan> <tspan class="pill-n" font-weight="700">{p.n}</tspan> <tspan font-weight="700">{p.v}</tspan>
+          <tspan fill-opacity=".66" font-weight="500">{p.l}</tspan> <tspan font-weight="700">{p.n}</tspan> <tspan font-weight="700">{p.v}</tspan>
         </text>
       </g>
       </g>
@@ -146,15 +166,23 @@ const menus: Record<View, string[]> = {
     <g class="wsi-breathe wsi-cats-top wsi-cats-f2" style={lag(0.8 + jit(2, 0.5))}>
       <rect class="wsi-cats-sh-top" style={lag(0.8 + jit(2, 0.5))} x="0" y="6" width="150" height="40" rx="4" fill={C.ink} fill-opacity=".1"></rect>
       <rect x="0" y="0" width="150" height="40" rx="4" fill="#fff" stroke={C.blue} stroke-width="2"></rect>
-      <text class="chip-t chip-mixed" x="18" y="25" font-size="14" font-weight="600" fill={C.ink}>Category</text>
-      <text class="chip-t chip-assets" x="18" y="25" font-size="14" font-weight="600" fill={C.ink}>Assets</text>
-      <text class="chip-t chip-liab" x="18" y="25" font-size="14" font-weight="600" fill={C.ink}>Liabilities</text>
+      <g class="sw-wrap">
+        {VIEWS.map((k) => (
+          <g class={`sw${k === 'mixed' ? ' on' : ''}`} data-v={k}>
+            <text x="18" y="25" font-size="14" font-weight="600" fill={C.ink}>{chipLabels[k]}</text>
+          </g>
+        ))}
+      </g>
       <path d="m118 17 6 6 6-6" stroke={C.ink} stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
       <g class="wsi-cats-sh-top" style={lag(0.8 + jit(2, 0.5))}><rect x="0" y="54" width="150" height="112" rx="16" fill={C.ink} fill-opacity=".08" transform="translate(0 5)"></rect></g>
       <rect x="0" y="54" width="150" height="112" rx="16" fill="#fff" stroke={C.beige} stroke-width="1.5"></rect>
       <rect x="8" y="98" width="134" height="32" rx="10" fill={C.tB}></rect>
-      <g font-size="14" fill={C.ink} font-weight="500">
-        {VIEWS.map((k) => menus[k].map((m, i) => <text class={`menu-t menu-${k}`} x="20" y={80 + i * 36}>{m}</text>))}
+      <g class="sw-wrap">
+        {VIEWS.map((k) => (
+          <g class={`sw${k === 'mixed' ? ' on' : ''}`} data-v={k} font-size="14" fill={C.ink} font-weight="500">
+            {menus[k].map((m, i) => <text x="20" y={80 + i * 36}>{m}</text>)}
+          </g>
+        ))}
       </g>
       <path class="wsi-draw" pathLength="100" d="m118 109 5 5 9-10" stroke="#3f9cc9" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none" style="--draw-d:1200ms"></path>
     </g>
@@ -173,34 +201,18 @@ const menus: Record<View, string[]> = {
   @keyframes wsi-cats-drop { from { opacity: 0; translate: 0 -28px; } to { opacity: 1; translate: 0 0; } }
   @keyframes wsi-cats-fade { from { opacity: 0; } to { opacity: 1; } }
 
-  /* view state: instant base. The script below folds the stack, swaps content while folded, then unfolds. */
+  /* view state: the script toggles `.sw.on` per morphing group; faces cross-fade via --fa. */
   svg.wsi-cats .wsi-cats-card { --fa: var(--fm, 1); }
-  svg.wsi-cats[data-shown-view="assets"] .wsi-cats-card { --fa: 1; }
-  svg.wsi-cats[data-shown-view="liabilities"] .wsi-cats-card { --fa: 0; }
+  svg.wsi-cats[data-view="assets"] .wsi-cats-card { --fa: 1; }
+  svg.wsi-cats[data-view="liabilities"] .wsi-cats-card { --fa: 0; }
   svg.wsi-cats .face-a { opacity: var(--fa); }
   svg.wsi-cats .face-b { opacity: calc(1 - var(--fa)); }
-  svg.wsi-cats .v { opacity: 0; }
-  svg.wsi-cats[data-shown-view="mixed"] .v-mixed,
-  svg.wsi-cats[data-shown-view="assets"] .v-assets,
-  svg.wsi-cats[data-shown-view="liabilities"] .v-liab { opacity: 1; }
-  svg.wsi-cats .chip-t { opacity: 0; }
-  svg.wsi-cats[data-shown-view="mixed"] .chip-mixed,
-  svg.wsi-cats[data-shown-view="none"] .chip-mixed,
-  svg.wsi-cats[data-shown-view="assets"] .chip-assets,
-  svg.wsi-cats[data-shown-view="liabilities"] .chip-liab { opacity: 1; }
-  svg.wsi-cats[data-shown-view="liabilities"] .pill-assets,
-  svg.wsi-cats[data-shown-view="assets"] .pill-liab,
-  svg.wsi-cats[data-shown-view="none"] .wsi-cats-pill { opacity: .4; }
-  svg.wsi-cats .menu-t { opacity: 0; }
-  svg.wsi-cats[data-shown-view="mixed"] .menu-mixed,
-  svg.wsi-cats[data-shown-view="assets"] .menu-assets,
-  svg.wsi-cats[data-shown-view="liabilities"] .menu-liab { opacity: 1; }
-
-  /* values toggle (data-shown-values): card $ values and the bold pill numbers */
-  svg.wsi-cats .val { opacity: 1; }
-  svg.wsi-cats[data-shown-values="off"] .val { opacity: 0; }
-  svg.wsi-cats .pill-n { fill-opacity: 1; }
-  svg.wsi-cats[data-shown-values="off"] .pill-n { fill-opacity: .35; }
+  svg.wsi-cats .sw { opacity: 0; }
+  svg.wsi-cats .sw.on { opacity: 1; }
+  svg.wsi-cats[data-view="liabilities"] .pill-assets,
+  svg.wsi-cats[data-view="assets"] .pill-liab { opacity: .4; }
+  svg.wsi-cats[data-view="assets"] .pill-assets,
+  svg.wsi-cats[data-view="liabilities"] .pill-liab { scale: 1.04; }
 
   @media (prefers-reduced-motion: no-preference) {
     .wsi-cats-base, .wsi-cats-mid, .wsi-cats-top { transform-box: fill-box; transform-origin: center; will-change: translate; }
@@ -214,113 +226,81 @@ const menus: Record<View, string[]> = {
     html.js svg.wsi-cats:not(.is-in) .wsi-cats-late { opacity: 0; }
     svg.wsi-cats.is-in .wsi-cats-card { animation: wsi-cats-drop 600ms cubic-bezier(0.23, 1, 0.32, 1) both; }
     svg.wsi-cats.is-in .wsi-cats-late { animation: wsi-cats-fade 500ms cubic-bezier(0.23, 1, 0.32, 1) 0.7s both; }
-    /* active pill lift; opacity is owned by the fold script, scale stays a CSS transition */
-    svg.wsi-cats .wsi-cats-pill { transition: scale 350ms cubic-bezier(0.23, 1, 0.32, 1); }
-    svg.wsi-cats[data-shown-view="assets"] .pill-liab,
-    svg.wsi-cats[data-shown-view="liabilities"] .pill-assets { scale: 1.04; }
+    /* face tint cross-fade, staggered top → bottom by slot index */
+    svg.wsi-cats .face-a, svg.wsi-cats .face-b { transition: opacity 380ms cubic-bezier(0.23, 1, 0.32, 1); transition-delay: calc(var(--i, 0) * 50ms); }
+    /* active pill lift + dim of the inactive one; scale stays a CSS transition */
+    svg.wsi-cats .wsi-cats-pill { transition: opacity 380ms cubic-bezier(0.23, 1, 0.32, 1), scale 350ms cubic-bezier(0.23, 1, 0.32, 1); }
   }
 </style>
 
 <script>
-  // Fold → swap → unfold. Cards collapse onto the bottom card (bottom first), pills and the dropdown fade out,
-  // the labels/values swap while folded, then cards drop in from the top and pills/dropdown fade back in.
+  // Morph: each swappable group (`.sw`) inside a `.sw-wrap` exits upward, then the target enters from below.
+  // Lower cards stagger top → bottom by 50ms; each morph lasts ~380ms (150ms out + 230ms in).
+  const STAGGER = 50;
+  const OUT_MS = 150;
+  const IN_MS = 230;
+  const EXIT = 'cubic-bezier(0.5, 0, 0.75, 0)';
   const EASE = 'cubic-bezier(0.23, 1, 0.32, 1)';
-  const FOLD_MS = 260;
-  const FOLD_STAGGER = 40;
-  const FADE_MS = 260;
-  const DROP_MS = 520;
-  const DROP_STAGGER = 90;
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 
-  type Snap = { t: string; o: string };
-  const settle = (anims: Animation[]) => Promise.all(anims.map((a) => a.finished.catch(() => undefined)));
+  type Track = { timers: number[]; anims: Animation[] };
+  const tracks = new WeakMap<Element, Track>();
 
-  function wire(svg: SVGSVGElement) {
-    const cards = Array.from(svg.querySelectorAll<SVGGElement>('.wsi-cats-card'))
-      .sort((a, b) => Number(a.dataset.i) - Number(b.dataset.i)); // top card first
-    const fades = Array.from(svg.querySelectorAll<SVGGElement>('.wsi-cats-pill, .wsi-cats-f2, .wsi-cats-base'));
-    const n = cards.length;
-    let seq = 0;
-    let live: Animation[] = [];
+  function swap(wrap: Element, key: string, delay: number, instant: boolean) {
+    const track = tracks.get(wrap) ?? { timers: [], anims: [] };
+    tracks.set(wrap, track);
+    track.timers.forEach((t) => clearTimeout(t));
+    track.anims.forEach((a) => a.cancel());
+    track.timers = [];
+    track.anims = [];
 
-    const cancel = () => {
-      for (const a of live) a.cancel();
-      live = [];
-    };
-    // Shown labels/values: CSS keys off these, and they only change while the stack is folded.
-    const commit = () => {
-      svg.dataset.shownView = svg.dataset.view ?? 'mixed';
-      svg.dataset.shownValues = svg.dataset.values ?? 'on';
-    };
-    const isShown = () =>
-      svg.dataset.shownView === svg.dataset.view && svg.dataset.shownValues === svg.dataset.values;
-    // Computed style includes in-flight animations, so a restart continues from what is on screen.
-    const snap = (el: Element): Snap => {
-      const cs = getComputedStyle(el);
-      const t = cs.getPropertyValue('translate');
-      return { t: t && t !== 'none' ? t : '0px 0px', o: cs.opacity };
-    };
-
-    async function play() {
-      const token = ++seq;
-      const from = new Map<Element, Snap>();
-      for (const el of [...cards, ...fades]) from.set(el, snap(el));
-      cancel();
-
-      const fold: Animation[] = [
-        ...cards.map((c, k) => {
-          const f = from.get(c)!;
-          return c.animate(
-            [{ translate: f.t, opacity: f.o }, { translate: `0px ${c.dataset.foldY ?? 0}px`, opacity: 0 }],
-            { duration: FOLD_MS, delay: (n - 1 - k) * FOLD_STAGGER, easing: EASE, fill: 'forwards' },
-          );
-        }),
-        ...fades.map((el) =>
-          el.animate([{ opacity: from.get(el)!.o }, { opacity: 0 }], { duration: FADE_MS, easing: EASE, fill: 'forwards' }),
-        ),
-      ];
-      live = fold;
-      await settle(fold);
-      if (token !== seq) return;
-
-      // Midpoint: swap content while folded. Cancelling the fold reveals the new base in the same task (no paint).
-      commit();
-      cancel();
-      const base = fades.map((el) => getComputedStyle(el).opacity);
-
-      const landed = (n - 1) * DROP_STAGGER + DROP_MS;
-      const unfold: Animation[] = [
-        ...cards.map((c, k) =>
-          c.animate([{ translate: '0px -24px', opacity: 0 }, { translate: '0px 0px', opacity: 1 }], {
-            duration: DROP_MS, delay: k * DROP_STAGGER, easing: EASE, fill: 'backwards',
-          }),
-        ),
-        ...fades.map((el, j) =>
-          el.animate([{ opacity: 0 }, { opacity: base[j] }], {
-            duration: FADE_MS, delay: landed, easing: EASE, fill: 'backwards',
-          }),
-        ),
-      ];
-      live = unfold;
-      await settle(unfold);
-      if (token !== seq) return;
-      cancel(); // finished effects fall back to the same base values
+    const next = wrap.querySelector<SVGGElement>(`:scope > [data-v="${key}"]`);
+    const cur = wrap.querySelector<SVGGElement>(':scope > .sw.on');
+    if (!next || next === cur) return;
+    if (instant || !cur) {
+      cur?.classList.remove('on');
+      next.classList.add('on');
+      return;
     }
 
-    const sync = () => {
-      if (isShown() && live.length === 0) return;
-      if (reduced.matches || !svg.classList.contains('is-in') || typeof Element.prototype.animate !== 'function') {
-        seq++;
-        cancel();
-        commit();
-        return;
-      }
-      void play();
-    };
-
-    commit();
-    new MutationObserver(sync).observe(svg, { attributes: true, attributeFilter: ['data-view', 'data-values'] });
+    const out = cur.animate(
+      [{ opacity: 1, translate: '0px 0px' }, { opacity: 0, translate: '0px -10px' }],
+      { duration: OUT_MS, delay, easing: EXIT, fill: 'forwards' },
+    );
+    track.anims.push(out);
+    track.timers.push(
+      window.setTimeout(() => {
+        out.cancel();
+        cur.classList.remove('on');
+        next.classList.add('on');
+        track.timers = [];
+        track.anims = [
+          next.animate(
+            [{ opacity: 0, translate: '0px 10px' }, { opacity: 1, translate: '0px 0px' }],
+            { duration: IN_MS, easing: EASE },
+          ),
+        ];
+      }, delay + OUT_MS),
+    );
   }
 
-  document.querySelectorAll<SVGSVGElement>('svg.wsi-cats').forEach(wire);
+  function setView(svg: SVGSVGElement, view: string, instant: boolean) {
+    svg.querySelectorAll<SVGGElement>('.sw-wrap').forEach((wrap) => {
+      const card = wrap.closest<SVGGElement>('.wsi-cats-card');
+      const delay = card ? Number(card.dataset.i) * STAGGER : 0;
+      const summary = wrap.dataset.summary === 'true';
+      // The summary card only changes its value in the formulas view.
+      const key = summary ? (view === 'formulas' ? 'formulas' : 'mixed') : view;
+      swap(wrap, key, delay, instant);
+    });
+  }
+
+  document.querySelectorAll<SVGSVGElement>('svg.wsi-cats').forEach((svg) => {
+    const instant = reduced.matches || typeof Element.prototype.animate !== 'function';
+    setView(svg, svg.dataset.view ?? 'mixed', true);
+    new MutationObserver(() => setView(svg, svg.dataset.view ?? 'mixed', instant)).observe(svg, {
+      attributes: true,
+      attributeFilter: ['data-view'],
+    });
+  });
 </script>

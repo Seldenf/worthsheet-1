@@ -5,11 +5,14 @@ interface Props {
 }
 const { class: className, title } = Astro.props;
 
-const C = { ink: '#2e2926', beige: '#e8e7e5', blue: '#6cbee4', green: '#40aa4a', yellow: '#fac344', tB: '#e2f2f9', tG: '#e2f9e9', tC: '#f9f2e2', sheets: '#0f9d58' };
+// Every pad, ground shadow and tint is an opaque hex (no alpha), so the progress line underneath never shows through.
+const C = { ink: '#2e2926', paper: '#f5f3f2', shade: '#e1dfde', beige: '#e8e7e5', blue: '#6cbee4', green: '#40aa4a', yellow: '#fac344', tB: '#e2f2f9', tG: '#e2f9e9', tC: '#f9f2e2', sheets: '#0f9d58' };
 const iso = (cx: number, cy: number, s: number) => `matrix(1 -.5 1 .5 ${cx - s} ${cy})`;
-// Breathing layers: base 0s, mid +0.4s, top +0.8s; steps ripple left to right.
+// Stagger: steps ripple left to right; each tile's own breathing timing comes from motion.ts (--amp, duration, delay on .wsi-breathe).
 const lag = (s: number) => `animation-delay:${s.toFixed(2)}s`;
 const jit = (i: number, amp: number) => (((i * 0.618) % 1) - 0.5) * 2 * amp;
+// Layer separation at peak breathing: top lifts 7px, slab lifts 7px minus this (1–3px per tile, desynced by index).
+const SEP = (i: number) => 2 + jit(i, 1);
 
 const ICONS = [
   '<path d="M12 4v11M7 10.5l5 5 5-5M5 19.5h14"/>',
@@ -29,7 +32,8 @@ const steps = [
 ];
 const GAP = 34; // pad sits this far below the tile
 const S = 64; // tile side
-const k = (S * 0.58) / 24;
+// Glyph: 70% of the previous size (previously 0.58 of the tile side), centered on the face.
+const k = ((S * 0.58) / 24) * 0.7;
 let path = `M${steps[0].x} ${steps[0].y + GAP}`;
 for (let i = 1; i < steps.length; i++) {
   const a = steps[i - 1];
@@ -59,10 +63,11 @@ const inStyle = (d: number, dur: number, y: number, s: number) => `--in-d:${d}ms
   </g>
   <!-- progress: solid overlay on the dashed base; its length is driven by --p (0–100) set on <svg> by the page script -->
   <path class="wsi-steps-progress" d={path} pathLength="100" stroke={C.ink} stroke-opacity="1" stroke-width="2.5" stroke-linecap="round" fill="none"></path>
-  <!-- pads (base) -->
+  <!-- pads (base): paper underlay + opaque pad color -->
   {steps.map((t, i) => (
     <g class="wsi-in" style={inStyle(i * 60, 900, 10, 0.95)}>
       <g class={`wsi-breathe wsi-steps-base wsi-steps-n${i + 1}`}><g transform={iso(t.x, t.y + GAP, 88)}>
+        <rect width="88" height="88" rx="14" fill={C.paper}></rect>
         <rect width="88" height="88" rx="14" fill={t.pad} stroke="#fff" stroke-width="2"></rect>
       </g></g>
     </g>
@@ -71,20 +76,21 @@ const inStyle = (d: number, dur: number, y: number, s: number) => `--in-d:${d}ms
     <g class={i > 0 ? 'wsi-extra' : undefined}>
     <g class={`wsi-steps-n${i + 1}`}>
       <g class="wsi-in" style={inStyle(tIn(i), 620, 0, 0.92)}>
-        <g class="wsi-steps-sh-mid" style={lag(0.4 + i * 0.4)}><g transform={iso(t.x + 4, t.y + GAP + 6, S)}><rect width={S} height={S} rx="10" fill="#f5f3f2"></rect><rect width={S} height={S} rx="10" fill={C.ink} fill-opacity=".1"></rect></g></g>
+        <g class="wsi-steps-sh-mid" style={lag(0.4 + i * 0.4)}><g transform={iso(t.x + 4, t.y + GAP + 6, S)}><rect width={S} height={S} rx="10" fill={C.paper}></rect><rect width={S} height={S} rx="10" fill={C.shade}></rect></g></g>
       </g>
     </g>
     </g>
   ))}
 
 
+  <!-- tiles: slab (darker, lifts less) under a top layer (face + glyph); both share one breathing timing via .wsi-breathe on the parent -->
   {steps.map((t, i) => (
     <g class={i > 0 ? 'wsi-extra' : undefined}>
-    <g class={`wsi-steps-n${i + 1}`} data-step={i + 1} style="cursor:pointer">
+    <g class={`wsi-steps-n${i + 1} wsi-steps-tile`} data-step={i + 1} style="cursor:pointer">
       <g class="wsi-in" style={inStyle(tIn(i), 620, 22, 0.9)}>
-        <g class="wsi-breathe wsi-steps-mid" style={lag(0.4 + i * 0.4)}>
-          <g transform={iso(t.x, t.y + 8, S)}><rect width={S} height={S} rx="10" fill={t.side}></rect></g>
-          <g transform={iso(t.x, t.y, S)}>
+        <g class="wsi-breathe wsi-steps-mid">
+          <g class="wsi-steps-slab" style={`--sep:${SEP(i).toFixed(2)}px`}><g transform={iso(t.x, t.y + 8, S)}><rect width={S} height={S} rx="10" fill={t.side}></rect></g></g>
+          <g class="wsi-steps-top"><g transform={iso(t.x, t.y, S)}>
             <rect width={S} height={S} rx="10" fill={t.fill} stroke="#fff" stroke-width="2"></rect>
             <g
               transform={`translate(${S / 2} ${S / 2}) scale(${k}) translate(-12 -12)`}
@@ -96,7 +102,7 @@ const inStyle = (d: number, dur: number, y: number, s: number) => `--in-d:${d}ms
               fill="none"
               set:html={ICONS[i]}
             ></g>
-          </g>
+          </g></g>
         </g>
       </g>
     </g>
@@ -107,14 +113,24 @@ const inStyle = (d: number, dur: number, y: number, s: number) => `--in-d:${d}ms
 <style is:global>
   :where(svg.wsi) { display: block; width: 100%; height: auto; }
   @keyframes wsi-steps-base { 0%, 100% { translate: 0 0; } 50% { translate: 0 calc(var(--lift, -2px) * var(--amp, 1)); } }
-  @keyframes wsi-steps-mid { 0%, 100% { translate: 0 0; } 50% { translate: 0 calc(var(--lift, -7px) * var(--amp, 1)); } }
-  @keyframes wsi-steps-shadow { 0%, 100% { scale: 1; opacity: 1; } 50% { scale: .92; opacity: .7; } }
+  @keyframes wsi-steps-top { 0%, 100% { translate: 0 0; } 50% { translate: 0 calc(var(--lift, -7px) * var(--amp, 1)); } }
+  @keyframes wsi-steps-slab { 0%, 100% { translate: 0 0; } 50% { translate: 0 calc((var(--lift, -7px) + var(--sep, 2px) + var(--extra, 0px)) * var(--amp, 1)); } }
+  @keyframes wsi-steps-shadow { 0%, 100% { scale: 1; } 50% { scale: .92; } }
   @keyframes wsi-steps-dash { to { stroke-dashoffset: -18; } }
   @media (prefers-reduced-motion: no-preference) {
-    .wsi-steps-base, .wsi-steps-mid { transform-box: fill-box; transform-origin: center; will-change: translate; }
-    .wsi-steps-sh-mid { transform-box: fill-box; transform-origin: center; will-change: scale, opacity; }
+    .wsi-steps-base, .wsi-steps-top, .wsi-steps-slab { transform-box: fill-box; transform-origin: center; will-change: translate; }
+    .wsi-steps-sh-mid { transform-box: fill-box; transform-origin: center; will-change: scale; }
     .wsi-steps-base { --lift: -2px; animation: wsi-steps-base 8s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
-    .wsi-steps-mid { --lift: -7px; animation: wsi-steps-mid 7s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+    /* The group carries .wsi-breathe only so motion.ts sets its --amp, duration and delay; its children inherit that timing. */
+    svg.wsi .wsi-steps-mid { --lift: -7px; animation-name: none; }
+    .wsi-steps-top, .wsi-steps-slab {
+      animation-duration: inherit;
+      animation-delay: inherit;
+      animation-iteration-count: infinite;
+      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+    }
+    .wsi-steps-top { animation-name: wsi-steps-top; }
+    .wsi-steps-slab { animation-name: wsi-steps-slab; }
     .wsi-steps-sh-mid { animation: wsi-steps-shadow 7s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
     .wsi-steps-path { animation: wsi-steps-dash 9s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
   }
@@ -123,48 +139,60 @@ const inStyle = (d: number, dur: number, y: number, s: number) => `--in-d:${d}ms
   .wsi-steps-progress { opacity: 0; stroke-dasharray: 100; stroke-dashoffset: calc(100 - var(--p, 0)); }
   svg[data-active] .wsi-steps-progress, svg.wsi-steps[style*="--p:"] .wsi-steps-progress { opacity: 1; }
 
+  /* Inactive steps dim by filter only (no group opacity), so nothing underneath can show through the pads. */
   svg[data-active] .wsi-steps-n1, svg[data-active] .wsi-steps-n2,
-  svg[data-active] .wsi-steps-n3, svg[data-active] .wsi-steps-n4 { filter: grayscale(.9); opacity: .45; }
+  svg[data-active] .wsi-steps-n3, svg[data-active] .wsi-steps-n4 { filter: grayscale(.85) brightness(1.32) contrast(.8); }
   svg[data-active="1"] .wsi-steps-n1, svg[data-active="2"] .wsi-steps-n2,
   svg[data-active="3"] .wsi-steps-n3, svg[data-active="4"] .wsi-steps-n4 {
-    opacity: 1;
+    filter: none;
     translate: 0 -6px;
   }
-  svg[data-active="1"] .wsi-steps-n1 { filter: drop-shadow(0 10px 18px rgba(108,190,228,.35)); }
-  svg[data-active="2"] .wsi-steps-n2 { filter: drop-shadow(0 10px 18px rgba(64,170,74,.35)); }
-  svg[data-active="3"] .wsi-steps-n3 { filter: drop-shadow(0 10px 18px rgba(250,195,68,.35)); }
-  svg[data-active="4"] .wsi-steps-n4 { filter: drop-shadow(0 10px 18px rgba(64,170,74,.35)); }
+  svg[data-active="1"] .wsi-steps-tile.wsi-steps-n1 { filter: drop-shadow(0 10px 18px rgba(108,190,228,.35)); }
+  svg[data-active="2"] .wsi-steps-tile.wsi-steps-n2 { filter: drop-shadow(0 10px 18px rgba(64,170,74,.35)); }
+  svg[data-active="3"] .wsi-steps-tile.wsi-steps-n3 { filter: drop-shadow(0 10px 18px rgba(250,195,68,.35)); }
+  svg[data-active="4"] .wsi-steps-tile.wsi-steps-n4 { filter: drop-shadow(0 10px 18px rgba(64,170,74,.35)); }
 
-  /* Soft tone tint on the active tile's pad (base rect) and ground shadow (second rect of the shadow group). */
-  svg[data-active="1"] .wsi-steps-base.wsi-steps-n1 rect { fill: rgba(108,190,228,.22); }
-  svg[data-active="2"] .wsi-steps-base.wsi-steps-n2 rect { fill: rgba(64,170,74,.22); }
-  svg[data-active="3"] .wsi-steps-base.wsi-steps-n3 rect { fill: rgba(250,195,68,.22); }
-  svg[data-active="4"] .wsi-steps-base.wsi-steps-n4 rect { fill: rgba(64,170,74,.22); }
-  svg[data-active="1"] .wsi-steps-n1 .wsi-steps-sh-mid rect:last-child { fill: rgba(108,190,228,.35); }
-  svg[data-active="2"] .wsi-steps-n2 .wsi-steps-sh-mid rect:last-child { fill: rgba(64,170,74,.35); }
-  svg[data-active="3"] .wsi-steps-n3 .wsi-steps-sh-mid rect:last-child { fill: rgba(250,195,68,.35); }
-  svg[data-active="4"] .wsi-steps-n4 .wsi-steps-sh-mid rect:last-child { fill: rgba(64,170,74,.35); }
+  /* Soft tone tint on the active tile's pad and ground shadow: opaque mixes of the tone over #f5f3f2. */
+  svg[data-active="1"] .wsi-steps-base.wsi-steps-n1 rect:last-child { fill: #d7e7ef; }
+  svg[data-active="2"] .wsi-steps-base.wsi-steps-n2 rect:last-child { fill: #cde3cd; }
+  svg[data-active="3"] .wsi-steps-base.wsi-steps-n3 rect:last-child { fill: #f6e8cc; }
+  svg[data-active="4"] .wsi-steps-base.wsi-steps-n4 rect:last-child { fill: #cde3cd; }
+  svg[data-active="1"] .wsi-steps-n1 .wsi-steps-sh-mid rect:last-child { fill: #c5e0ed; }
+  svg[data-active="2"] .wsi-steps-n2 .wsi-steps-sh-mid rect:last-child { fill: #b6d9b7; }
+  svg[data-active="3"] .wsi-steps-n3 .wsi-steps-sh-mid rect:last-child { fill: #f7e2b5; }
+  svg[data-active="4"] .wsi-steps-n4 .wsi-steps-sh-mid rect:last-child { fill: #b6d9b7; }
+
+  /* Active tile separates its layers a bit more. */
+  svg[data-active="1"] .wsi-steps-tile.wsi-steps-n1 .wsi-steps-slab,
+  svg[data-active="2"] .wsi-steps-tile.wsi-steps-n2 .wsi-steps-slab,
+  svg[data-active="3"] .wsi-steps-tile.wsi-steps-n3 .wsi-steps-slab,
+  svg[data-active="4"] .wsi-steps-tile.wsi-steps-n4 .wsi-steps-slab { --extra: 1.5px; }
 
   /* Only the active step breathes; inactive steps hold still while one is selected. */
   svg[data-active] .wsi-steps-base,
-  svg[data-active] .wsi-steps-mid,
+  svg[data-active] .wsi-steps-top,
+  svg[data-active] .wsi-steps-slab,
   svg[data-active] .wsi-steps-sh-mid { animation-play-state: paused; }
   svg[data-active="1"] .wsi-steps-n1.wsi-steps-base,
-  svg[data-active="1"] .wsi-steps-n1 .wsi-steps-mid,
+  svg[data-active="1"] .wsi-steps-n1 .wsi-steps-top,
+  svg[data-active="1"] .wsi-steps-n1 .wsi-steps-slab,
   svg[data-active="1"] .wsi-steps-n1 .wsi-steps-sh-mid,
   svg[data-active="2"] .wsi-steps-n2.wsi-steps-base,
-  svg[data-active="2"] .wsi-steps-n2 .wsi-steps-mid,
+  svg[data-active="2"] .wsi-steps-n2 .wsi-steps-top,
+  svg[data-active="2"] .wsi-steps-n2 .wsi-steps-slab,
   svg[data-active="2"] .wsi-steps-n2 .wsi-steps-sh-mid,
   svg[data-active="3"] .wsi-steps-n3.wsi-steps-base,
-  svg[data-active="3"] .wsi-steps-n3 .wsi-steps-mid,
+  svg[data-active="3"] .wsi-steps-n3 .wsi-steps-top,
+  svg[data-active="3"] .wsi-steps-n3 .wsi-steps-slab,
   svg[data-active="3"] .wsi-steps-n3 .wsi-steps-sh-mid,
   svg[data-active="4"] .wsi-steps-n4.wsi-steps-base,
-  svg[data-active="4"] .wsi-steps-n4 .wsi-steps-mid,
+  svg[data-active="4"] .wsi-steps-n4 .wsi-steps-top,
+  svg[data-active="4"] .wsi-steps-n4 .wsi-steps-slab,
   svg[data-active="4"] .wsi-steps-n4 .wsi-steps-sh-mid { animation-play-state: running; }
 
   @media (prefers-reduced-motion: no-preference) {
     .wsi-steps-n1, .wsi-steps-n2, .wsi-steps-n3, .wsi-steps-n4 {
-      transition: filter 600ms cubic-bezier(0.23, 1, 0.32, 1), opacity 600ms cubic-bezier(0.23, 1, 0.32, 1), translate 600ms cubic-bezier(0.23, 1, 0.32, 1);
+      transition: filter 600ms cubic-bezier(0.23, 1, 0.32, 1), translate 600ms cubic-bezier(0.23, 1, 0.32, 1);
     }
     .wsi-steps-progress {
       transition: opacity 600ms cubic-bezier(0.23, 1, 0.32, 1);

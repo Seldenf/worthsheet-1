@@ -32,21 +32,6 @@ const current = Astro.url.pathname;
 const isCurrent = (path: string) => current === url(path);
 const calculatorsActive = [...calculators, featured].some((c) => current.startsWith(url(c.path)));
 
-const logoRows = Array.from({ length: 24 }, (_, k) => {
-  // Rows 1–2 are the morph targets (green at y=16, blue at y=36); later rows cycle cream / green / blue.
-  const palette = [
-    { fill: '#40aa4a', opacity: 0.9 },
-    { fill: '#6cbee4', opacity: 1 },
-  ];
-  const cycle = [
-    { fill: '#fdfcfa', opacity: 1 },
-    { fill: '#40aa4a', opacity: 0.9 },
-    { fill: '#6cbee4', opacity: 1 },
-  ];
-  // y=16 and y=36 centre on the original square rows; from row 2 on, a 16-unit pitch (12 tall, 4 gap).
-  const y = k === 0 ? 16 : 36 + (k - 1) * 16;
-  return { y, ...(k < 2 ? palette[k] : cycle[(k - 2) % 3]) };
-});
 ---
 
 <header class="site-header" data-header>
@@ -60,24 +45,39 @@ const logoRows = Array.from({ length: 24 }, (_, k) => {
         </defs>
         <rect width="64" height="64" rx="16" fill="#2e2926"></rect>
         <g clip-path="url(#ws-logo-clip)">
-          <g class="logo-stage">
-            <g class="logo-rows">
-              {
-                logoRows.map((r) => (
-                  <g class="logo-row">
-                    <rect x="14" y={r.y} width="36" height="12" rx="4" fill={r.fill} fill-opacity={r.opacity}></rect>
-                    <rect x="26" y={r.y} width="1" height="12" fill="#2e2926" fill-opacity="0.22"></rect>
-                    <rect x="38" y={r.y} width="1" height="12" fill="#2e2926" fill-opacity="0.22"></rect>
-                  </g>
-                ))
-              }
+          <g class="logo-squares">
+            <g class="logo-sq" data-sq="tl">
+              <rect x="14" y="14" width="16" height="16" rx="4" fill="#40aa4a"></rect>
+              <rect class="logo-cover" x="14" y="14" width="16" height="16" rx="4" fill="#fdfcfa"></rect>
+            </g>
+            <g class="logo-sq" data-sq="tr">
+              <rect x="34" y="14" width="16" height="16" rx="4" fill="#fdfcfa"></rect>
+            </g>
+            <g class="logo-sq" data-sq="br">
+              <rect x="34" y="34" width="16" height="16" rx="4" fill="#6cbee4"></rect>
+              <rect class="logo-cover" x="34" y="34" width="16" height="16" rx="4" fill="#fdfcfa"></rect>
+            </g>
+            <g class="logo-sq" data-sq="bl">
+              <rect x="14" y="34" width="16" height="16" rx="4" fill="#fdfcfa"></rect>
             </g>
           </g>
+          <g class="logo-row">
+            <rect x="14" y="0" width="36" height="12" rx="3" fill="#fdfcfa"></rect>
+            <rect x="31.5" y="0" width="1" height="12" fill="#2e2926" fill-opacity="0.18"></rect>
+          </g>
+          <g class="logo-row">
+            <rect x="14" y="0" width="36" height="12" rx="3" fill="#fdfcfa"></rect>
+            <rect x="31.5" y="0" width="1" height="12" fill="#2e2926" fill-opacity="0.18"></rect>
+          </g>
+          <g class="logo-row">
+            <rect x="14" y="0" width="36" height="12" rx="3" fill="#fdfcfa"></rect>
+            <rect x="31.5" y="0" width="1" height="12" fill="#2e2926" fill-opacity="0.18"></rect>
+          </g>
+          <g class="logo-row">
+            <rect x="14" y="0" width="36" height="12" rx="3" fill="#fdfcfa"></rect>
+            <rect x="31.5" y="0" width="1" height="12" fill="#2e2926" fill-opacity="0.18"></rect>
+          </g>
         </g>
-        <rect class="sq sq-tl" x="14" y="14" width="16" height="16" rx="4" fill="#40aa4a"></rect>
-        <rect class="sq sq-tr" x="34" y="14" width="16" height="16" rx="4" fill="#fdfcfa"></rect>
-        <rect class="sq sq-br" x="34" y="34" width="16" height="16" rx="4" fill="#6cbee4"></rect>
-        <rect class="sq sq-bl" x="14" y="34" width="16" height="16" rx="4" fill="#fdfcfa"></rect>
       </svg>
       <span class="logo-text">{SITE_NAME}</span>
     </a>
@@ -223,25 +223,19 @@ const logoRows = Array.from({ length: 24 }, (_, k) => {
     transform: scale(0.96);
   }
 
-  .logo-stage {
-    display: none;
+  /* Wrappers animated via WAAPI: user-space origin, no transform attribute on these elements. */
+  .logo-sq,
+  .logo-row {
+    transform-box: view-box;
+    transform-origin: 0 0;
   }
 
-  @media (prefers-reduced-motion: no-preference) {
-    :global(html.js) .logo-stage {
-      display: inline;
-    }
+  .logo-row {
+    opacity: 0;
+  }
 
-    .logo-mark .sq,
-    .logo-stage {
-      transform-box: view-box;
-      transform-origin: 32px 32px;
-    }
-
-    .logo-row {
-      transform-box: fill-box;
-      transform-origin: 0 50%;
-    }
+  .logo-cover {
+    opacity: 0;
   }
 
   .site-nav {
@@ -765,137 +759,174 @@ const logoRows = Array.from({ length: 24 }, (_, k) => {
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   if (logo && logoMark && !reduceMotion) {
-    // One shared 2600ms timeline. Every animation is created paused at 0 and filled both ways.
-    const DUR = 2600;
+    // Rest: four squares. Hover: they merge into two cream rows; while hovered, a new row enters below
+    // (sliver → expand → whole stack jumps up one slot), 360ms per step. Leave: the current step completes,
+    // then the rows split back into the coloured squares (time-reversed intro).
     const EASE_OUT = 'cubic-bezier(0.23, 1, 0.32, 1)';
-    const el = (sel: string) => logoMark.querySelector(sel) as Element;
+    const EASE_MIRROR = 'cubic-bezier(0.68, 0, 0.77, 0)'; // time-reversed EASE_OUT, so the outro mirrors the intro
+    const EASE_JUMP = 'cubic-bezier(0.2, 0.8, 0.2, 1)';
+    const MERGE_MS = 320;
+    const FADE_MS = 120;
+    const EXPAND_MS = 140;
+    const JUMP_MS = 160;
+    const HOLD_MS = 60; // 140 + 160 + 60 = 360ms per loop step
 
-    type Frame = { t: number } & Record<string, string | number>;
-    const all: Animation[] = [];
-    function track(target: Element, frames: Frame[]) {
-      const keyframes = frames.map(({ t, ...rest }) => ({ ...rest, offset: t / DUR }));
-      const anim = target.animate(keyframes as Keyframe[], { duration: DUR, fill: 'both' });
-      anim.pause();
-      anim.currentTime = 0;
-      all.push(anim);
-    }
+    const ROW_X = 14;
+    const ROW_W = 36;
+    const SLIVER = 4 / ROW_W;
+    // Slot 1 = y16 (top visible row), slot 2 = y36, slot 3 = y56 (entry, below row 2), slot 0 = y-4 (exit, above tile).
+    const slotY = (n: number) => 16 + (n - 1) * 20;
+    // Row element is drawn at y=0 with a 14-anchored horizontal scale; `sx` < 1 is the sliver/expansion.
+    const rowT = (sx: number, y: number) => `matrix(${sx},0,0,1,${ROW_X * (1 - sx)},${y})`;
+    const IDENT = 'matrix(1,0,0,1,0,0)';
 
-    // Morph 0–300ms: TL/BL stretch right into rows 1–2 from the left edge; TR/BR slide left and fade into them.
-    const MORPH = 300;
-    const EMERGE = 2000;
-    const EMERGE_STEP = 40;
-    const EMERGE_MS = 480;
-    const morph = [
-      { sel: '.sq-tl', origin: '14px 22px', sx: 2.25, sy: 0.75, dx: 0 },
-      { sel: '.sq-tr', origin: '32px 32px', sx: 1, sy: 1, dx: -12 },
-      { sel: '.sq-br', origin: '32px 32px', sx: 1, sy: 1, dx: -12 },
-      { sel: '.sq-bl', origin: '14px 42px', sx: 2.25, sy: 0.75, dx: 0 },
-    ];
-    morph.forEach(({ sel, origin, sx, sy, dx }, i) => {
-      const start = EMERGE + i * EMERGE_STEP;
-      track(el(sel), [
-        { t: 0, transform: 'translate(0px, 0px) rotate(0deg) scale(1, 1)', transformOrigin: origin, opacity: 1, easing: EASE_OUT },
-        { t: MORPH, transform: `translate(${dx}px, 0px) rotate(0deg) scale(${sx}, ${sy})`, transformOrigin: origin, opacity: 0 },
-        { t: start, transform: 'translate(0px, 0px) rotate(-180deg) scale(0, 0)', transformOrigin: '32px 32px', opacity: 0, easing: EASE_OUT },
-        { t: start + EMERGE_MS, transform: 'translate(0px, 0px) rotate(0deg) scale(1, 1)', transformOrigin: '32px 32px', opacity: 1 },
-        { t: DUR, transform: 'translate(0px, 0px) rotate(0deg) scale(1, 1)', transformOrigin: '32px 32px', opacity: 1 },
-      ]);
-    });
-
-    // Stack scroll, from one curve shared by the scroll keyframes and the typing schedule:
-    // 0–300 hold; 300–1000 accelerate to −190; 1000–1480 linear to −320; 1480–1900 ease-out stop at −336.
-    const scrollY = (t: number) => {
-      if (t <= MORPH) return 0;
-      if (t <= 1000) {
-        const p = (t - MORPH) / 700;
-        return -190 * p * p;
-      }
-      if (t <= 1480) return -190 - (130 * (t - 1000)) / 480;
-      if (t <= 1900) {
-        const q = (t - 1480) / 420;
-        return -320 - 16 * (1 - (1 - q) ** 3);
-      }
-      return -336;
+    type Box = { x: number; y: number; w: number; h: number };
+    // Matrix mapping rectangle `from` onto rectangle `to` (transform-origin 0 0, user units).
+    const fit = (from: Box, to: Box) => {
+      const sx = to.w / from.w;
+      const sy = to.h / from.h;
+      return `matrix(${sx},0,0,${sy},${to.x - sx * from.x},${to.y - sy * from.y})`;
     };
-    const blurAt = (t: number) => {
-      if (t <= MORPH) return 0;
-      if (t <= 1000) return (2.4 * (t - MORPH)) / 700;
-      if (t <= 1480) return 2.4;
-      if (t <= 1900) return 2.4 * (1 - (t - 1480) / 420);
-      return 0;
+    const CORNERS = ['tl', 'tr', 'br', 'bl'] as const;
+    type Corner = (typeof CORNERS)[number];
+    const SQUARE: Record<Corner, Box> = {
+      tl: { x: 14, y: 14, w: 16, h: 16 },
+      tr: { x: 34, y: 14, w: 16, h: 16 },
+      br: { x: 34, y: 34, w: 16, h: 16 },
+      bl: { x: 14, y: 34, w: 16, h: 16 },
+    };
+    // Each square's half of a merged row: left half (14–32) and right half (32–50) meet at the seam x=32.
+    const HALF: Record<Corner, Box> = {
+      tl: { x: 14, y: 16, w: 18, h: 12 },
+      tr: { x: 32, y: 16, w: 18, h: 12 },
+      br: { x: 32, y: 36, w: 18, h: 12 },
+      bl: { x: 14, y: 36, w: 18, h: 12 },
+    };
+    const SPLIT: Record<Corner, string> = {
+      tl: fit(SQUARE.tl, HALF.tl),
+      tr: fit(SQUARE.tr, HALF.tr),
+      br: fit(SQUARE.br, HALF.br),
+      bl: fit(SQUARE.bl, HALF.bl),
     };
 
-    // Rows 1–2 crossfade in during the morph. Each later row (absolute top 36 + 16·(k−1)) types for 120ms.
-    // It starts when its top reaches y=60, so it types in as it rises. If it would reach the bottom edge (y=64)
-    // sooner, it starts earlier and is fully typed before entering: fast rows never show an unfilled slot.
-    const ROW_MS = 120;
-    const firstTime = (pred: (t: number) => boolean) => {
-      for (let t = 0; t <= DUR; t += 1) if (pred(t)) return t;
-      return DUR;
-    };
-    const typeStart = (k: number) => {
-      const top = 36 + (k - 1) * 16;
-      const rising = firstTime((t) => top + scrollY(t) <= 60);
-      const entering = firstTime((t) => top + scrollY(t) <= 64);
-      return Math.max(MORPH, Math.min(rising, entering - ROW_MS));
-    };
-    logoMark.querySelectorAll('.logo-row').forEach((row, k) => {
-      if (k < 2) {
-        track(row, [
-          { t: 0, opacity: 0, easing: EASE_OUT },
-          { t: MORPH, opacity: 1 },
-          { t: DUR, opacity: 1 },
-        ]);
-        return;
-      }
-      const s = typeStart(k);
-      track(row, [
-        { t: 0, transform: 'scaleX(0)' },
-        { t: s, transform: 'scaleX(0)', easing: EASE_OUT },
-        { t: s + ROW_MS, transform: 'scaleX(1)' },
-        { t: DUR, transform: 'scaleX(1)' },
-      ]);
-    });
-    // Stack scroll and blur, sampled every 20ms from the same curve used for the typing schedule.
-    const scrollFrames: Frame[] = [];
-    for (let t = 0; t <= DUR; t += 20) {
-      scrollFrames.push({
-        t,
-        transform: `translateY(${scrollY(t).toFixed(2)}px)`,
-        filter: `blur(${blurAt(t).toFixed(2)}px)`,
-      });
-    }
-    track(el('.logo-rows'), scrollFrames);
+    const squares = logoMark.querySelector<SVGGElement>('.logo-squares')!;
+    const sq = Object.fromEntries(
+      CORNERS.map((c) => [c, logoMark.querySelector<SVGGElement>(`.logo-sq[data-sq="${c}"]`)!]),
+    ) as Record<Corner, SVGGElement>;
+    const covers = Array.from(logoMark.querySelectorAll<SVGElement>('.logo-cover'));
+    const rows = Array.from(logoMark.querySelectorAll<SVGGElement>('.logo-row'));
 
-    // Vortex 1900–2400ms: the stack swirls into the tile centre (0 → −90° → −180°, scale → 0.2, fades out).
-    track(el('.logo-stage'), [
-      { t: 0, transform: 'rotate(0deg) scale(1)', opacity: 1 },
-      { t: 1900, transform: 'rotate(0deg) scale(1)', opacity: 1, easing: EASE_OUT },
-      { t: 2150, transform: 'rotate(-90deg) scale(0.6)', opacity: 0.6 },
-      { t: 2400, transform: 'rotate(-180deg) scale(0.2)', opacity: 0 },
-      { t: DUR, transform: 'rotate(-180deg) scale(0.2)', opacity: 0 },
-    ]);
-
-    // Play once to the end. Hover/focus starts it unless already running; leaving never reverses it; after it ends, the next hover replays from 0.
-    let running = false;
-    function play() {
-      if (running) return;
-      running = true;
-      for (const anim of all) {
-        anim.currentTime = 0;
-        anim.play();
-      }
-      void Promise.all(all.map((anim) => anim.finished)).then(() => {
-        running = false;
+    type Style = Partial<Record<'transform' | 'opacity', string | number>>;
+    // Animates `el` from → to, then commits `to` as inline style so the element rests on the final value.
+    function tween(el: SVGElement, from: Style, to: Style, duration: number, easing: string, delay = 0) {
+      const anim = el.animate([from, to] as Keyframe[], { duration, delay, easing, fill: 'none' });
+      return anim.finished.then(() => {
+        Object.assign(el.style, to);
+        anim.cancel();
       });
     }
 
+    let stack: SVGGElement[] = []; // [top visible row (slot 1), second visible row (slot 2)]
+    let free: SVGGElement[] = [];  // recycled pool
+    let phase: 'rest' | 'stack' = 'rest';
+    let active = false;
+    let busy = false;
+    let pointerIn = false;
+    let keyFocus = false;
+
+    async function intro() {
+      const [top, mid] = rows;
+      rows.forEach((r) => (r.style.opacity = '0'));
+      top.style.transform = rowT(1, slotY(1));
+      mid.style.transform = rowT(1, slotY(2));
+      stack = [top, mid];
+      free = rows.slice(2);
+      await Promise.all([
+        ...CORNERS.map((c) => tween(sq[c], { transform: IDENT }, { transform: SPLIT[c] }, MERGE_MS, EASE_OUT)),
+        ...covers.map((el) => tween(el, { opacity: 0 }, { opacity: 1 }, MERGE_MS, EASE_OUT)),
+        tween(squares, { opacity: 1 }, { opacity: 0 }, FADE_MS, 'linear', MERGE_MS - FADE_MS),
+        tween(top, { opacity: 0 }, { opacity: 1 }, FADE_MS, 'linear', MERGE_MS - FADE_MS),
+        tween(mid, { opacity: 0 }, { opacity: 1 }, FADE_MS, 'linear', MERGE_MS - FADE_MS),
+      ]);
+    }
+
+    async function outro() {
+      const [top, mid] = stack;
+      // Start exactly where the intro ended: squares sit on the row halves, invisible.
+      CORNERS.forEach((c) => (sq[c].style.transform = SPLIT[c]));
+      covers.forEach((el) => (el.style.opacity = '1'));
+      squares.style.opacity = '0';
+      await Promise.all([
+        ...CORNERS.map((c) => tween(sq[c], { transform: SPLIT[c] }, { transform: IDENT }, MERGE_MS, EASE_MIRROR)),
+        ...covers.map((el) => tween(el, { opacity: 1 }, { opacity: 0 }, MERGE_MS, EASE_MIRROR)),
+        tween(squares, { opacity: 0 }, { opacity: 1 }, FADE_MS, 'linear'),
+        tween(top, { opacity: 1 }, { opacity: 0 }, FADE_MS, 'linear'),
+        tween(mid, { opacity: 1 }, { opacity: 0 }, FADE_MS, 'linear'),
+      ]);
+      stack = [];
+    }
+
+    // One ENTER: a sliver appears in slot 3, expands from the left, then the stack jumps up one slot.
+    async function step() {
+      const row = free.shift()!;
+      row.style.transform = rowT(SLIVER, slotY(3));
+      row.style.opacity = '1';
+      await tween(row, { transform: rowT(SLIVER, slotY(3)) }, { transform: rowT(1, slotY(3)) }, EXPAND_MS, EASE_OUT);
+
+      const [top, mid] = stack;
+      await Promise.all([
+        tween(top, { transform: rowT(1, slotY(1)) }, { transform: rowT(1, slotY(0)) }, JUMP_MS, EASE_JUMP),
+        tween(mid, { transform: rowT(1, slotY(2)) }, { transform: rowT(1, slotY(1)) }, JUMP_MS, EASE_JUMP),
+        tween(row, { transform: rowT(1, slotY(3)) }, { transform: rowT(1, slotY(2)) }, JUMP_MS, EASE_JUMP),
+      ]);
+      top.style.opacity = '0';
+      free.push(top);
+      stack = [mid, row];
+      await new Promise((resolve) => setTimeout(resolve, HOLD_MS));
+    }
+
+    // Single driver: intro → steps while active → outro → (re-)intro if active again. Each phase completes
+    // before the next, so a step in progress always finishes its expansion and jump.
+    async function drive() {
+      busy = true;
+      try {
+        while (active || phase === 'stack') {
+          if (!active) {
+            await outro();
+            phase = 'rest';
+          } else if (phase === 'rest') {
+            await intro();
+            phase = 'stack';
+          } else {
+            await step();
+          }
+        }
+      } finally {
+        busy = false;
+      }
+    }
+
+    const update = () => {
+      active = pointerIn || keyFocus;
+      if (!busy) void drive();
+    };
+    const fine = window.matchMedia('(hover: hover) and (pointer: fine)');
     logo.addEventListener('pointerenter', () => {
-      if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
-      play();
+      if (!fine.matches) return;
+      pointerIn = true;
+      update();
+    });
+    logo.addEventListener('pointerleave', () => {
+      pointerIn = false;
+      update();
     });
     logo.addEventListener('focus', () => {
-      if (logo.matches(':focus-visible')) play();
+      keyFocus = logo.matches(':focus-visible');
+      update();
+    });
+    logo.addEventListener('blur', () => {
+      keyFocus = false;
+      update();
     });
   }
 </script>

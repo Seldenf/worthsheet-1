@@ -263,27 +263,9 @@ const jsonLd = [
           <h2 id="categories-title">Tailored to create a personal financial statement super-fast</h2>
           <p class="lead">A comprehensive list of categories modeled on common personal financial statement forms, with the flexibility to add your own.</p>
           <ul class="list-check">
-            <li class="cat-item">
-              <label class="cat-toggle">
-                <input class="cat-input" type="checkbox" checked data-cat="assets" />
-                <span class="cat-box" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M2.5 6.2l2.3 2.3 4.7-4.9" pathLength="1" /></svg></span>
-                <span>{STATS.assetCategories} asset categories</span>
-              </label>
-            </li>
-            <li class="cat-item">
-              <label class="cat-toggle">
-                <input class="cat-input" type="checkbox" checked data-cat="liabilities" />
-                <span class="cat-box" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M2.5 6.2l2.3 2.3 4.7-4.9" pathLength="1" /></svg></span>
-                <span>{STATS.liabilityCategories} liability categories</span>
-              </label>
-            </li>
-            <li class="cat-item">
-              <label class="cat-toggle">
-                <input class="cat-input" type="checkbox" checked data-cat="formulas" />
-                <span class="cat-box" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M2.5 6.2l2.3 2.3 4.7-4.9" pathLength="1" /></svg></span>
-                <span>Dynamic calculation formulas</span>
-              </label>
-            </li>
+            <li data-view="assets" tabindex="0">{STATS.assetCategories} asset categories</li>
+            <li data-view="liabilities" tabindex="0">{STATS.liabilityCategories} liability categories</li>
+            <li data-view="formulas" tabindex="0">Dynamic calculation formulas</li>
           </ul>
           <div>
             <Button href="/download/" variant="primary">Get the template for free</Button>
@@ -949,113 +931,22 @@ const jsonLd = [
     font-weight: 560;
   }
 
-  /* Categories toggles: real checkboxes drawn as the list-check square; no row highlight on hover. */
-  #categories ul.list-check > li.cat-item {
-    padding-left: 0;
-  }
-
-  #categories ul.list-check > li.cat-item::before {
-    content: none;
-  }
-
-  #categories .cat-toggle {
-    position: relative;
-    display: block;
-    padding-left: 32px;
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  #categories .cat-input {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    margin: 0;
-    overflow: hidden;
-    clip-path: inset(50%);
-    opacity: 0;
-    pointer-events: none;
-  }
-
-  #categories .cat-box {
-    --box: #40aa4a;
-    position: absolute;
-    left: 0;
-    top: 0.2em;
-    display: grid;
-    place-items: center;
-    box-sizing: border-box;
-    width: 20px;
-    height: 20px;
-    border: 1.5px solid var(--box);
-    border-radius: 6px;
-    background-color: transparent;
-  }
-
-  #categories .cat-item:nth-child(3n + 2) .cat-box {
-    --box: #6cbee4;
-  }
-
-  #categories .cat-item:nth-child(3n + 3) .cat-box {
-    --box: #fac344;
-  }
-
-  #categories .cat-box svg {
-    width: 12px;
-    height: 12px;
-    fill: none;
-    opacity: 0;
-    scale: 0.6;
-  }
-
-  #categories .cat-box path {
-    stroke: #fff;
-    stroke-width: 2.4;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    stroke-dasharray: 1;
-    stroke-dashoffset: 1;
-  }
-
-  #categories .cat-input:checked + .cat-box {
-    background-color: var(--box);
-  }
-
-  #categories .cat-input:checked + .cat-box svg {
-    opacity: 1;
-    scale: 1;
-  }
-
-  #categories .cat-input:checked + .cat-box path {
-    stroke-dashoffset: 0;
-  }
-
-  #categories .cat-input:focus-visible + .cat-box {
+  /* Category list drives the illustration on hover or focus; plain list-check bullets, no row background. */
+  #categories ul.list-check li:focus-visible {
     outline: 2px solid #2e2926;
-    outline-offset: 3px;
-  }
-
-  #categories .cat-toggle:active .cat-box {
-    scale: 0.9;
+    outline-offset: 4px;
+    border-radius: 4px;
   }
 
   @media (hover: hover) and (pointer: fine) {
-    #categories .cat-toggle:hover .cat-box {
+    #categories ul.list-check li:hover::before {
       filter: brightness(1.08);
     }
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    #categories .cat-box {
-      transition: background-color 160ms cubic-bezier(0.23, 1, 0.32, 1), filter 160ms cubic-bezier(0.23, 1, 0.32, 1), scale 120ms cubic-bezier(0.23, 1, 0.32, 1);
-    }
-
-    #categories .cat-box svg {
-      transition: opacity 160ms cubic-bezier(0.23, 1, 0.32, 1), scale 160ms cubic-bezier(0.23, 1, 0.32, 1);
-    }
-
-    #categories .cat-box path {
-      transition: stroke-dashoffset 160ms cubic-bezier(0.23, 1, 0.32, 1);
+    #categories ul.list-check li::before {
+      transition: filter 160ms cubic-bezier(0.23, 1, 0.32, 1);
     }
   }
 </style>
@@ -1223,20 +1114,38 @@ const jsonLd = [
 </script>
 
 <script>
+  // Hover or focus on a category row picks the illustration view; leaving the list returns to mixed.
   const section = document.getElementById('categories');
+  const list = section?.querySelector<HTMLUListElement>('ul.list-check') ?? null;
   const svg = section?.querySelector<SVGSVGElement>('svg.wsi-cats') ?? null;
-  const assets = section?.querySelector<HTMLInputElement>('input[data-cat="assets"]') ?? null;
-  const liabilities = section?.querySelector<HTMLInputElement>('input[data-cat="liabilities"]') ?? null;
-  const formulas = section?.querySelector<HTMLInputElement>('input[data-cat="formulas"]') ?? null;
-  if (svg && assets && liabilities && formulas) {
-    // Checkboxes drive the illustration: asset/liability toggles pick the view, formulas toggle the values.
-    const sync = () => {
-      const a = assets.checked;
-      const l = liabilities.checked;
-      svg.setAttribute('data-view', a && l ? 'mixed' : a ? 'assets' : l ? 'liabilities' : 'none');
-      svg.setAttribute('data-values', formulas.checked ? 'on' : 'off');
-    };
-    [assets, liabilities, formulas].forEach((input) => input.addEventListener('change', sync));
-    sync();
+  if (list && svg) {
+    const fine = matchMedia('(hover: hover) and (pointer: fine)');
+    let hovered: string | null = null;
+    let focused: string | null = null;
+    const apply = () => svg.setAttribute('data-view', hovered ?? focused ?? 'mixed');
+
+    list.querySelectorAll<HTMLLIElement>('li[data-view]').forEach((li) => {
+      li.addEventListener('pointerenter', () => {
+        if (!fine.matches) return;
+        hovered = li.dataset.view ?? null;
+        apply();
+      });
+    });
+    list.addEventListener('pointerleave', () => {
+      hovered = null;
+      apply();
+    });
+    list.addEventListener('focusin', (e) => {
+      const li = (e.target as Element).closest<HTMLLIElement>('li[data-view]');
+      if (!li) return;
+      focused = li.dataset.view ?? null;
+      apply();
+    });
+    list.addEventListener('focusout', (e) => {
+      const next = e.relatedTarget as Node | null;
+      if (next && list.contains(next)) return;
+      focused = null;
+      apply();
+    });
   }
 </script>
