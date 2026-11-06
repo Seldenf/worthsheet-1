@@ -32,7 +32,7 @@ Consider getting pre-approved for a mortgage before you start house hunting. Pre
 
 ### Consult with Professionals
 
-Consider consulting with a mortgage broker or financial advisor to discuss your options and get personalized advice based on your individual circumstances. In addition, before making a decision on a loan or savings plan, run the numbers! The best way to start is by trying out online personal financial calculators such as a simple mortgage calculator, retirement contribution (403b calculator, 401(k) calculator), net worth calculators, and bank rate calculators. [An example of a mortgage calculator with an amortization schedule can be found here.](https://docs.google.com/spreadsheets/d/1DDSarVrMHDTyeA3ax41OfzTytrIyqwTviUEeQDE9XSk/edit?usp=sharing)
+Consider consulting with a mortgage broker or financial advisor to discuss your options and get personalized advice based on your individual circumstances. In addition, before making a decision on a loan or savings plan, run the numbers! The best way to start is by trying out online personal financial calculators such as a simple mortgage calculator, retirement contribution (403b calculator, 401(k) calculator), net worth calculators, and bank rate calculators. Try our [mortgage calculator with an amortization schedule](/mortgage-calculator/).
 
 ## How can you reduce your total loan costs?
 

@@ -93,4 +93,4 @@ In addition to requesting the above information, the bank will ask you to comple
 
 **[Download the WorthSheet PFS Template](/download/)** WorthSheet is a personal financial statement template that is available in Google Sheet or Microsoft Excel.
 
-Finally, before making a decision on a loan or savings plan, run the numbers! The best way to start is by trying out online personal financial calculators such as a simple mortgage calculator, retirement contribution (403b calculator, 401(k) calculator), net worth calculators, and bank rate calculators. You can find an example of a [mortgage calculator with an amortization schedule here](https://docs.google.com/spreadsheets/d/1DDSarVrMHDTyeA3ax41OfzTytrIyqwTviUEeQDE9XSk/edit?usp=sharing).
+Finally, before making a decision on a loan or savings plan, run the numbers! The best way to start is by trying out online personal financial calculators such as a simple mortgage calculator, retirement contribution (403b calculator, 401(k) calculator), net worth calculators, and bank rate calculators. Try our [mortgage calculator with an amortization schedule](/mortgage-calculator/).

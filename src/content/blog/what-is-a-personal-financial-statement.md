@@ -50,14 +50,14 @@ Collect documents that detail your assets and liabilities. This may include bank
 
 #### 2. Download the Worthsheet PFS Template:
 
-[HERE](/download/) Worthsheet is a personal financial statement template that is available in Google Sheet or Microsoft Excel.
+[Get the free WorthSheet template](/download/). Worthsheet is a personal financial statement template that is available in Google Sheet or Microsoft Excel.
 
 - **List Your Assets**: Create a list of all your assets. See the above list of assets and liabilities.
 - **Determine Asset Values**: Assign values to your assets based on their current market or fair market value. For items like vehicles or personal property, you can estimate their value. You can also use websites such as [Zillow](https://www.zillow.com/), [Redfin](https://www.redfin.com/), [TrueCar](https://www.truecar.com/), and [edmunds](https://www.edmunds.com/).
 - **List Your Liabilities**: Create a list of all your liabilities. See the above list of assets and liabilities.
 - **Calculate Net Worth**: Subtract your total liabilities from your total assets to calculate your net worth. The [Worthsheet template](/download/) will calculate this for you!
 
-**[Download The Template HERE](/download/)**
+**[Download the free PFS template](/download/)**
 
 #### 3. Update Regularly
 
@@ -71,4 +71,4 @@ If you find the process challenging or have complex financial situations, consid
 
 ### Why should I create a personal financial statement?
 
-Remember, the goal is to create a clear and accurate snapshot of your financial situation. The easier you make this process for yourself, the more likely you are to keep your personal financial statement up to date. Before making a decision on a loan or savings plan, run the numbers! There are numerous online personal financial calculators such as a simple mortgage calculator, retirement contribution (403b calculator, 401(k) calculator), and full bank rate calculators. An example of a mortgage calculator with an amortization schedule can be found [here](https://docs.google.com/spreadsheets/d/1DDSarVrMHDTyeA3ax41OfzTytrIyqwTviUEeQDE9XSk/edit?usp=sharing).
+Remember, the goal is to create a clear and accurate snapshot of your financial situation. The easier you make this process for yourself, the more likely you are to keep your personal financial statement up to date. Before making a decision on a loan or savings plan, run the numbers! There are numerous online personal financial calculators such as a simple mortgage calculator, retirement contribution (403b calculator, 401(k) calculator), and full bank rate calculators. Try our [mortgage calculator with an amortization schedule](/mortgage-calculator/).
