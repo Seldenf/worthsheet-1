@@ -1,0 +1,382 @@
+---
+import Base from '../layouts/Base.astro';
+import Section from '../components/Section.astro';
+import Button from '../components/Button.astro';
+import Eyebrow from '../components/Eyebrow.astro';
+import Prose from '../components/Prose.astro';
+import Faq from '../components/Faq.astro';
+import CtaBand from '../components/CtaBand.astro';
+import DocumentStack from '../components/illustrations/DocumentStack.astro';
+import CtaTiles from '../components/illustrations/CtaTiles.astro';
+import { faqLd } from '../lib/seo';
+import { url } from '../lib/url';
+
+const OFFICIAL_URL = 'https://www.sba.gov/document/sba-form-413-personal-financial-statement';
+const NOTICE_URL = 'https://legacy.sba.gov/sites/default/files/2025-07/5000-868123.pdf';
+const SOP_NOTICE_URL = 'https://www.sba.gov/document/information-notice-5000-880695-issuance-sop-50-10-81';
+const FORM_PDF_URL = 'https://legacy.sba.gov/sites/default/files/2025-02/SBAForm413.pdf';
+const LOANS_7A_URL = 'https://www.sba.gov/funding-programs/loans/7a-loans';
+const XLSX = '/downloads/sba-form-413-pfs-worksheet.xlsx';
+
+const faq = [
+  {
+    q: 'What is SBA Form 413?',
+    a: 'The Personal Financial Statement SBA uses to assess repayment ability and creditworthiness of applicants for 7(a) and 504 loans, disaster loans, surety bonds and the WOSB and 8(a) programs.',
+  },
+  {
+    q: 'Who must complete SBA Form 413?',
+    a: 'For 7(a), 504 and surety: each proprietor, general partner, LLC managing member, each 20%+ equity owner and any guarantor.',
+  },
+  {
+    q: 'How current does the information have to be?',
+    a: 'The form says within 120 days of submission for 7(a), 504, surety, 8(a) and WOSB, and 90 days for disaster loans; SOP 50 10 8.1 and your lender may require fresher figures.',
+  },
+  {
+    q: 'Can I use my own format instead of Form 413?',
+    a: 'For 7(a), 504 and surety purposes SBA accepts equivalent formats with the same data; confirm with your lender.',
+  },
+  {
+    q: 'What happens if I give false information?',
+    a: 'The form warns of criminal penalties and administrative remedies, including under 18 U.S.C. §§1001 and 3571.',
+  },
+];
+
+const overview = [
+  { part: 'Assets column', list: 'Cash on hand and in banks; savings accounts; IRA or other retirement accounts; accounts and notes receivable; life insurance cash surrender value; stocks and bonds; real estate; automobiles; other personal property; other assets.', feeds: 'Detail goes in Sections 3, 4, 5 and 8' },
+  { part: 'Liabilities column', list: 'Accounts payable; notes payable to banks and others; installment accounts (auto and other) with monthly payments; loans against life insurance; mortgages on real estate; unpaid taxes; other liabilities. Net worth is total assets minus total liabilities.', feeds: 'Detail goes in Sections 2, 4, 6 and 7' },
+  { part: 'Section 1', list: 'Source of income: salary, net investment income, real estate income and other income. Alimony or child support is not listed as “other income” unless you want it counted toward total income.', feeds: 'Stands alone' },
+  { part: 'Contingent liabilities', list: 'As endorser or co-maker; legal claims and judgments; provision for federal income tax; other special debt.', feeds: 'Stands alone (not part of net worth)' },
+  { part: 'Section 2', list: 'Notes payable to banks and others: noteholder names and addresses, original and current balance, payment amount and frequency, and how each is secured or endorsed.', feeds: 'Notes payable line' },
+  { part: 'Section 3', list: 'Stocks and bonds: number of shares, name of securities, cost, market value quotation, date of quotation and total value.', feeds: 'Stocks and bonds line' },
+  { part: 'Section 4', list: 'Real estate owned, each parcel separately: type, address, date purchased, original cost, present market value, mortgage holder, account number, balance, payment and status.', feeds: 'Real estate and mortgages lines' },
+  { part: 'Section 5', list: 'Other personal property and other assets: a description of each item (include year, make and model for automobiles) and any lien holder, lien amount, terms and delinquency.', feeds: 'Retirement, receivables, automobiles, other property and other assets lines' },
+  { part: 'Section 6', list: 'Unpaid taxes: type, to whom payable, when due, amount and any property a tax lien attaches to.', feeds: 'Unpaid taxes line' },
+  { part: 'Section 7', list: 'Other liabilities, described in detail.', feeds: 'Other liabilities line' },
+  { part: 'Section 8', list: 'Life insurance held: face amount and cash surrender value of each policy, insurance company and beneficiaries.', feeds: 'Life insurance cash surrender value line' },
+];
+---
+
+<Base
+  title="SBA Form 413 Guide & Free Excel Template | WorthSheet"
+  description="What SBA Form 413 is, who must file it, how current it must be and where to send it, plus a free SBA-oriented Excel template to organize your numbers first."
+  path="/sba-form-413/"
+  breadcrumbs={[{ name: 'SBA Form 413', path: '/sba-form-413/' }]}
+  jsonLd={[faqLd(faq)]}
+>
+  <Section tone="surface">
+    <div class="hero">
+      <div class="stack" style="--stack-gap: 1.25rem">
+        <Eyebrow>SBA personal financial statement</Eyebrow>
+        <h1>SBA Form 413: personal financial statement guide and template</h1>
+        <p class="lead">
+          SBA Form 413 is the Personal Financial Statement the U.S. Small Business Administration
+          uses to assess the repayment ability and creditworthiness of applicants for 7(a) and 504
+          loans, disaster loans, surety bonds and the WOSB and 8(a) programs. It lists your personal
+          assets, liabilities, income and contingent liabilities as of one date.
+        </p>
+        <div class="actions">
+          <Button href={XLSX} variant="primary" size="lg" download>Download the Excel worksheet</Button>
+          <Button href={OFFICIAL_URL} variant="secondary" size="lg">Get the official form (SBA.gov)</Button>
+        </div>
+        <p class="muted small">
+          The worksheet helps you organize your numbers. Submit the official SBA Form 413 (or the
+          equivalent your lender accepts), not the worksheet.
+        </p>
+      </div>
+      <DocumentStack class="hero-art" />
+    </div>
+  </Section>
+
+  <Section aria-labelledby="what-title">
+    <Prose>
+      <h2 id="what-title">What SBA Form 413 is</h2>
+      <p>
+        SBA uses the information on Form 413 as one of several data sources when it analyzes whether
+        an applicant can repay an SBA loan. For surety bonds it helps SBA recover if a contractor
+        defaults on the contract, and for the WOSB and 8(a) programs it helps SBA assess economic
+        disadvantage. The form was last issued in the 05-24 edition (OMB No. 3245-0188, expiration
+        08/31/2027).
+      </p>
+      <p>
+        In plain terms it is a personal balance sheet, like the one in our{' '}
+        <a href={url('/personal-financial-statement-example/')}>personal financial statement example</a>,
+        with extra SBA sections for income, contingent liabilities and detail schedules. For a
+        line-by-line walkthrough, read{' '}
+        <a href={url('/how-to-fill-out-sba-form-413/')}>how to fill out SBA Form 413</a>.
+      </p>
+
+      <h2>Who has to complete SBA Form 413</h2>
+      <p>For a 7(a) loan, a 504 loan or a surety bond, the form is completed for:</p>
+      <ul>
+        <li>each proprietor;</li>
+        <li>each general partner;</li>
+        <li>the managing member of a limited liability company (LLC);</li>
+        <li>
+          each owner of 20% or more of the equity of the applicant, including the assets of the
+          owner’s spouse and any minor children; and
+        </li>
+        <li>any person providing a guaranty on the loan.</li>
+      </ul>
+      <p>
+        You return the completed form to the lender processing a 7(a) application, the Certified
+        Development Company (CDC) processing a 504 application, or the surety company or agent
+        processing a bond. It does not go to SBA directly. Disaster loan applicants, WOSB applicants
+        claiming economic disadvantage and 8(a) applicants have their own instructions on the form,
+        including who must file and where to send it.
+      </p>
+      <p>
+        The 7(a) program works through participating lenders. See{' '}
+        <a href={LOANS_7A_URL} rel="noopener" target="_blank">SBA’s 7(a) loans page</a> for how to
+        find one.
+      </p>
+
+      <h2>How current must the information be?</h2>
+      <p>
+        Two SBA sources give different windows, so check with your lender before you date the
+        statement:
+      </p>
+      <ul>
+        <li>
+          <strong>The form (05-24 edition)</strong> says the information must be current as of a
+          date within <strong>120 days of submission</strong> for 7(a), 504, surety bond guaranty,
+          8(a) BD and WOSB, or within <strong>90 days of submission</strong> for Disaster.
+        </li>
+        <li>
+          <strong>SOP 50 10 8.1</strong> (effective October 1, 2026, for applications issued an SBA
+          loan number on or after that date) says the lender must obtain a
+          personal financial statement from each individual guaranteeing the loan, other than
+          supplemental guarantors, <strong>dated within 90 days of loan approval</strong>. SBA’s
+          notice also says forms are being updated to match the SOP.
+        </li>
+      </ul>
+      <p>
+        Lenders may set shorter windows still, so use fresh balances and the shorter window your
+        lender gives you. The same two sources also differ on spouses: the form’s certification
+        covers the spouse of any 20%-or-more owner when spousal assets are included, while the SOP
+        says non-owner spouses are not required to sign. Follow your lender’s checklist. Sources:{' '}
+        <a href={OFFICIAL_URL} rel="noopener" target="_blank">SBA Form 413</a>,{' '}
+        <a href={NOTICE_URL} rel="noopener" target="_blank">SBA Information Notice 5000-868123</a>{' '}
+        and{' '}
+        <a href={SOP_NOTICE_URL} rel="noopener" target="_blank">the SOP 50 10 8.1 notice</a>. Last
+        verified November 6, 2026.
+      </p>
+    </Prose>
+  </Section>
+
+  <Section tone="surface" aria-labelledby="sections-title">
+    <div class="stack" style="--stack-gap: 1rem">
+      <h2 id="sections-title">SBA Form 413 sections at a glance</h2>
+      <p class="lead">
+        The front page has an assets column and a liabilities column. Sections 2 to 8 hold the
+        detail behind those totals.
+      </p>
+    </div>
+    <div class="table-wrap overview">
+      <table>
+        <caption class="sr-only">What each part of SBA Form 413 asks for and which front-page line it feeds</caption>
+        <thead>
+          <tr>
+            <th scope="col">Part of the form</th>
+            <th scope="col">What you list</th>
+            <th scope="col">Ties to</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            overview.map((row) => (
+              <tr>
+                <th scope="row">{row.part}</th>
+                <td>{row.list}</td>
+                <td>{row.feeds}</td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+    <p class="muted small overview-note">
+      The form says to omit cents. Section names above follow the 05-24 edition; always work from
+      the current edition your lender provides.
+    </p>
+  </Section>
+
+  <Section aria-labelledby="official-title">
+    <Prose>
+      <h2 id="official-title">Where to get the official SBA Form 413</h2>
+      <p>
+        Download the current form from SBA:{' '}
+        <a href={OFFICIAL_URL} rel="noopener" target="_blank">SBA Form 413, Personal Financial Statement</a>
+        {' '}(<a href={FORM_PDF_URL} rel="noopener" target="_blank">05-24 edition PDF</a>). Your lender
+        or CDC may also give you its own copy or checklist.
+      </p>
+      <h3>Can I use my own format?</h3>
+      <p>
+        For 7(a), 504 and surety purposes, SBA accepts personal financial statements in other formats
+        that contain the same data, such as a lender’s equivalent form or an accountant-prepared
+        statement. 8(a) BD and WOSB applicants must use Form 413. Confirm with your lender before
+        you send anything else (see{' '}
+        <a href={NOTICE_URL} rel="noopener" target="_blank">SBA’s information notice</a>).
+      </p>
+      <h3>Accuracy matters</h3>
+      <p>
+        The form warns that knowingly making a false statement is a violation of federal law and can
+        lead to criminal prosecution, significant civil penalties and a denied application. Gather
+        account statements first and use current figures.
+      </p>
+    </Prose>
+  </Section>
+
+  <Section tone="blue" id="worksheet" aria-labelledby="worksheet-title">
+    <div class="worksheet">
+      <div class="stack" style="--stack-gap: 1.25rem">
+        <Eyebrow>Free download</Eyebrow>
+        <h2 id="worksheet-title">SBA Form 413 worksheet (Excel)</h2>
+        <p class="lead">
+          Worksheet to organize your numbers — submit the official SBA Form 413 to your lender.
+        </p>
+        <ul class="checks">
+          <li>
+            Front sheet organized like the form: assets, liabilities, net worth, Section 1 income
+            and contingent liabilities.
+          </li>
+          <li>Detail tables for Sections 2 to 8 that feed the front-page totals.</li>
+          <li>SUM formulas and a net worth formula that tie out automatically; whole dollars, no cents.</li>
+        </ul>
+        <div class="actions">
+          <Button href={XLSX} variant="primary" size="lg" download>Download the Excel worksheet</Button>
+          <Button href="/download/" variant="secondary" size="lg">Get the general PFS template</Button>
+        </div>
+        <p class="muted small">
+          Not an official SBA document. Estimates for educational purposes only. Not a loan offer or
+          financial advice.
+        </p>
+      </div>
+    </div>
+  </Section>
+
+  <Section aria-labelledby="next-title">
+    <div class="stack" style="--stack-gap: 1.25rem">
+      <h2 id="next-title">Next steps</h2>
+    </div>
+    <div class="grid grid-3 next-grid">
+      <a class="card stack" style="--stack-gap: 0.5rem" href={url('/how-to-fill-out-sba-form-413/')}>
+        <h3>How to fill out SBA Form 413</h3>
+        <p class="muted">A line-by-line guide to each asset, liability and contingent-liability entry.</p>
+      </a>
+      <a class="card stack" style="--stack-gap: 0.5rem" href={url('/personal-financial-statement-example/')}>
+        <h3>Personal financial statement example</h3>
+        <p class="muted">See a completed statement and download a printable blank PFS.</p>
+      </a>
+      <a class="card stack" style="--stack-gap: 0.5rem" href={url('/glossary/contingent-liabilities/')}>
+        <h3>Contingent liabilities explained</h3>
+        <p class="muted">What counts as a contingent liability and why lenders ask about it.</p>
+      </a>
+    </div>
+    <p class="muted small next-note">
+      Also see the glossary entry <a href={url('/glossary/sba-form-413/')}>SBA Form 413</a> and the
+      editable <a href={url('/download/')}>free PFS template</a> for Google Sheets and Excel.
+    </p>
+  </Section>
+
+  <Section tone="surface" aria-labelledby="faq-title">
+    <div class="faq-wrap">
+      <h2 id="faq-title">SBA Form 413: FAQ</h2>
+      <Faq items={faq} />
+    </div>
+  </Section>
+
+  <CtaBand>
+    <CtaTiles slot="art" />
+  </CtaBand>
+</Base>
+
+<style>
+  .hero {
+    display: grid;
+    gap: clamp(32px, 5vw, 64px);
+    align-items: center;
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding-top: 0.5rem;
+  }
+
+  .hero :global(.hero-art) {
+    max-width: 520px;
+    margin-inline: auto;
+  }
+
+  @media (min-width: 900px) {
+    .hero {
+      grid-template-columns: 1.15fr 0.85fr;
+    }
+  }
+
+  .overview {
+    margin-top: clamp(24px, 4vw, 40px);
+  }
+
+  .overview th[scope='row'] {
+    width: 12rem;
+    white-space: nowrap;
+    font-weight: 600;
+  }
+
+  .overview td:last-child {
+    min-width: 12rem;
+    color: var(--muted);
+  }
+
+  .overview td:nth-child(2) {
+    min-width: 22rem;
+  }
+
+  .overview-note,
+  .next-note {
+    margin-top: 16px;
+  }
+
+  .worksheet {
+    max-width: 760px;
+  }
+
+  .checks {
+    list-style: none;
+    display: grid;
+    gap: 10px;
+  }
+
+  .checks li {
+    position: relative;
+    padding-left: 1.75em;
+  }
+
+  .checks li::before {
+    content: '';
+    position: absolute;
+    left: 0.25em;
+    top: 0.45em;
+    width: 0.5em;
+    height: 0.9em;
+    border: solid var(--sheets-green);
+    border-width: 0 2.5px 2.5px 0;
+    transform: rotate(40deg);
+  }
+
+  .next-grid {
+    margin-top: clamp(24px, 4vw, 40px);
+  }
+
+  .next-grid h3 {
+    font-size: 1.25rem;
+  }
+
+  .faq-wrap {
+    display: grid;
+    gap: 32px;
+    max-width: 820px;
+  }
+</style>

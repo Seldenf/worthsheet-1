@@ -1,0 +1,290 @@
+---
+import Base from '../layouts/Base.astro';
+import Section from '../components/Section.astro';
+import Eyebrow from '../components/Eyebrow.astro';
+import Prose from '../components/Prose.astro';
+import { url } from '../lib/url';
+
+/** Address for privacy requests. Single source for every mailto link on this page. */
+const CONTACT_EMAIL = 'hello@worthsheet.com';
+const mailto = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('WorthSheet privacy request')}`;
+---
+
+<Base
+  title="Privacy Policy | WorthSheet"
+  description="How WorthSheet collects and uses your name, email, ZIP code and analytics data when you download the free PFS template, and the choices you have."
+  path="/privacy-policy/"
+  breadcrumbs={[{ name: 'Privacy policy', path: '/privacy-policy/' }]}
+>
+  <Section>
+    <div class="container-narrow">
+      <Eyebrow>Legal</Eyebrow>
+      <h1>Privacy policy</h1>
+      <p class="muted policy-date">
+        Effective <time datetime="2026-11-06">November 6, 2026</time>
+      </p>
+
+      <Prose>
+        <p>
+          WorthSheet (“we”, “us”) runs worthsheet.com, a website with a free personal financial
+          statement template, calculators, guides and a bank finder. This policy explains what
+          personal data the site handles, why, who else receives it, and the choices you have. We
+          keep it short because we collect very little.
+        </p>
+
+        <h2>Who we are</h2>
+        <p>
+          Our website address is https://worthsheet.com. To ask a question about this policy or
+          make a privacy request, email <a href={mailto}>{CONTACT_EMAIL}</a>.
+        </p>
+
+        <h2>What we collect and why</h2>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Data</th>
+                <th scope="col">When</th>
+                <th scope="col">Why</th>
+                <th scope="col">Where it goes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">Name and email (required)</th>
+                <td>You submit the template form on <a href={url('/download/')}>/download/</a>.</td>
+                <td>To deliver the template and to contact you about it.</td>
+                <td>A Google Sheet we operate, plus an email notification to the WorthSheet team.</td>
+              </tr>
+              <tr>
+                <th scope="row">ZIP code and purpose (optional)</th>
+                <td>You fill in the optional form fields.</td>
+                <td>To understand who uses the template and for what (mortgage, SBA or business loan, personal loan, financial advisor, other).</td>
+                <td>The same Google Sheet and notification email.</td>
+              </tr>
+              <tr>
+                <th scope="row">Page and referrer</th>
+                <td>Sent automatically with the form.</td>
+                <td>To see which page and source a signup came from.</td>
+                <td>The same Google Sheet.</td>
+              </tr>
+              <tr>
+                <th scope="row">Analytics data (page views, events)</th>
+                <td>Only after you click Accept in the cookie banner.</td>
+                <td>To understand how the site is used and improve it.</td>
+                <td>Google Analytics 4.</td>
+              </tr>
+              <tr>
+                <th scope="row">Your cookie choice</th>
+                <td>When you click Accept or Decline.</td>
+                <td>To remember your choice.</td>
+                <td>Your browser only (see “Cookies and local storage”).</td>
+              </tr>
+              <tr>
+                <th scope="row">ZIP code for bank search</th>
+                <td>You search for banks by ZIP code on <a href={url('/banks/')}>/banks/</a>.</td>
+                <td>To look up FDIC-insured institutions near you.</td>
+                <td>The FDIC, directly from your browser (see below).</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          We do not ask for financial account numbers, Social Security numbers or the figures you
+          put into the template. The calculators on this site run in your browser; the numbers you
+          type into them are not sent to us.
+        </p>
+
+        <h2>The template form</h2>
+        <p>
+          When you submit the form, your browser sends the fields above directly to a Google Apps
+          Script web app that we operate. The script saves them as a new row in a Google Sheet that
+          only the WorthSheet team can open, and sends an email notification with your name, email,
+          ZIP code, purpose and page to the WorthSheet team through Google’s mail service. Google
+          therefore also receives the technical data any web request includes, such as your IP
+          address and browser details, under <a href="https://policies.google.com/privacy" rel="noopener">Google’s Privacy Policy</a>.
+        </p>
+        <p>We use this information to:</p>
+        <ul>
+          <li>deliver the template and confirm that your request was saved;</li>
+          <li>
+            send you occasional template updates, or contact you about the template you requested
+            (every message gives you a way to opt out, or you can email us);
+          </li>
+          <li>understand the main use cases of the template, so we can improve it and our guides.</li>
+        </ul>
+        <p>
+          The form includes a hidden anti-spam field; it is not stored. If JavaScript is turned off
+          the form still works but shows you the raw confirmation response instead of the template
+          links; you can then return to this site and open the template from the
+          <a href={url('/')}>home page</a>.
+        </p>
+
+        <h2>Opening the template in Google Sheets or Excel</h2>
+        <p>
+          After you submit the form we send you to Google, which asks you to sign in to make your
+          own copy of the Google Sheet. Your copy lives in your Google account and is governed by
+          <a href="https://policies.google.com/terms" rel="noopener">Google’s Terms of Service</a>
+          and <a href="https://policies.google.com/privacy" rel="noopener">Privacy Policy</a>, not by
+          this policy. We do not see or receive what you type into your copy. The Excel (.xlsx)
+          version downloads to your device and stays there.
+        </p>
+
+        <h2>Cookies and local storage</h2>
+        <p>
+          WorthSheet does not set cookies of its own. The only item we store in your browser is
+          your cookie choice, saved in local storage under the key <code>ws-consent</code> with the
+          value <code>granted</code> or <code>denied</code>. It stays until you clear your browser
+          data. Use “Cookie settings” in the footer to review or change your choice at any time.
+        </p>
+        <h3>Google Analytics 4</h3>
+        <p>
+          We use Google Analytics 4 (measurement ID G-RVHR897PTG) with Google Consent Mode v2.
+          Every consent signal starts as denied and Google’s analytics script is not loaded at all
+          until you click Accept. If you accept, we grant only <code>analytics_storage</code>, which lets
+          Google Analytics set cookies (such as <code>_ga</code>) and measure page views and
+          interactions. Advertising storage, advertising user data and ad personalization stay
+          denied, and we do not use Google Analytics for advertising. If you click Decline, or
+          make no choice, no analytics script loads and no analytics cookies are set.
+        </p>
+        <p>
+          With consent, we send Google Analytics events such as page views, a “lead” event that
+          includes the purpose you selected (never your name, email or ZIP code), and a “template
+          opened” event that records whether you chose Google Sheets or Excel. Google acts as our
+          analytics provider; see <a href="https://support.google.com/analytics/answer/6004245" rel="noopener">how Google safeguards Google Analytics data</a>.
+        </p>
+
+        <h2>Bank search and the FDIC</h2>
+        <p>
+          When you search for banks by ZIP code, your browser sends the ZIP code you enter directly
+          to the Federal Deposit Insurance Corporation’s BankFind API, and the FDIC returns the
+          matching institutions. We do not receive or store that ZIP code. The FDIC receives it,
+          along with your IP address, as part of the request, and handles it under its own
+          <a href="https://www.fdic.gov/privacy" rel="noopener">privacy policy</a>. Nothing is sent to the FDIC
+          until you run a search.
+        </p>
+
+        <h2>Hosting</h2>
+        <p>
+          The site is a static website served by GitHub Pages. GitHub may process technical
+          request data, such as your IP address, when you load a page, as described in the
+          <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" rel="noopener">GitHub privacy statement</a>.
+          Fonts and images are served from the site itself, not from third-party servers.
+        </p>
+
+        <h2>Who we share your data with</h2>
+        <p>
+          We do not sell your personal data, and we do not share it with third parties for
+          advertising or cross-context behavioral advertising. Your data is handled only by service providers that run the
+          parts described above: Google (Sheets, Apps Script and mail for the form; Google
+          Analytics, only with your consent) and GitHub (hosting). We may also disclose
+          information if the law requires it or to protect our rights, users or the site.
+        </p>
+
+        <h2>How long we retain your data</h2>
+        <p>
+          We keep form submissions until you ask us to delete them or we no longer need them to
+          run and improve the template. Analytics data is kept according to the retention setting
+          of our Google Analytics 4 property. Your cookie choice stays in your browser until you
+          clear it. Notification emails remain in the mailboxes of the team members who received
+          them until they delete them.
+        </p>
+
+        <h2>How we protect your data</h2>
+        <p>
+          Form data travels over HTTPS to Google and is stored in Google’s infrastructure. Access
+          to the Google Sheet is limited to the WorthSheet team. No method of transmission or
+          storage is perfectly secure, so we cannot guarantee absolute security.
+        </p>
+
+        <h2>What rights you have over your data</h2>
+        <p>
+          You can ask us to tell you what personal data we hold about you, send you a copy, correct
+          it, delete it, or stop contacting you. Email
+          <a href={mailto}>{CONTACT_EMAIL}</a> from the address you used on the form so we can find
+          your record. We may need to confirm that the request comes from you, and we may keep what
+          we are required to keep for legal or security reasons. We aim to respond within 45 days.
+          You can withdraw analytics consent at any time with “Cookie settings” in the footer.
+        </p>
+        <h3>California residents (CCPA/CPRA)</h3>
+        <p>
+          California law gives you the right to know what personal information we collect, use and
+          disclose; to request deletion or correction; to opt out of the sale or sharing of your
+          personal information; to limit use of sensitive personal information; and to not be
+          treated differently for using these rights. In the past 12 months we collected
+          identifiers (name, email, ZIP code), internet activity (page, referrer and, with
+          consent, analytics data) and the purpose you selected. We do not sell or share personal
+          information as those terms are defined in California law, and we do not collect sensitive
+          personal information. You may use an authorized agent to make a request on your behalf.
+        </p>
+        <h3>EEA, UK and similar laws</h3>
+        <p>
+          WorthSheet is aimed at people in the United States. If GDPR or a similar law applies to
+          you, you also have the right to object to or restrict processing, to data portability and
+          to complain to your local data protection authority. Our legal bases are your consent
+          (analytics cookies, and the information you choose to submit in the form) and our
+          legitimate interest in delivering and improving a free template. Because we use Google’s
+          services, your data may be processed in the United States and other countries where
+          Google operates.
+        </p>
+
+        <h2>Children’s privacy</h2>
+        <p>
+          WorthSheet is not directed to children under 13 and we do not knowingly collect personal
+          information from them. If you believe a child has submitted the form, email
+          <a href={mailto}>{CONTACT_EMAIL}</a> and we will delete the record.
+        </p>
+
+        <h2>Links to other sites</h2>
+        <p>
+          Our guides link to government and other third-party sites, such as the SBA, CFPB and
+          FDIC. Those sites have their own privacy practices that we do not control.
+        </p>
+
+        <h2>Changes to this policy</h2>
+        <p>
+          If our practices change, we will update this page and the effective date above. Material
+          changes will be reflected here before they take effect.
+        </p>
+
+        <h2>Contact</h2>
+        <p>
+          Questions or requests about your data: <a href={mailto}>{CONTACT_EMAIL}</a>. Looking for
+          the template? <a href={url('/download/')}>Get the free PFS template</a>.
+        </p>
+      </Prose>
+    </div>
+  </Section>
+</Base>
+
+<style>
+  .policy-date {
+    margin-top: 0.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .table-scroll {
+    overflow-x: auto;
+  }
+
+  .table-scroll table {
+    width: 100%;
+    min-width: 560px;
+    border-collapse: collapse;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+  }
+
+  .table-scroll th,
+  .table-scroll td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .table-scroll thead th {
+    background: var(--surface);
+    font-weight: 600;
+  }
+</style>

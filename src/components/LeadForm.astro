@@ -1,0 +1,362 @@
+---
+import Button from './Button.astro';
+import { url } from '../lib/url';
+import { LEADS_ENDPOINT, PURPOSES, TEMPLATE_COPY_URL, TEMPLATE_XLSX_URL } from '../config';
+
+interface Props {
+  /** Prefix for element ids, so the form can appear twice on one page. */
+  id?: string;
+  class?: string;
+}
+
+const { id = 'lead', class: className } = Astro.props;
+---
+
+<div class:list={['lead-form', className]} data-lead-form>
+  <form
+    class="lead-fields"
+    action={LEADS_ENDPOINT}
+    method="post"
+    data-form
+    data-copy-url={TEMPLATE_COPY_URL}
+    data-xlsx-url={TEMPLATE_XLSX_URL}
+  >
+    <div class="field">
+      <label for={`${id}-name`}>Name</label>
+      <input
+        id={`${id}-name`}
+        name="name"
+        type="text"
+        autocomplete="name"
+        maxlength="100"
+        required
+        aria-describedby={`${id}-name-error`}
+      />
+      <p class="field-error" id={`${id}-name-error`} data-error="name" hidden></p>
+    </div>
+
+    <div class="field">
+      <label for={`${id}-email`}>Email</label>
+      <input
+        id={`${id}-email`}
+        name="email"
+        type="email"
+        autocomplete="email"
+        maxlength="254"
+        required
+        aria-describedby={`${id}-email-error`}
+      />
+      <p class="field-error" id={`${id}-email-error`} data-error="email" hidden></p>
+    </div>
+
+    <div class="field">
+      <label for={`${id}-zip`}>ZIP code <span class="optional">(optional)</span></label>
+      <input
+        id={`${id}-zip`}
+        name="zip"
+        type="text"
+        inputmode="numeric"
+        autocomplete="postal-code"
+        maxlength="10"
+        pattern="\d{5}(-\d{4})?"
+        title="5-digit ZIP code, or ZIP+4 like 12345-6789"
+        aria-describedby={`${id}-zip-error`}
+      />
+      <p class="field-error" id={`${id}-zip-error`} data-error="zip" hidden></p>
+    </div>
+
+    <div class="field">
+      <label for={`${id}-purpose`}>What do you need it for?</label>
+      <select id={`${id}-purpose`} name="purpose" aria-describedby={`${id}-purpose-error`}>
+        <option value="">Select one (optional)</option>
+        {PURPOSES.map((purpose) => <option value={purpose}>{purpose}</option>)}
+      </select>
+      <p class="field-error" id={`${id}-purpose-error`} data-error="purpose" hidden></p>
+    </div>
+
+    <div class="hp" aria-hidden="true">
+      <label for={`${id}-website`}>Leave this field empty</label>
+      <input id={`${id}-website`} name="website" type="text" tabindex="-1" autocomplete="off" />
+    </div>
+
+    <input type="hidden" name="page" value={Astro.url.pathname} />
+
+    <div class="submit-row">
+      <Button type="submit" variant="primary" size="lg" data-submit>Get the free template</Button>
+      <p class="consent-note">
+        By submitting you agree to the <a href={url('/privacy-policy/')}>Privacy Policy</a>.
+      </p>
+    </div>
+
+    <p class="form-status" role="status" aria-live="polite" data-status></p>
+  </form>
+
+  <div class="success" data-success tabindex="-1" hidden>
+    <svg class="success-icon" viewBox="0 0 48 48" width="48" height="48" aria-hidden="true">
+      <circle cx="24" cy="24" r="24" fill="var(--tint-green)"></circle>
+      <path
+        d="M14 25l7 7 13-15"
+        fill="none"
+        stroke="var(--sheets-green)"
+        stroke-width="3.2"
+        stroke-linecap="round"
+        stroke-linejoin="round"></path>
+    </svg>
+    <h2 tabindex="-1" data-success-title>Your template is ready</h2>
+    <p>
+      We’re opening your copy in Google Sheets. If nothing happens, use one of the buttons below.
+    </p>
+    <div class="success-actions">
+      <Button href={TEMPLATE_COPY_URL} variant="primary" size="lg" data-template-link="sheets">
+        Open my copy in Google Sheets
+      </Button>
+      <Button href={TEMPLATE_XLSX_URL} variant="secondary" size="lg" data-template-link="xlsx">
+        Download for Excel (.xlsx)
+      </Button>
+    </div>
+    <p class="field-hint">
+      Google asks you to sign in to make a copy of a Google Sheet. The Excel (.xlsx) version
+      downloads as a regular file.
+    </p>
+  </div>
+</div>
+
+<style>
+  .lead-form {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    padding: clamp(24px, 4vw, 40px);
+  }
+
+  .lead-fields {
+    display: grid;
+    gap: 20px;
+  }
+
+  .optional {
+    font-weight: 400;
+    color: var(--muted);
+  }
+
+  .hp {
+    position: absolute;
+    left: -10000px;
+    top: auto;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+
+  .submit-row {
+    display: grid;
+    gap: 12px;
+  }
+
+  .submit-row :global(.btn) {
+    width: 100%;
+  }
+
+  .consent-note {
+    font-size: 0.875rem;
+    color: var(--muted);
+  }
+
+  .consent-note a {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .form-status {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--danger);
+  }
+
+  .form-status:empty {
+    display: none;
+  }
+
+  .success {
+    display: grid;
+    gap: 16px;
+    justify-items: start;
+  }
+
+  .success[hidden],
+  .lead-fields[hidden],
+  .field-error[hidden] {
+    display: none;
+  }
+
+  .success h2 {
+    font-size: clamp(1.6rem, 3vw, 2rem);
+  }
+
+  .success:focus,
+  .success h2:focus {
+    outline: none;
+  }
+
+  .success-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+</style>
+
+<script>
+  import { LEADS_ENDPOINT, TEMPLATE_COPY_URL } from '../config';
+  import { track } from '../lib/analytics';
+
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const ZIP_RE = /^\d{5}(-\d{4})?$/;
+  const REDIRECT_DELAY_MS = 600;
+
+  type Field = 'name' | 'email' | 'zip' | 'purpose';
+  const FIELDS: Field[] = ['name', 'email', 'zip', 'purpose'];
+
+  const ERROR_FIELD: Record<string, Field> = {
+    missing_name: 'name',
+    invalid_email: 'email',
+    invalid_zip: 'zip',
+    invalid_purpose: 'purpose',
+  };
+
+  const ERROR_TEXT: Record<Field, string> = {
+    name: 'Please enter your name.',
+    email: 'Please enter a valid email address.',
+    zip: 'Enter a 5-digit ZIP code (or ZIP+4), or leave it blank.',
+    purpose: 'Please choose one of the listed options, or leave it blank.',
+  };
+
+  function init(root: HTMLElement) {
+    const form = root.querySelector<HTMLFormElement>('[data-form]');
+    const success = root.querySelector<HTMLElement>('[data-success]');
+    const status = root.querySelector<HTMLElement>('[data-status]');
+    const submit = root.querySelector<HTMLButtonElement>('[data-submit]');
+    if (!form || !success || !status || !submit) return;
+
+    // Replace native validation bubbles with inline messages (native validation still applies without JS).
+    form.noValidate = true;
+
+    const submitLabel = submit.textContent?.trim() || 'Get the free template';
+    let redirectTimer: number | undefined;
+
+    const input = (field: Field) =>
+      form.elements.namedItem(field) as HTMLInputElement | HTMLSelectElement;
+    const errorEl = (field: Field) => form.querySelector<HTMLElement>(`[data-error="${field}"]`)!;
+
+    function setError(field: Field, message: string) {
+      const el = errorEl(field);
+      el.textContent = message;
+      el.hidden = false;
+      input(field).setAttribute('aria-invalid', 'true');
+    }
+
+    function clearError(field: Field) {
+      const el = errorEl(field);
+      el.textContent = '';
+      el.hidden = true;
+      input(field).removeAttribute('aria-invalid');
+    }
+
+    function values() {
+      return {
+        name: input('name').value.trim(),
+        email: input('email').value.trim(),
+        zip: input('zip').value.trim(),
+        purpose: input('purpose').value,
+        website: (form!.elements.namedItem('website') as HTMLInputElement).value,
+      };
+    }
+
+    function validate(v: ReturnType<typeof values>): Field[] {
+      const bad: Field[] = [];
+      if (!v.name) bad.push('name');
+      if (!EMAIL_RE.test(v.email)) bad.push('email');
+      if (v.zip && !ZIP_RE.test(v.zip)) bad.push('zip');
+      return bad;
+    }
+
+    function setBusy(busy: boolean, label = submitLabel) {
+      submit!.disabled = busy;
+      submit!.textContent = label;
+      form!.setAttribute('aria-busy', String(busy));
+    }
+
+    for (const field of FIELDS) {
+      input(field).addEventListener('input', () => {
+        clearError(field);
+        status!.textContent = '';
+      });
+    }
+
+    function showSuccess() {
+      form!.hidden = true;
+      success!.hidden = false;
+      success!.querySelector<HTMLElement>('[data-success-title]')?.focus();
+      redirectTimer = window.setTimeout(() => location.assign(TEMPLATE_COPY_URL), REDIRECT_DELAY_MS);
+    }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      status.textContent = '';
+      for (const field of FIELDS) clearError(field);
+
+      const v = values();
+      const invalid = validate(v);
+      if (invalid.length > 0) {
+        for (const field of invalid) setError(field, ERROR_TEXT[field]);
+        input(invalid[0]).focus();
+        return;
+      }
+
+      setBusy(true, 'Sending…');
+
+      try {
+        const body = new URLSearchParams({
+          name: v.name,
+          email: v.email,
+          zip: v.zip,
+          purpose: v.purpose,
+          website: v.website,
+          page: location.pathname,
+          referrer: document.referrer,
+        });
+        const res = await fetch(LEADS_ENDPOINT, { method: 'POST', body });
+        const data = (await res.json()) as { ok?: boolean; error?: string };
+
+        if (data.ok === true) {
+          track('generate_lead', { purpose: v.purpose });
+          showSuccess();
+          return;
+        }
+
+        setBusy(false);
+        const field = data.error ? ERROR_FIELD[data.error] : undefined;
+        if (field) {
+          setError(field, ERROR_TEXT[field]);
+          input(field).focus();
+        } else {
+          status.textContent = 'Something went wrong while saving your details. Please try again.';
+        }
+      } catch {
+        setBusy(false, 'Try again');
+        status.textContent =
+          'We couldn’t reach the server, so nothing was saved. Check your connection and try again.';
+      }
+    });
+
+    success.addEventListener('click', (event) => {
+      const link = (event.target as HTMLElement).closest<HTMLElement>('[data-template-link]');
+      if (!link) return;
+      // The visitor chose a destination; don't also redirect this tab.
+      window.clearTimeout(redirectTimer);
+      track('template_open', { format: link.dataset.templateLink === 'xlsx' ? 'xlsx' : 'sheets' });
+    });
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-lead-form]').forEach(init);
+</script>

@@ -1,0 +1,83 @@
+---
+/**
+ * One labelled result value. Generic; update the value from JS with `setOut(out, text)` from `./calc`
+ * (it sets the text of every `[data-out="<out>"]` element).
+ *
+ * Props
+ * - label    (required) what the number is, e.g. "Monthly principal & interest".
+ * - out      (required) key for `data-out` on the value element.
+ * - value    server-rendered initial text (default "—"). Pass a prerendered string so the page is useful without JS.
+ * - hint     optional small text under the value.
+ * - hintOut  optional `data-out` key for the hint (when its text is also updated from JS).
+ * - primary  larger, highlighted card (use for the headline number).
+ * - class    extra class.
+ */
+interface Props {
+	label: string;
+	out: string;
+	value?: string;
+	hint?: string;
+	hintOut?: string;
+	primary?: boolean;
+	class?: string;
+}
+
+const { label, out, value = '—', hint, hintOut, primary = false, class: className } = Astro.props;
+---
+
+<div class:list={['result', { 'result-primary': primary }, className]}>
+	<p class="result-label">{label}</p>
+	<p class="result-value num" data-out={out}>{value}</p>
+	{(hint || hintOut) && <p class="result-hint" data-out={hintOut}>{hint}</p>}
+</div>
+
+<style>
+	.result {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+		padding: 16px 18px;
+		border: 1px solid var(--line);
+		border-radius: var(--radius-sm);
+		background: var(--white);
+		min-width: 0;
+	}
+
+	.result-label {
+		font-size: 0.875rem;
+		font-weight: 500;
+		color: var(--muted);
+		line-height: 1.3;
+	}
+
+	.result-value {
+		font-size: clamp(1.375rem, 2.6vw, 1.75rem);
+		font-weight: 580;
+		letter-spacing: -0.025em;
+		line-height: 1.15;
+		overflow-wrap: anywhere;
+	}
+
+	.result-hint {
+		font-size: 0.8125rem;
+		color: var(--muted);
+		line-height: 1.4;
+	}
+
+	.result-primary {
+		background: var(--ink);
+		border-color: var(--ink);
+		color: var(--white);
+		padding: 22px 24px;
+	}
+
+	.result-primary .result-label,
+	.result-primary .result-hint {
+		color: rgba(255, 255, 255, 0.78);
+	}
+
+	.result-primary .result-value {
+		font-size: clamp(2rem, 5vw, 3rem);
+		letter-spacing: -0.035em;
+	}
+</style>

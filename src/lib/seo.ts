@@ -108,6 +108,8 @@ export function webAppLd(opts: {
   description: string;
   path: string;
   category?: string;
+  /** Omit for non-browser deliverables such as the spreadsheet template. */
+  browserRequirements?: string;
 }): Ld {
   return {
     '@context': 'https://schema.org',
@@ -118,7 +120,7 @@ export function webAppLd(opts: {
     applicationCategory: 'FinanceApplication',
     ...(opts.category ? { applicationSubCategory: opts.category } : {}),
     operatingSystem: 'Any',
-    browserRequirements: 'Requires JavaScript',
+    ...(opts.browserRequirements ? { browserRequirements: opts.browserRequirements } : {}),
     inLanguage: 'en-US',
     isAccessibleForFree: true,
     offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },

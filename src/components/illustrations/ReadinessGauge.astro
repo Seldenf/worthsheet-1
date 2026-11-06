@@ -4,8 +4,10 @@ interface Props {
   title?: string;
   /** Active rating: 0 Poor · 1 Fair · 2 Good · 3 Very Good · 4 Excellent */
   level?: 0 | 1 | 2 | 3 | 4;
+  /** Prefix for internal ids; set a distinct one when the gauge appears more than once on a page. */
+  idPrefix?: string;
 }
-const { class: className, title, level = 3 } = Astro.props;
+const { class: className, title, level = 3, idPrefix = 'wsi-gauge' } = Astro.props;
 
 const C = { ink: '#2e2926', beige: '#e8e7e5', tB: '#e2f2f9', tG: '#e2f9e9' };
 const iso = (cx: number, cy: number, s: number) => `matrix(1 -.5 1 .5 ${cx - s} ${cy})`;
@@ -58,12 +60,12 @@ const baseB = pt(11, nd - 90);
 >
   {title && <title>{title}</title>}
   <defs>
-    <filter id="wsi-gauge-blur" x="-20%" y="-30%" width="140%" height="160%"><feGaussianBlur stdDeviation="8"></feGaussianBlur></filter>
+    <filter id={`${idPrefix}-blur`} x="-20%" y="-30%" width="140%" height="160%"><feGaussianBlur stdDeviation="8"></feGaussianBlur></filter>
   </defs>
 
   <g transform={iso(CX, CY + 40, 196)}><rect width="196" height="196" rx="26" fill={C.tB} fill-opacity=".6" stroke="#fff" stroke-width="2"></rect></g>
   <g transform={iso(CX, CY + 40, 150)}><rect width="150" height="150" rx="22" fill={C.tG} fill-opacity=".7" stroke="#fff" stroke-width="2"></rect></g>
-  <ellipse cx={CX} cy={CY + 40} rx="170" ry="26" fill={C.ink} fill-opacity=".07" filter="url(#wsi-gauge-blur)"></ellipse>
+  <ellipse cx={CX} cy={CY + 40} rx="170" ry="26" fill={C.ink} fill-opacity=".07" filter={`url(#${idPrefix}-blur)`}></ellipse>
 
   <g class="wsi-gauge-f1">
     {segs.map((s, i) => (

@@ -1,0 +1,375 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import { Image, getImage } from 'astro:assets';
+import type { MarkdownHeading } from 'astro';
+import Base from './Base.astro';
+import Prose from '../components/Prose.astro';
+import Faq from '../components/Faq.astro';
+import Button from '../components/Button.astro';
+import CtaBand from '../components/CtaBand.astro';
+import PostCard from '../components/PostCard.astro';
+import CtaTiles from '../components/illustrations/CtaTiles.astro';
+import { SITE_NAME } from '../config';
+import { articleLd, faqLd } from '../lib/seo';
+
+interface Props {
+  entry: CollectionEntry<'blog'>;
+  headings?: MarkdownHeading[];
+}
+
+const { entry, headings = [] } = Astro.props;
+const { title, seoTitle, description, pubDate, updatedDate, heroImage, heroAlt, faq } = entry.data;
+const path = `/${entry.id}/`;
+
+const suffixed = `${title} | ${SITE_NAME}`;
+const pageTitle = seoTitle ?? (suffixed.length <= 60 ? suffixed : title);
+
+const ogImage = heroImage
+  ? (await getImage({ src: heroImage, width: 1200, height: 630, format: 'jpg' })).src
+  : undefined;
+
+const fmt = (d: Date) =>
+  d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
+const iso = (d: Date) => d.toISOString().slice(0, 10);
+const showUpdated = updatedDate && iso(updatedDate) !== iso(pubDate);
+
+const toc = headings.filter((h) => h.depth === 2);
+
+// Related guides: keyword/title token overlap, newest first as tiebreaker and fallback.
+const STOP = new Set(['a', 'an', 'and', 'are', 'do', 'for', 'how', 'in', 'is', 'of', 'on', 'or', 'the', 'to', 'what', 'when', 'with', 'you', 'your']);
+const tokens = (post: CollectionEntry<'blog'>) =>
+  new Set(
+    [post.data.title, ...(post.data.keywords ?? [])]
+      .join(' ')
+      .toLowerCase()
+      .split(/[^a-z0-9]+/)
+      .filter((t) => t.length > 1 && !STOP.has(t)),
+  );
+const mine = tokens(entry);
+const related = (await getCollection('blog', ({ data }) => !data.draft))
+  .filter((post) => post.id !== entry.id)
+  .map((post) => ({ post, score: [...tokens(post)].filter((t) => mine.has(t)).length }))
+  .sort((a, b) => b.score - a.score || b.post.data.pubDate.valueOf() - a.post.data.pubDate.valueOf())
+  .slice(0, 3)
+  .map(({ post }) => post);
+
+const crumbs = [
+  { name: 'Blog', path: '/blog/' },
+  { name: title, path },
+];
+
+const jsonLd = [
+  articleLd({
+    title,
+    description,
+    path,
+    datePublished: pubDate,
+    dateModified: updatedDate,
+    image: ogImage,
+  }),
+  ...(faq && faq.length > 0 ? [faqLd(faq)] : []),
+];
+---
+
+<Base
+  title={pageTitle}
+  description={description}
+  path={path}
+  image={ogImage}
+  ogType="article"
+  breadcrumbs={crumbs}
+  jsonLd={jsonLd}
+>
+  <article class="post">
+    <header class="container-narrow post-header">
+      <h1>{title}</h1>
+      <p class="post-meta muted">
+        By {SITE_NAME} Team · Published <time datetime={iso(pubDate)}>{fmt(pubDate)}</time>
+        {
+          showUpdated && (
+            <>
+              {' '}
+              · Updated <time datetime={iso(updatedDate)}>{fmt(updatedDate)}</time>
+            </>
+          )
+        }
+      </p>
+    </header>
+
+    {
+      heroImage && (
+        <figure class="container post-hero">
+          <Image
+            src={heroImage}
+            alt={heroAlt ?? ''}
+            width={1200}
+            widths={[480, 768, 1200]}
+            sizes="(min-width: 1200px) 1136px, 100vw"
+            loading="eager"
+            fetchpriority="high"
+            decoding="async"
+          />
+        </figure>
+      )
+    }
+
+    <div class="container-narrow post-content">
+      {
+        toc.length >= 4 && (
+          <nav class="toc card" aria-labelledby="toc-title">
+            <p id="toc-title" class="toc-title">
+              In this guide
+            </p>
+            <ol>
+              {toc.map((h) => (
+                <li>
+                  <a href={`#${h.slug}`}>{h.text}</a>
+                </li>
+              ))}
+            </ol>
+          </nav>
+        )
+      }
+
+      <div class="post-body">
+        <Prose>
+          <slot />
+        </Prose>
+      </div>
+
+      <aside class="post-cta card" aria-labelledby="post-cta-title">
+        <h2 id="post-cta-title">Build your own personal financial statement</h2>
+        <p>
+          Use the free WorthSheet template in Google Sheets or Excel to list your assets and
+          liabilities and see your net worth in minutes.
+        </p>
+        <Button href="/download/" variant="primary">Get the free template</Button>
+      </aside>
+
+      {
+        faq && faq.length > 0 && (
+          <section class="post-faq" aria-labelledby="faq-title">
+            <h2 id="faq-title">Frequently asked questions</h2>
+            <Faq items={faq} />
+          </section>
+        )
+      }
+    </div>
+  </article>
+
+  {
+    related.length > 0 && (
+      <section class="related" aria-labelledby="related-title">
+        <div class="container">
+          <h2 id="related-title">Related guides</h2>
+          <div class="grid grid-3">
+            {related.map((post) => (
+              <PostCard post={post} />
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <CtaBand>
+    <CtaTiles slot="art" />
+  </CtaBand>
+</Base>
+
+<style>
+  .post {
+    padding-top: clamp(16px, 3vw, 32px);
+  }
+
+  .post-header {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .post-header h1 {
+    font-size: clamp(2rem, 5vw, 3.25rem);
+    text-wrap: balance;
+  }
+
+  .post-meta {
+    font-size: 0.9375rem;
+  }
+
+  .post-hero {
+    margin-block: clamp(24px, 4vw, 40px);
+  }
+
+  .post-hero :global(img) {
+    display: block;
+    width: 100%;
+    max-width: 960px;
+    height: auto;
+    margin-inline: auto;
+    border-radius: var(--radius-lg);
+  }
+
+  .post-content {
+    padding-bottom: clamp(32px, 6vw, 64px);
+  }
+
+  .toc {
+    margin-bottom: clamp(24px, 4vw, 40px);
+    padding: clamp(18px, 2.4vw, 26px);
+    background: var(--surface);
+    box-shadow: none;
+  }
+
+  .toc-title {
+    margin-bottom: 0.6em;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  .toc ol {
+    padding-left: 1.3em;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4em;
+  }
+
+  .toc a {
+    color: var(--ink);
+    text-decoration-color: var(--line-strong);
+    text-underline-offset: 0.2em;
+  }
+
+  .toc a:hover {
+    text-decoration-color: var(--ink);
+  }
+
+  .post-cta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+    margin-top: clamp(32px, 5vw, 56px);
+    background: var(--tint-blue);
+  }
+
+  .post-cta h2 {
+    font-size: clamp(1.35rem, 2.4vw, 1.75rem);
+  }
+
+  .post-cta p {
+    color: var(--muted);
+  }
+
+  .post-faq {
+    margin-top: clamp(40px, 6vw, 72px);
+  }
+
+  .post-faq h2 {
+    margin-bottom: 20px;
+    font-size: clamp(1.6rem, 3vw, 2.125rem);
+  }
+
+  .related {
+    padding-block: clamp(40px, 6vw, 72px);
+    background: var(--surface);
+  }
+
+  .related h2 {
+    margin-bottom: clamp(20px, 3vw, 32px);
+    font-size: clamp(1.6rem, 3vw, 2.125rem);
+  }
+
+  /* ---------- Markdown body (extends the shared .prose styles) ---------- */
+  .post-body {
+    overflow-wrap: break-word;
+  }
+
+  .post-body :global(h2),
+  .post-body :global(h3),
+  .post-body :global(h4) {
+    scroll-margin-top: 96px;
+  }
+
+  .post-body :global(h4) {
+    margin-top: 1.5em;
+    font-size: 1.125rem;
+  }
+
+  .post-body :global(strong) {
+    font-weight: 600;
+  }
+
+  .post-body :global(ul ul),
+  .post-body :global(ol ol),
+  .post-body :global(ul ol),
+  .post-body :global(ol ul) {
+    margin-top: 0.4em;
+  }
+
+  .post-body :global(img) {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin-inline: auto;
+    border: 1px solid var(--line);
+  }
+
+  .post-body :global(figure) {
+    margin-inline: 0;
+  }
+
+  .post-body :global(figcaption) {
+    margin-top: 0.6em;
+    color: var(--muted);
+    font-size: 0.875rem;
+    text-align: center;
+  }
+
+  .post-body :global(table) {
+    width: 100%;
+    max-width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+  }
+
+  .post-body :global(th),
+  .post-body :global(td) {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .post-body :global(th) {
+    background: var(--surface);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .post-body :global(tr:last-child td) {
+    border-bottom: 0;
+  }
+
+  .post-body :global(blockquote) {
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    background: var(--surface);
+    padding: 0.9em 1.25em;
+  }
+
+  .post-body :global(blockquote > * + *) {
+    margin-top: 0.7em;
+  }
+
+  .post-body :global(details) {
+    padding: 0.8em 1em;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+  }
+
+  .post-body :global(summary) {
+    cursor: pointer;
+    font-weight: 600;
+  }
+</style>

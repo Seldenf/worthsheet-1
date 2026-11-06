@@ -1,0 +1,203 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Section from '../../components/Section.astro';
+import Prose from '../../components/Prose.astro';
+import Eyebrow from '../../components/Eyebrow.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import GlossaryBook from '../../components/illustrations/GlossaryBook.astro';
+import CtaTiles from '../../components/illustrations/CtaTiles.astro';
+import { url } from '../../lib/url';
+import { abs } from '../../lib/seo';
+import { GLOSSARY_META } from '../../data/glossary-meta';
+
+export async function getStaticPaths() {
+  const entries = await getCollection('glossary');
+  const termBySlug = new Map(entries.map((e) => [e.id, e.data.term]));
+  return entries.map((entry) => ({
+    params: { slug: entry.id },
+    props: { entry, termBySlug },
+  }));
+}
+
+const { entry, termBySlug } = Astro.props;
+const slug = entry.id;
+const { term, definition, description, related = [], relatedLinks = [] } = entry.data;
+
+const meta = GLOSSARY_META[slug];
+if (!meta) throw new Error(`Missing GLOSSARY_META entry for "${slug}" in src/data/glossary-meta.ts`);
+
+const relatedTerms = related.map((s) => {
+  const name = termBySlug.get(s);
+  if (!name) throw new Error(`Glossary "${slug}" lists unknown related slug "${s}"`);
+  return { slug: s, term: name };
+});
+
+const { Content } = await render(entry);
+const path = `/glossary/${slug}/`;
+
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'DefinedTerm',
+    '@id': abs(path) + '#term',
+    name: term,
+    description: definition,
+    url: abs(path),
+    inLanguage: 'en-US',
+    inDefinedTermSet: {
+      '@type': 'DefinedTermSet',
+      '@id': abs('/glossary/') + '#glossary',
+      name: 'WorthSheet personal finance and mortgage glossary',
+      url: abs('/glossary/'),
+    },
+  },
+];
+---
+
+<Base
+  title={meta.title}
+  description={description}
+  path={path}
+  jsonLd={jsonLd}
+  breadcrumbs={[
+    { name: 'Glossary', path: '/glossary/' },
+    { name: term, path },
+  ]}
+>
+  <Section tone="surface">
+    <div class="head">
+      <div class="stack" style="--stack-gap: 1.25rem">
+        <Eyebrow>Glossary · {meta.topic}</Eyebrow>
+        <h1>{meta.h1}</h1>
+        <p class="lead">{definition}</p>
+      </div>
+      <GlossaryBook class="head-art float" />
+    </div>
+  </Section>
+
+  <Section tone="paper">
+    <div class="body">
+      <Prose>
+        <Content />
+      </Prose>
+
+      {
+        relatedTerms.length > 0 && (
+          <section class="aside-block" aria-labelledby="related-terms">
+            <h2 id="related-terms">Related terms</h2>
+            <ul class="chips">
+              {relatedTerms.map((r) => (
+                <li>
+                  <a class="pill chip" href={url(`/glossary/${r.slug}/`)}>
+                    {r.term}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )
+      }
+
+      {
+        relatedLinks.length > 0 && (
+          <section class="aside-block" aria-labelledby="related-links">
+            <h2 id="related-links">Tools and guides</h2>
+            <ul class="links">
+              {relatedLinks.map((l) => (
+                <li>
+                  <a href={url(l.path)}>{l.label}</a>
+                </li>
+              ))}
+              <li>
+                <a href={url('/glossary/')}>All glossary terms</a>
+              </li>
+            </ul>
+          </section>
+        )
+      }
+    </div>
+  </Section>
+
+  <CtaBand>
+    <CtaTiles slot="art" />
+  </CtaBand>
+</Base>
+
+<style>
+  .head {
+    display: grid;
+    gap: 28px;
+    align-items: center;
+  }
+
+  .head-art {
+    width: 100%;
+    max-width: 280px;
+    height: auto;
+    justify-self: start;
+  }
+
+  @media (min-width: 900px) {
+    .head {
+      grid-template-columns: 1fr 280px;
+      gap: 56px;
+    }
+
+    .head-art {
+      justify-self: end;
+    }
+  }
+
+  .body {
+    max-width: var(--prose);
+    display: grid;
+    gap: clamp(32px, 5vw, 48px);
+  }
+
+  .aside-block h2 {
+    margin: 0 0 16px;
+    font-size: 1.25rem;
+    letter-spacing: -0.01em;
+  }
+
+  .chips,
+  .links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .chip {
+    text-decoration: none;
+    transition: background-color 0.15s ease;
+  }
+
+  .chip:hover {
+    background: var(--surface);
+    border-color: var(--line-strong);
+  }
+
+  .links {
+    display: grid;
+    gap: 8px;
+  }
+
+  .links a {
+    color: var(--ink);
+    text-decoration: underline;
+    text-decoration-color: var(--line-strong);
+    text-underline-offset: 0.2em;
+    text-decoration-thickness: 1.5px;
+  }
+
+  .links a:hover {
+    text-decoration-color: var(--ink);
+  }
+</style>

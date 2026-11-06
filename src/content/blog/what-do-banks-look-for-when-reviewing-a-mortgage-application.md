@@ -1,5 +1,6 @@
 ---
 title: "What do banks look for when reviewing a mortgage application?"
+seoTitle: "What Banks Look For in a Mortgage Application | WorthSheet"
 description: "Learn what banks evaluate in mortgage applications, including credit scores, income, DTI ratios, and more, to secure your loan approval."
 pubDate: 2024-02-05
 updatedDate: 2024-02-09

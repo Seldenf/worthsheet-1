@@ -1,0 +1,307 @@
+---
+import Base from '../layouts/Base.astro';
+import Section from '../components/Section.astro';
+import Prose from '../components/Prose.astro';
+import Faq from '../components/Faq.astro';
+import CtaBand from '../components/CtaBand.astro';
+import CalculatorTile from '../components/illustrations/CalculatorTile.astro';
+import CtaTiles from '../components/illustrations/CtaTiles.astro';
+import CalcLayout from '../components/calculators/CalcLayout.astro';
+import MoneyInput from '../components/calculators/MoneyInput.astro';
+import ResultCard from '../components/calculators/ResultCard.astro';
+import RelatedLinks from '../components/calculators/RelatedLinks.astro';
+import { faqLd, webAppLd } from '../lib/seo';
+import { formatUSD, principalForPayment } from '../lib/finance';
+import { url } from '../lib/url';
+import {
+	AFFORD_DEFAULTS as D,
+	AFFORD_KEYS,
+	affordOutputs,
+	defaultAfford as d,
+	evaluateAffordability,
+	type AffordKey,
+} from '../components/calculators/affordabilityModel';
+
+const path = '/how-much-house-can-i-afford/';
+const title = 'How Much House Can I Afford? Calculator | WorthSheet';
+const description =
+	'Find out how much house you can afford from your income, debts, down payment, rate and term. Uses the 28/36 rule with taxes and insurance included.';
+
+const faq = [
+	{
+		q: 'How much house can I afford on my income?',
+		a: 'It depends on income, existing debts, down payment, interest rate, loan term, taxes and insurance. This calculator applies the 28/36 rule to estimate a price range.',
+	},
+	{
+		q: 'What is the 28/36 rule?',
+		a: 'Housing costs at or under 28% of gross monthly income and total debts at or under 36%; it is a benchmark, not a lender requirement.',
+	},
+	{
+		q: 'Does the calculator include property taxes and insurance?',
+		a: 'Yes. You enter a property tax rate (percent of the price per year), annual homeowners insurance and optional HOA dues, so the monthly payment is closer to what a lender calls PITI.',
+	},
+	{
+		q: 'How does my down payment change what I can afford?',
+		a: 'A larger down payment lowers the loan amount and payment; under 20% down on a conventional loan usually adds private mortgage insurance, which this calculator flags but does not add to the payment.',
+	},
+	{
+		q: 'Is this a pre-approval?',
+		a: 'No. It is an educational estimate; only a lender can tell you how much you qualify to borrow.',
+	},
+];
+
+const out = affordOutputs(d);
+
+// Worked example, derived from the same model and defaults the calculator uses.
+const rawDefaults = Object.fromEntries(AFFORD_KEYS.map((k) => [k, String(D[k])])) as Record<AffordKey, string>;
+const rate = D.rate / 100;
+const loanPerDollar = principalForPayment(1, rate, D.years);
+const monthlyTaxRate = D.taxRate / 100 / 12;
+const fixedMonthly = D.insurance / 12 + D.hoa;
+const piBudget = d.budget - fixedMonthly - monthlyTaxRate * D.down;
+const atRate = (r: number) => {
+	const o = evaluateAffordability({ ...rawDefaults, rate: String(r) });
+	return o.ok ? o.result.price : 0;
+};
+
+const related = [
+	{ href: '/debt-to-income-ratio-calculator/', title: 'Debt-to-income calculator', text: 'Check your front-end and back-end DTI for a specific payment.' },
+	{ href: '/mortgage-calculator/', title: 'Mortgage calculator', text: 'See total interest and a yearly amortization schedule for a price you are considering.' },
+	{ href: '/mortgage-readiness-assessment/', title: 'Mortgage readiness assessment', text: 'Score credit, income, loan-to-value, DTI and net worth together.' },
+	{ href: '/mortgage-readiness-checklist/', title: 'Mortgage readiness checklist', text: 'What to fix before you apply, in five steps.' },
+	{ href: '/glossary/down-payment/', title: 'Down payment', text: 'Definition and how it changes the loan and the payment.' },
+	{ href: '/glossary/pmi/', title: 'Private mortgage insurance (PMI)', text: 'Why a smaller down payment can add a monthly insurance cost.' },
+];
+---
+
+<Base
+	title={title}
+	description={description}
+	path={path}
+	breadcrumbs={[{ name: 'How much house can I afford?', path }]}
+	jsonLd={[
+		webAppLd({ name: 'How much house can I afford? calculator', description, path, category: 'Home affordability calculator' }),
+		faqLd(faq),
+	]}
+>
+	<CalcLayout
+		eyebrow="Free calculator"
+		title="How much house can I afford?"
+		lead="Enter your income, monthly debts, down payment, interest rate and the cost of owning a home. The calculator applies the 28/36 rule, subtracts property taxes, insurance and HOA dues, and solves for the most expensive home that fits."
+		formId="afford-form"
+		inputsTitle="Income and costs"
+		resultsTone="green"
+	>
+		<CalculatorTile slot="art" />
+
+		<MoneyInput id="income" label="Annual gross income" value={D.income} hint="Pay before taxes and deductions, for everyone on the loan." required />
+		<MoneyInput id="debts" label="Monthly debt payments" value={D.debts} hint="Car, student, credit card minimums and other loans. Do not include rent or the new housing payment." />
+		<MoneyInput id="down" label="Down payment" value={D.down} hint="Cash you will put toward the purchase." />
+		<div class="field-grid">
+			<MoneyInput id="rate" label="Interest rate (%)" value={D.rate} prefix="" suffix="%" hint="Example value. Use a rate you have been quoted." required />
+			<MoneyInput id="years" label="Loan term (years)" value={D.years} prefix="" suffix="years" inputmode="numeric" hint="For example 15 or 30." required />
+		</div>
+		<div class="field-grid">
+			<MoneyInput id="taxRate" label="Property tax rate (% per year)" value={D.taxRate} prefix="" suffix="%" hint="Share of the home price paid in tax each year. Example value; check your county." />
+			<MoneyInput id="insurance" label="Homeowners insurance ($ per year)" value={D.insurance} hint="Example value; get a quote." />
+		</div>
+		<MoneyInput id="hoa" label="HOA dues ($ per month)" value={D.hoa} hint="Leave at 0 if there is no homeowners association." />
+
+		<div slot="results" data-results class="stack" style="--stack-gap: 16px">
+			<ResultCard primary label="Estimated maximum home price" out="price" value={out.price} hintOut="rule" hint={out.rule} />
+			<div class="out-grid">
+				<ResultCard label="Loan amount" out="loan" value={out.loan} hint="Price minus down payment" />
+				<ResultCard label="Down payment" out="down" value={out.down} hintOut="downPct" hint={out.downPct} />
+				<ResultCard label="Max monthly housing payment" out="budget" value={out.budget} hint="The smaller of the 28% and 36% limits" />
+				<ResultCard label="Payment at max price" out="total" value={out.total} hint="Principal, interest, taxes, insurance and HOA" />
+			</div>
+
+			<div class="table-wrap">
+				<table>
+					<caption>Monthly housing payment at the maximum price</caption>
+					<thead>
+						<tr><th scope="col">Part</th><th scope="col" class="num">Per month</th></tr>
+					</thead>
+					<tbody>
+						<tr><th scope="row">Principal and interest</th><td class="num" data-out="pi">{out.pi}</td></tr>
+						<tr><th scope="row">Property taxes</th><td class="num" data-out="tax">{out.tax}</td></tr>
+						<tr><th scope="row">Homeowners insurance</th><td class="num" data-out="ins">{out.ins}</td></tr>
+						<tr><th scope="row">HOA dues</th><td class="num" data-out="hoa">{out.hoa}</td></tr>
+					</tbody>
+					<tfoot>
+						<tr><th scope="row">Total housing payment</th><td class="num" data-out="total">{out.total}</td></tr>
+					</tfoot>
+				</table>
+			</div>
+
+			<p class="check">
+				At this price your front-end ratio is <strong class="num" data-out="front">{out.front}</strong> and your back-end ratio is <strong class="num" data-out="back">{out.back}</strong>.
+			</p>
+
+			<p class="note" data-pmi hidden={!d.pmiLikely}>
+				<strong>Heads up:</strong> a down payment under 20% of the price usually means private mortgage insurance (PMI) on a conventional loan. PMI is not included in this estimate. See the <a href="https://www.consumerfinance.gov/ask-cfpb/what-is-private-mortgage-insurance-en-122/" rel="noopener">CFPB explanation of PMI</a>.
+			</p>
+		</div>
+	</CalcLayout>
+
+	<Section tone="surface" aria-labelledby="method">
+		<div class="two-col">
+			<Prose>
+				<h2 id="method">How the affordability estimate works</h2>
+				<p>
+					The calculator uses the 28/36 rule of thumb: spend no more than 28% of gross monthly income on housing and no more than 36% on all debt, housing included. It is a benchmark, not a lender requirement. Then it works backward from the monthly payment you can afford to the largest price:
+				</p>
+				<ol>
+					<li><strong>Monthly income</strong> = annual gross income ÷ 12.</li>
+					<li><strong>Front-end cap</strong> = 28% × monthly income. <strong>Back-end cap</strong> = 36% × monthly income − your monthly debts. Your <strong>housing budget</strong> is the smaller of the two.</li>
+					<li>Take out the fixed costs: homeowners insurance ÷ 12 plus HOA dues. Property tax depends on the price, so it is solved together with the loan: tax per month = price × tax rate ÷ 12.</li>
+					<li>The rest of the budget pays principal and interest. With <em>c</em> = the loan that $1 of monthly principal and interest repays at your rate and term, the loan is <em>c</em> × (budget − insurance − HOA − monthly tax rate × down payment) ÷ (1 + <em>c</em> × monthly tax rate).</li>
+					<li><strong>Maximum price</strong> = loan + down payment.</li>
+				</ol>
+				<p>
+					The estimate does not include PMI, closing costs, maintenance or utilities. If the budget cannot cover insurance, HOA dues and the tax on your down payment, the calculator says so instead of showing a price.
+				</p>
+			</Prose>
+			<Prose>
+				<h2 id="example">Worked example</h2>
+				<p>
+					Income of {formatUSD(D.income)} a year, {formatUSD(D.debts)} a month in other debts, {formatUSD(D.down)} down, a {D.rate}% rate, a {D.years}-year term, a {D.taxRate}% property tax rate, {formatUSD(D.insurance)} a year of insurance and no HOA:
+				</p>
+				<ul>
+					<li>Monthly income: {formatUSD(D.income)} ÷ 12 = {formatUSD(d.monthlyIncome)}.</li>
+					<li>Front-end cap: 28% × {formatUSD(d.monthlyIncome)} = {formatUSD(d.frontCap)}. Back-end cap: 36% × {formatUSD(d.monthlyIncome)} − {formatUSD(D.debts)} = {formatUSD(d.backCap)}. The smaller is <strong>{formatUSD(d.budget)}</strong>.</li>
+					<li>Insurance: {formatUSD(D.insurance)} ÷ 12 = {formatUSD(fixedMonthly, true)}. Monthly tax rate: {D.taxRate}% ÷ 12 = {(monthlyTaxRate * 100).toFixed(2)}% of the price.</li>
+					<li>At {D.rate}% over {D.years} years, $1 of monthly principal and interest repays about ${loanPerDollar.toFixed(2)} of loan (<em>c</em>).</li>
+					<li>Loan = {loanPerDollar.toFixed(2)} × ({formatUSD(d.budget)} − {formatUSD(fixedMonthly, true)} − {monthlyTaxRate.toFixed(4)} × {formatUSD(D.down)}) ÷ (1 + {loanPerDollar.toFixed(2)} × {monthlyTaxRate.toFixed(4)}) = {loanPerDollar.toFixed(2)} × {formatUSD(piBudget, true)} ÷ {(1 + loanPerDollar * monthlyTaxRate).toFixed(4)} ≈ <strong>{formatUSD(d.loan)}</strong>.</li>
+					<li>Maximum price: {formatUSD(d.loan)} + {formatUSD(D.down)} = <strong>{formatUSD(d.price)}</strong>.</li>
+					<li>Check: principal and interest {formatUSD(d.principalInterest, true)} + tax {formatUSD(d.propertyTax, true)} + insurance {formatUSD(d.insurance, true)} = {formatUSD(d.housingTotal, true)}, equal to the budget.</li>
+				</ul>
+				<p>
+					The rate matters a lot. With the same inputs, a {5.5}% rate supports about {formatUSD(atRate(5.5))}, while {7.5}% supports about {formatUSD(atRate(7.5))}. These rates are only examples, not forecasts.
+				</p>
+			</Prose>
+		</div>
+	</Section>
+
+	<Section aria-labelledby="after">
+		<div class="two-col">
+			<Prose>
+				<h2 id="after">What lenders look at beyond 28/36</h2>
+				<p>
+					Lenders apply their own limits. Fannie Mae allows a debt-to-income ratio up to 36% for manually underwritten loans, up to 45% with strong credit and reserves, and up to 50% through Desktop Underwriter (<a href="https://selling-guide.fanniemae.com/sel/b3-6-02/debt-income-ratios" rel="noopener">Selling Guide B3-6-02</a>). Check your own ratios with the <a href={url('/debt-to-income-ratio-calculator/')}>DTI calculator</a>; the glossary explains <a href={url('/glossary/front-end-dti/')}>front-end DTI</a> and <a href={url('/glossary/back-end-dti/')}>back-end DTI</a>.
+				</p>
+				<p>
+					Taxes and insurance are often paid through an <a href={url('/glossary/escrow/')}>escrow account</a>, so they are part of your monthly payment even though you do not send them separately. For the loan itself, the <a href={url('/mortgage-calculator/')}>mortgage calculator</a> shows total interest and a yearly amortization schedule.
+				</p>
+			</Prose>
+			<Prose>
+				<h2>Prepare your numbers before you apply</h2>
+				<p>
+					A lender will ask what you own and what you owe. The free WorthSheet template totals your assets, liabilities and net worth in Google Sheets or Excel, and its Homebuyer Readiness tab scores five criteria lenders care about. Try the <a href={url('/mortgage-readiness-assessment/')}>mortgage readiness assessment</a> to see where you stand.
+				</p>
+			</Prose>
+		</div>
+	</Section>
+
+	<Section tone="surface" aria-labelledby="faq-title">
+		<div class="two-col">
+			<div class="stack">
+				<h2 id="faq-title">Home affordability FAQ</h2>
+				<p class="lead">What the estimate includes and how to read it.</p>
+			</div>
+			<Faq items={faq} />
+		</div>
+	</Section>
+
+	<Section aria-labelledby="related-title">
+		<div class="stack" style="--stack-gap: 24px">
+			<h2 id="related-title">Related tools and guides</h2>
+			<RelatedLinks items={related} />
+		</div>
+	</Section>
+
+	<CtaBand>
+		<CtaTiles slot="art" />
+	</CtaBand>
+</Base>
+
+<script>
+	import {
+		bindCalculator,
+		createUseTracker,
+		readInputs,
+		setOutAll,
+		showErrors,
+		showResults,
+	} from '../components/calculators/calc';
+	import { AFFORD_KEYS, affordOutputs, evaluateAffordability } from '../components/calculators/affordabilityModel';
+
+	const trackUse = createUseTracker('affordability');
+	const DEFAULT_MESSAGE = 'Fix the highlighted fields to see your results.';
+
+	function update(interacted: boolean) {
+		const outcome = evaluateAffordability(readInputs(AFFORD_KEYS));
+		if (!outcome.ok) {
+			showErrors(AFFORD_KEYS, outcome.errors);
+			showResults(false, outcome.noRoom ?? DEFAULT_MESSAGE);
+			return;
+		}
+		showErrors(AFFORD_KEYS, {});
+		showResults(true);
+		setOutAll(affordOutputs(outcome.result));
+		const pmi = document.querySelector<HTMLElement>('[data-pmi]');
+		if (pmi) pmi.hidden = !outcome.result.pmiLikely;
+		if (interacted) trackUse();
+	}
+
+	bindCalculator('afford-form', update);
+</script>
+
+<style>
+	.field-grid {
+		display: grid;
+		gap: 18px;
+	}
+
+	.out-grid {
+		display: grid;
+		gap: 12px;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.check {
+		font-size: 0.9375rem;
+	}
+
+	.note {
+		padding: 14px 16px;
+		border-radius: var(--radius-sm);
+		border: 1px solid #8a5a00;
+		background: var(--tint-yellow);
+		color: #4a3100;
+		font-size: 0.9375rem;
+		line-height: 1.5;
+	}
+
+	.note a {
+		color: inherit;
+	}
+
+	.two-col {
+		display: grid;
+		gap: clamp(32px, 5vw, 64px);
+		align-items: start;
+	}
+
+	@media (min-width: 520px) {
+		.field-grid {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+
+	@media (min-width: 900px) {
+		.two-col {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+</style>

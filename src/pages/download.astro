@@ -1,0 +1,185 @@
+---
+import Base from '../layouts/Base.astro';
+import Section from '../components/Section.astro';
+import Eyebrow from '../components/Eyebrow.astro';
+import Faq from '../components/Faq.astro';
+import LeadForm from '../components/LeadForm.astro';
+import DocumentStack from '../components/illustrations/DocumentStack.astro';
+import { STATS } from '../config';
+import { url } from '../lib/url';
+import { faqLd } from '../lib/seo';
+
+const faq = [
+  {
+    q: 'How do I get the template?',
+    a: 'Fill in the short form with your name and email. You’ll be taken to your own copy in Google Sheets (Google asks you to sign in to make a copy), and the page also offers a button to download the Excel (.xlsx) version.',
+  },
+  {
+    q: 'Is it really free?',
+    a: 'Yes, the template is free. We ask for a name and email so we know who is using it; see the Privacy Policy for how that data is handled.',
+  },
+  {
+    q: 'Can I use it in Excel instead of Google Sheets?',
+    a: 'Yes. After you submit the form, the success panel offers “Download for Excel (.xlsx)”.',
+  },
+  {
+    q: 'What tabs does the template include?',
+    a: 'Personal Finance Statement (PFS) and Homebuyer Readiness.',
+  },
+  {
+    q: 'Do I have to fill in every category?',
+    a: 'No. Fill in the accounts you have and leave the rest at zero; add rows if you have more accounts than the template shows.',
+  },
+];
+
+const benefits = ['Free PFS template', 'Regular template updates', 'Secure and private'];
+---
+
+<Base
+  title="Download the Free PFS Template (Sheets & Excel) | WorthSheet"
+  description="Get the free WorthSheet personal financial statement template. Enter your name and email, then open your copy in Google Sheets or download the Excel version."
+  path="/download/"
+  breadcrumbs={[{ name: 'Download', path: '/download/' }]}
+  jsonLd={[faqLd(faq)]}
+>
+  <Section tone="surface">
+    <div class="hero">
+      <div class="stack hero-copy" style="--stack-gap: 1.25rem">
+        <Eyebrow>Free template</Eyebrow>
+        <h1>Download the free personal financial statement template</h1>
+        <p class="lead">
+          Your journey to simplified finances starts here. Tell us where to send your copy and
+          you’ll land in the spreadsheet in seconds.
+        </p>
+        <ul class="benefits">
+          {
+            benefits.map((benefit) => (
+              <li>
+                <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+                  <circle cx="12" cy="12" r="12" fill="var(--tint-green)" />
+                  <path
+                    d="M7 12.5l3.2 3.2L17 8.8"
+                    fill="none"
+                    stroke="var(--sheets-green)"
+                    stroke-width="2.2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+                {benefit}
+              </li>
+            ))
+          }
+        </ul>
+        <p class="muted">
+          Over {STATS.downloads.replace('+', '')} downloads. Name and email are used to deliver the
+          template; read the <a href={url('/privacy-policy/')}>Privacy Policy</a>.
+        </p>
+      </div>
+      <div class="hero-form">
+        <LeadForm id="download" />
+      </div>
+    </div>
+  </Section>
+
+  <Section aria-labelledby="what-you-get">
+    <div class="what">
+      <div class="stack" style="--stack-gap: 1.25rem">
+        <Eyebrow>What you get</Eyebrow>
+        <h2 id="what-you-get">One spreadsheet, two tabs, ready for a lender</h2>
+        <ul class="get-list">
+          <li>
+            <strong>Two tabs:</strong> Personal Finance Statement (PFS) and Homebuyer Readiness.
+          </li>
+          <li>
+            <strong>{STATS.assetCategories} asset and {STATS.liabilityCategories} liability categories</strong>
+            built in, with formulas that total assets, liabilities and net worth for you.
+          </li>
+          <li>
+            <strong>Works in Google Sheets and Excel.</strong> Open your own copy in Google Sheets or
+            download the .xlsx file.
+          </li>
+        </ul>
+        <p>
+          Want to see it filled in first? Browse the
+          <a href={url('/personal-financial-statement-example/')}>personal financial statement example</a>,
+          learn how to
+          <a href={url('/how-to-fill-out-a-personal-financial-statement/')}>fill one out</a>, or read
+          about <a href={url('/sba-form-413/')}>SBA Form 413</a>.
+        </p>
+      </div>
+      <DocumentStack class="what-art" />
+    </div>
+  </Section>
+
+  <Section tone="surface" aria-labelledby="faq-title">
+    <div class="container-narrow faq-wrap">
+      <Eyebrow>Questions</Eyebrow>
+      <h2 id="faq-title">Template download FAQ</h2>
+      <Faq items={faq} />
+    </div>
+  </Section>
+</Base>
+
+<style>
+  .hero {
+    display: grid;
+    gap: clamp(32px, 6vw, 72px);
+    align-items: start;
+  }
+
+  .benefits {
+    display: grid;
+    gap: 12px;
+    list-style: none;
+    padding: 0;
+    font-weight: 540;
+    font-size: 1.0625rem;
+  }
+
+  .benefits li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .hero-copy a,
+  .what a {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .what {
+    display: grid;
+    gap: clamp(32px, 6vw, 72px);
+    align-items: center;
+  }
+
+  .get-list {
+    display: grid;
+    gap: 14px;
+    padding-left: 1.2em;
+  }
+
+  .what-art {
+    width: 100%;
+    max-width: 420px;
+    height: auto;
+    justify-self: center;
+  }
+
+  .faq-wrap {
+    display: grid;
+    gap: 16px;
+  }
+
+  @media (min-width: 900px) {
+    .hero {
+      grid-template-columns: 1.1fr 1fr;
+    }
+
+    .what {
+      grid-template-columns: 1.3fr 1fr;
+    }
+  }
+</style>

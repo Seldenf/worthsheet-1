@@ -1,0 +1,1388 @@
+---
+import Base from '../layouts/Base.astro';
+import Section from '../components/Section.astro';
+import Eyebrow from '../components/Eyebrow.astro';
+import Button from '../components/Button.astro';
+import Faq from '../components/Faq.astro';
+import CtaBand from '../components/CtaBand.astro';
+import Prose from '../components/Prose.astro';
+import ReadinessGauge from '../components/illustrations/ReadinessGauge.astro';
+import CtaTiles from '../components/illustrations/CtaTiles.astro';
+import { faqLd, webAppLd } from '../lib/seo';
+import { url } from '../lib/url';
+
+const path = '/mortgage-readiness-assessment/';
+const title = 'Mortgage Readiness Assessment & Score | WorthSheet';
+const description =
+  'Free mortgage readiness assessment: score your credit, income, loan-to-value, debt-to-income and net worth on five criteria lenders use. Based on our template.';
+
+const faq = [
+  {
+    q: 'What is a mortgage readiness assessment?',
+    a: 'A quick self-check that rates your credit score, income, loan-to-value, debt-to-income and personal financial statement so you can see what to improve before applying.',
+  },
+  {
+    q: 'What criteria does the assessment score?',
+    a: 'Five: credit score, income and employment, loan-to-value ratio, debt-to-income ratio (front-end and back-end) and whether you have a personal financial statement.',
+  },
+  {
+    q: 'Are the ratings lender approval rules?',
+    a: 'No. They are educational bands based on commonly cited lender guidelines; each lender and loan program sets its own requirements.',
+  },
+  {
+    q: 'What credit score do I need?',
+    a: 'It varies by program; see the readiness checklist for Fannie Mae, FHA and VA starting points.',
+  },
+  {
+    q: 'Does this affect my credit score?',
+    a: 'No. It uses numbers you enter and does not check your credit.',
+  },
+  {
+    q: 'How is the overall score calculated?',
+    a: 'Each criterion is rated from Poor to Excellent. The gauge shows the average of the criteria you have filled in (for debt-to-income, the weaker of front-end and back-end), and the headline counts how many criteria are rated Good or better.',
+  },
+  {
+    q: 'Is my information saved or sent anywhere?',
+    a: 'No. Everything is calculated in your browser and nothing you type is uploaded or stored. If you accept analytics cookies, only the fact that the tool was used is recorded, never your numbers.',
+  },
+];
+
+interface Band {
+  rating: string;
+  range: string;
+  note?: string;
+}
+
+const bands: Record<string, Band[]> = {
+  credit: [
+    {
+      rating: 'Poor',
+      range: '300–579',
+      note: 'You may find it hard to qualify for credit or be offered credit at higher interest rates. Lenders see a higher risk of default.',
+    },
+    {
+      rating: 'Fair',
+      range: '580–669',
+      note: 'You may be eligible for credit but often at higher interest rates. Lenders see a moderate risk.',
+    },
+    {
+      rating: 'Good',
+      range: '670–739',
+      note: 'You are likely to be offered better interest rates. Lenders see a lower risk.',
+    },
+    {
+      rating: 'Very Good',
+      range: '740–799',
+      note: 'You are typically offered favorable terms. Lenders see a low risk.',
+    },
+    {
+      rating: 'Excellent',
+      range: '800–850',
+      note: 'A very low risk of default; you are likely to qualify for the most favorable terms and rates.',
+    },
+  ],
+  income: [
+    { rating: 'Poor', range: 'Under $40,000' },
+    { rating: 'Fair', range: '$40,000 to under $75,000' },
+    { rating: 'Good', range: '$75,000 to under $150,000' },
+    { rating: 'Very Good', range: '$150,000 to under $300,000' },
+    { rating: 'Excellent', range: '$300,000 or more' },
+  ],
+  ltv: [
+    { rating: 'Poor', range: 'Above 92.5%' },
+    { rating: 'Fair', range: 'Above 85% up to 92.5%' },
+    { rating: 'Good', range: '75% up to 85%' },
+    { rating: 'Very Good', range: '60% up to under 75%' },
+    { rating: 'Excellent', range: 'Under 60%' },
+  ],
+  front: [
+    { rating: 'Poor', range: 'Above 28% of gross monthly income' },
+    { rating: 'Good', range: 'Above 20% up to 28%' },
+    { rating: 'Very Good', range: '10% up to 20%' },
+    { rating: 'Excellent', range: 'Under 10%' },
+  ],
+  back: [
+    { rating: 'Poor', range: 'Above 36% of gross monthly income' },
+    { rating: 'Good', range: 'Above 30% up to 36%' },
+    { rating: 'Very Good', range: '20% up to 30%' },
+    { rating: 'Excellent', range: 'Under 20%' },
+  ],
+  pfs: [
+    { rating: 'Poor', range: 'You have not created a personal financial statement' },
+    { rating: 'Excellent', range: 'You have created a personal financial statement' },
+  ],
+};
+
+const incomeFields = [
+  { id: 'inc1', label: 'Borrower 1 annual income', hint: 'Before taxes' },
+  { id: 'inc2', label: 'Borrower 2 annual income', hint: 'Leave blank if there is no co-borrower' },
+  { id: 'inc-other', label: 'Other annual income', hint: 'Social Security, pension or other income' },
+];
+
+const pitiFields = [
+  { id: 'tax', label: 'Monthly property tax' },
+  { id: 'ins', label: 'Monthly homeowners insurance' },
+  { id: 'hoa', label: 'Monthly HOA dues' },
+];
+
+const related = [
+  {
+    href: '/mortgage-readiness-checklist/',
+    title: 'Mortgage readiness checklist',
+    text: 'The five criteria in plain English, with what to fix first.',
+  },
+  {
+    href: '/how-much-house-can-i-afford/',
+    title: 'How much house can I afford?',
+    text: 'Work out a price range from income, debts and down payment.',
+  },
+  {
+    href: '/debt-to-income-ratio-calculator/',
+    title: 'Debt-to-income ratio calculator',
+    text: 'See front-end and back-end DTI against the 28/36 benchmark.',
+  },
+  {
+    href: '/mortgage-calculator/',
+    title: 'Mortgage calculator',
+    text: 'Monthly payment, total interest and an amortization table.',
+  },
+  {
+    href: '/net-worth-calculator/',
+    title: 'Net worth calculator',
+    text: 'Total your assets and liabilities for criterion five.',
+  },
+  {
+    href: '/what-do-banks-look-for-when-reviewing-a-mortgage-application/',
+    title: 'What banks look for in a mortgage application',
+    text: 'The factors lenders weigh when reviewing your application.',
+  },
+  {
+    href: '/glossary/loan-to-value-ratio/',
+    title: 'What is a loan-to-value ratio?',
+    text: 'Definition and examples of LTV.',
+  },
+  {
+    href: '/glossary/back-end-dti/',
+    title: 'What is back-end DTI?',
+    text: 'Total monthly debt payments divided by gross monthly income.',
+  },
+];
+
+const criteriaTitles = {
+  credit: 'Credit score',
+  income: 'Income & employment',
+  ltv: 'Loan-to-value ratio',
+  dti: 'Debt-to-income ratio',
+  pfs: 'Personal financial statement',
+};
+---
+
+<Base
+  title={title}
+  description={description}
+  path={path}
+  breadcrumbs={[{ name: 'Mortgage readiness assessment', path }]}
+  jsonLd={[
+    webAppLd({
+      name: 'Mortgage Readiness Assessment',
+      description,
+      path,
+      category: 'Mortgage readiness calculator',
+    }),
+    faqLd(faq),
+  ]}
+>
+  <section class="hero">
+    <div class="container hero-grid">
+      <div class="hero-copy">
+        <Eyebrow>Free homebuyer self-check</Eyebrow>
+        <h1>Mortgage readiness assessment (free score calculator)</h1>
+        <p class="lead">
+          The mortgage readiness assessment is a free self-check that rates your credit score, income, loan-to-value
+          ratio, debt-to-income ratio and personal financial statement from Poor to Excellent, so you can see what to
+          improve before you apply.
+        </p>
+        <ul class="hero-points">
+          <li>Five criteria, the same bands as the Homebuyer Readiness tab of our free template</li>
+          <li>Instant ratings and a personalized checklist of next steps</li>
+          <li>No credit check: it only uses numbers you type, in your browser</li>
+        </ul>
+        <div class="hero-actions">
+          <Button href="#assessment" variant="primary" size="lg">Start the assessment</Button>
+          <Button href="/mortgage-readiness-checklist/" variant="secondary" size="lg">Read the checklist</Button>
+        </div>
+      </div>
+      <div class="hero-art">
+        <ReadinessGauge class="float" level={3} />
+      </div>
+    </div>
+  </section>
+
+  <Section id="assessment" tone="surface" aria-labelledby="assessment-title">
+    <div data-ra class="ra">
+      <div class="ra-intro">
+        <h2 id="assessment-title">Rate your mortgage readiness</h2>
+        <p class="muted">
+          Fill in as many of the five criteria as you can. Each one is rated as you type, and the score on the right
+          updates automatically. Amounts are in U.S. dollars.
+        </p>
+      </div>
+
+      <noscript>
+        <p class="muted">
+          The ratings need JavaScript. Without it, use the <a href={url('/download/')}>free template</a>, which has the
+          same Homebuyer Readiness tab.
+        </p>
+      </noscript>
+
+      <div class="ra-layout">
+        <div class="ra-criteria">
+          <!-- 1. Credit score -->
+          <section class="card ra-card" aria-labelledby="c1-title">
+            <header class="ra-card-head">
+              <h3 id="c1-title"><span class="ra-num">1</span> Credit score</h3>
+              <span class="ra-badge" data-badge="credit" data-level="none">Not scored yet</span>
+            </header>
+            <div class="field">
+              <label for="ra-credit">Your credit score (300–850)</label>
+              <input
+                type="text"
+                id="ra-credit"
+                inputmode="numeric"
+                autocomplete="off"
+                placeholder="e.g. 720"
+                aria-describedby="ra-credit-hint ra-credit-err"
+              />
+              <p class="field-hint" id="ra-credit-hint">
+                Need your report? Get a free one at
+                <a href="https://www.annualcreditreport.com/" rel="noopener" target="_blank">AnnualCreditReport.com</a>,
+                the only website authorized by federal law to provide free credit reports. Scores are often free from
+                your bank or card issuer.
+              </p>
+              <p class="field-error" id="ra-credit-err" data-error="credit" hidden></p>
+            </div>
+            <details class="ra-bands">
+              <summary>How credit score is rated</summary>
+              <div class="table-wrap">
+                <table data-bands="credit">
+                  <thead>
+                    <tr><th scope="col">Rating</th><th scope="col">Score</th><th scope="col">What it usually means</th></tr>
+                  </thead>
+                  <tbody>
+                    {
+                      bands.credit.map((b) => (
+                        <tr data-band={b.rating}>
+                          <th scope="row">{b.rating}</th>
+                          <td>{b.range}</td>
+                          <td>{b.note}</td>
+                        </tr>
+                      ))
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </details>
+          </section>
+
+          <!-- 2. Income -->
+          <section class="card ra-card" aria-labelledby="c2-title">
+            <header class="ra-card-head">
+              <h3 id="c2-title"><span class="ra-num">2</span> Income &amp; employment</h3>
+              <span class="ra-badge" data-badge="income" data-level="none">Not scored yet</span>
+            </header>
+            <div class="ra-fields">
+              {
+                incomeFields.map((f) => (
+                  <div class="field">
+                    <label for={`ra-${f.id}`}>{f.label}</label>
+                    <div class="input-group">
+                      <span class="input-affix" aria-hidden="true">$</span>
+                      <input
+                        type="text"
+                        id={`ra-${f.id}`}
+                        inputmode="decimal"
+                        autocomplete="off"
+                        placeholder="0"
+                        aria-describedby={`ra-${f.id}-hint ra-${f.id}-err`}
+                      />
+                    </div>
+                    <p class="field-hint" id={`ra-${f.id}-hint`}>{f.hint}</p>
+                    <p class="field-error" id={`ra-${f.id}-err`} data-error={f.id} hidden />
+                  </div>
+                ))
+              }
+            </div>
+            <dl class="ra-readout">
+              <div><dt>Total annual income</dt><dd class="num" data-out="income-total">—</dd></div>
+            </dl>
+            <details class="ra-bands">
+              <summary>How income is rated</summary>
+              <p>
+                Lenders look at income mainly through your debt-to-income ratio, and most importantly at whether it is
+                stable and documented. These bands use general U.S. household income ranges, and income should also be
+                judged against the cost of living where you plan to buy.
+              </p>
+              <div class="table-wrap">
+                <table data-bands="income">
+                  <thead>
+                    <tr><th scope="col">Rating</th><th scope="col">Total annual income</th></tr>
+                  </thead>
+                  <tbody>
+                    {
+                      bands.income.map((b) => (
+                        <tr data-band={b.rating}>
+                          <th scope="row">{b.rating}</th>
+                          <td>{b.range}</td>
+                        </tr>
+                      ))
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </details>
+          </section>
+
+          <!-- 3. LTV -->
+          <section class="card ra-card" aria-labelledby="c3-title">
+            <header class="ra-card-head">
+              <h3 id="c3-title"><span class="ra-num">3</span> Loan-to-value ratio</h3>
+              <span class="ra-badge" data-badge="ltv" data-level="none">Not scored yet</span>
+            </header>
+            <div class="ra-fields ra-fields-2">
+              <div class="field">
+                <label for="ra-price">Purchase price</label>
+                <div class="input-group">
+                  <span class="input-affix" aria-hidden="true">$</span>
+                  <input type="text" id="ra-price" inputmode="decimal" autocomplete="off" placeholder="400,000" aria-describedby="ra-price-hint ra-price-err" />
+                </div>
+                <p class="field-hint" id="ra-price-hint">The loan itself will be based on the appraised value.</p>
+                <p class="field-error" id="ra-price-err" data-error="price" hidden></p>
+              </div>
+              <div class="field">
+                <label for="ra-down">Down payment</label>
+                <div class="input-group">
+                  <span class="input-affix" aria-hidden="true">$</span>
+                  <input type="text" id="ra-down" inputmode="decimal" autocomplete="off" placeholder="40,000" aria-describedby="ra-down-hint ra-down-err" />
+                </div>
+                <p class="field-hint" id="ra-down-hint">Enter 0 if none.</p>
+                <p class="field-error" id="ra-down-err" data-error="down" hidden></p>
+              </div>
+              <div class="field">
+                <label for="ra-rate">Interest rate</label>
+                <div class="input-group">
+                  <input type="text" id="ra-rate" inputmode="decimal" autocomplete="off" placeholder="6.5" aria-describedby="ra-rate-hint ra-rate-err" />
+                  <span class="input-affix input-affix-end" aria-hidden="true">%</span>
+                </div>
+                <p class="field-hint" id="ra-rate-hint">Annual rate you expect to pay. Needed for the payment in criterion 4.</p>
+                <p class="field-error" id="ra-rate-err" data-error="rate" hidden></p>
+              </div>
+              <div class="field">
+                <label for="ra-term">Loan term</label>
+                <select id="ra-term">
+                  <option value="30" selected>30 years</option>
+                  <option value="15">15 years</option>
+                </select>
+                <p class="field-hint">Fixed rate, fully amortizing.</p>
+              </div>
+            </div>
+            <dl class="ra-readout">
+              <div><dt>Mortgage amount</dt><dd class="num" data-out="loan">—</dd></div>
+              <div><dt>Loan-to-value</dt><dd class="num" data-out="ltv">—</dd></div>
+              <div><dt>Principal &amp; interest per month</dt><dd class="num" data-out="pi">—</dd></div>
+            </dl>
+            <details class="ra-bands">
+              <summary>How loan-to-value is rated</summary>
+              <p>
+                The LTV ratio is the loan amount relative to the property's appraised value. A lower LTV is generally
+                more favorable because it means you have more equity in the home. For a readiness check it is fine to use
+                the expected purchase price. See the <a href="#programs">loan program notes</a> below for conventional,
+                FHA, VA and USDA loans.
+              </p>
+              <div class="table-wrap">
+                <table data-bands="ltv">
+                  <thead>
+                    <tr><th scope="col">Rating</th><th scope="col">Loan-to-value</th></tr>
+                  </thead>
+                  <tbody>
+                    {
+                      bands.ltv.map((b) => (
+                        <tr data-band={b.rating}>
+                          <th scope="row">{b.rating}</th>
+                          <td>{b.range}</td>
+                        </tr>
+                      ))
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </details>
+          </section>
+
+          <!-- 4. DTI -->
+          <section class="card ra-card" aria-labelledby="c4-title">
+            <header class="ra-card-head">
+              <h3 id="c4-title"><span class="ra-num">4</span> Debt-to-income ratio</h3>
+              <span class="ra-badge" data-badge="dti" data-level="none">Not scored yet</span>
+            </header>
+            <p class="muted ra-lede">
+              Uses your total income from criterion 2 and the mortgage payment from criterion 3, so fill those in first.
+            </p>
+            <div class="field">
+              <label for="ra-debts">Current monthly debt payments</label>
+              <div class="input-group">
+                <span class="input-affix" aria-hidden="true">$</span>
+                <input type="text" id="ra-debts" inputmode="decimal" autocomplete="off" placeholder="600" aria-describedby="ra-debts-hint ra-debts-err" />
+              </div>
+              <p class="field-hint" id="ra-debts-hint">
+                Car, student loan, credit card minimums and similar monthly payments. Enter 0 if none. Do not include rent
+                or the new mortgage.
+              </p>
+              <p class="field-error" id="ra-debts-err" data-error="debts" hidden></p>
+            </div>
+            <details class="ra-optional">
+              <summary>Optional: include property tax, insurance and HOA (PITI)</summary>
+              <p class="muted">
+                Lenders count the full housing payment, not just principal and interest. Leave these blank (treated as $0)
+                to match the template, which uses principal and interest only.
+              </p>
+              <div class="ra-fields ra-fields-3">
+                {
+                  pitiFields.map((f) => (
+                    <div class="field">
+                      <label for={`ra-${f.id}`}>{f.label}</label>
+                      <div class="input-group">
+                        <span class="input-affix" aria-hidden="true">$</span>
+                        <input type="text" id={`ra-${f.id}`} inputmode="decimal" autocomplete="off" placeholder="0" aria-describedby={`ra-${f.id}-err`} />
+                      </div>
+                      <p class="field-error" id={`ra-${f.id}-err`} data-error={f.id} hidden></p>
+                    </div>
+                  ))
+                }
+              </div>
+            </details>
+            <dl class="ra-readout">
+              <div><dt>Housing payment per month</dt><dd class="num" data-out="housing">—</dd></div>
+              <div>
+                <dt>Front-end DTI (housing)</dt>
+                <dd><span class="num" data-out="front">—</span> <span class="ra-badge ra-badge-sm" data-badge="front" data-level="none">Not scored</span></dd>
+              </div>
+              <div>
+                <dt>Back-end DTI (total)</dt>
+                <dd><span class="num" data-out="back">—</span> <span class="ra-badge ra-badge-sm" data-badge="back" data-level="none">Not scored</span></dd>
+              </div>
+            </dl>
+            <details class="ra-bands">
+              <summary>How debt-to-income is rated</summary>
+              <p>
+                <strong>Front-end DTI</strong> (housing DTI) is the proposed monthly housing payment divided by gross
+                monthly income; ideally 28% or lower. <strong>Back-end DTI</strong> (total DTI) adds all other monthly debt
+                payments such as credit cards, car loans and student loans; ideally 36% or lower. The criterion is rated by
+                the weaker of the two.
+              </p>
+              <div class="table-wrap">
+                <table data-bands="front">
+                  <caption>Front-end DTI</caption>
+                  <thead>
+                    <tr><th scope="col">Rating</th><th scope="col">Housing payment as share of gross monthly income</th></tr>
+                  </thead>
+                  <tbody>
+                    {
+                      bands.front.map((b) => (
+                        <tr data-band={b.rating}>
+                          <th scope="row">{b.rating}</th>
+                          <td>{b.range}</td>
+                        </tr>
+                      ))
+                    }
+                  </tbody>
+                </table>
+              </div>
+              <div class="table-wrap">
+                <table data-bands="back">
+                  <caption>Back-end DTI</caption>
+                  <thead>
+                    <tr><th scope="col">Rating</th><th scope="col">Housing plus other debt payments as share of gross monthly income</th></tr>
+                  </thead>
+                  <tbody>
+                    {
+                      bands.back.map((b) => (
+                        <tr data-band={b.rating}>
+                          <th scope="row">{b.rating}</th>
+                          <td>{b.range}</td>
+                        </tr>
+                      ))
+                    }
+                  </tbody>
+                </table>
+              </div>
+              <p class="muted">The two DTI scales have no Fair band, as in the template.</p>
+            </details>
+          </section>
+
+          <!-- 5. PFS -->
+          <section class="card ra-card" aria-labelledby="c5-title">
+            <header class="ra-card-head">
+              <h3 id="c5-title"><span class="ra-num">5</span> Personal financial statement</h3>
+              <span class="ra-badge" data-badge="pfs" data-level="none">Not scored yet</span>
+            </header>
+            <div class="field">
+              <label for="ra-pfs">Have you created a personal financial statement?</label>
+              <select id="ra-pfs">
+                <option value="" selected>Select one</option>
+                <option value="yes">Yes, I have one</option>
+                <option value="no">No, not yet</option>
+              </select>
+              <p class="field-hint">
+                A personal financial statement (PFS) summarizes your assets, liabilities and net worth on one date. Don't
+                have one? <a href={url('/download/')}>Get the free template</a> or try the
+                <a href={url('/net-worth-calculator/')}>net worth calculator</a>.
+              </p>
+            </div>
+            <p class="ra-or"><span>or enter your totals</span></p>
+            <div class="ra-fields ra-fields-2">
+              <div class="field">
+                <label for="ra-assets">Total assets</label>
+                <div class="input-group">
+                  <span class="input-affix" aria-hidden="true">$</span>
+                  <input type="text" id="ra-assets" inputmode="decimal" autocomplete="off" placeholder="0" aria-describedby="ra-assets-err" />
+                </div>
+                <p class="field-error" id="ra-assets-err" data-error="assets" hidden></p>
+              </div>
+              <div class="field">
+                <label for="ra-liab">Total liabilities</label>
+                <div class="input-group">
+                  <span class="input-affix" aria-hidden="true">$</span>
+                  <input type="text" id="ra-liab" inputmode="decimal" autocomplete="off" placeholder="0" aria-describedby="ra-liab-err" />
+                </div>
+                <p class="field-error" id="ra-liab-err" data-error="liab" hidden></p>
+              </div>
+            </div>
+            <dl class="ra-readout">
+              <div><dt>Net worth</dt><dd class="num" data-out="networth">—</dd></div>
+            </dl>
+            <details class="ra-bands">
+              <summary>How the personal financial statement is rated</summary>
+              <p>
+                Beyond the criteria above, a lender may ask you for a summary of your financial health. Entering totals
+                counts as having a statement. Update it often.
+              </p>
+              <div class="table-wrap">
+                <table data-bands="pfs">
+                  <thead>
+                    <tr><th scope="col">Rating</th><th scope="col">Meaning</th></tr>
+                  </thead>
+                  <tbody>
+                    {
+                      bands.pfs.map((b) => (
+                        <tr data-band={b.rating}>
+                          <th scope="row">{b.rating}</th>
+                          <td>{b.range}</td>
+                        </tr>
+                      ))
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </details>
+          </section>
+        </div>
+
+        <aside class="ra-results" aria-labelledby="results-title">
+          <div class="card ra-results-card">
+            <h3 id="results-title">Your readiness score</h3>
+            <div aria-live="polite" aria-atomic="true" class="ra-live">
+              <p class="ra-empty muted" data-empty>
+                Fill in at least one criterion and your rating appears here.
+              </p>
+              <div data-result hidden>
+                <div class="ra-gauge" data-gauge>
+                  <ReadinessGauge level={0} idPrefix="wsi-gauge-live" />
+                </div>
+                <p class="ra-headline" data-headline></p>
+                <p class="ra-overall"><strong data-overall></strong> <span data-overall-note class="muted"></span></p>
+                <p class="muted ra-scored" data-scored></p>
+              </div>
+            </div>
+            <ul class="ra-summary">
+              {
+                Object.entries(criteriaTitles).map(([key, label]) => (
+                  <li>
+                    <span>{label}</span>
+                    <span class="ra-badge ra-badge-sm" data-sum={key} data-level="none">Not scored</span>
+                  </li>
+                ))
+              }
+            </ul>
+          </div>
+
+          <div class="card ra-steps" data-steps-card hidden>
+            <h3>Your next steps</h3>
+            <p class="muted" data-steps-none hidden>
+              None of your scored criteria are below Good. Compare lenders, then ask for a pre-approval; see the
+              <a href={url('/mortgage-readiness-checklist/')}>mortgage readiness checklist</a> for the paperwork to gather.
+            </p>
+            <ul class="ra-step-list">
+              <li data-step="credit" hidden>
+                <strong>Credit score.</strong> Get your free reports at
+                <a href="https://www.annualcreditreport.com/" rel="noopener" target="_blank">AnnualCreditReport.com</a>,
+                dispute any errors, pay down revolving balances and avoid opening new credit before you apply. Lenders set
+                their own score minimums, so ask what applies to the loan you want.
+              </li>
+              <li data-step="income" hidden>
+                <strong>Income &amp; employment.</strong> Add every reliable income source, including a co-borrower's.
+                Lenders verify income with documents such as pay stubs, W-2s and tax returns, so keep them organized. See
+                what a price range looks like in
+                <a href={url('/how-much-house-can-i-afford/')}>How much house can I afford?</a>
+              </li>
+              <li data-step="ltv" hidden>
+                <strong>Loan-to-value.</strong> Save a larger down payment or target a lower price. Conventional lenders
+                often prefer 80% LTV or lower, and under 20% down usually means mortgage insurance. Try different
+                scenarios in the <a href={url('/mortgage-calculator/')}>mortgage calculator</a>, and review the
+                <a href="#programs">loan program notes</a>.
+              </li>
+              <li data-step="dti" hidden>
+                <strong>Debt-to-income.</strong> Pay down monthly debts, aim for a lower price or a larger down payment,
+                and model the effect in the
+                <a href={url('/debt-to-income-ratio-calculator/')}>debt-to-income ratio calculator</a>.
+              </li>
+              <li data-step="pfs" hidden>
+                <strong>Personal financial statement.</strong> Create one: list your assets and liabilities in the
+                <a href={url('/download/')}>free WorthSheet template</a> and keep it updated.
+              </li>
+            </ul>
+            <p class="muted">
+              More detail on each criterion:
+              <a href={url('/mortgage-readiness-checklist/')}>mortgage readiness checklist</a>.
+            </p>
+          </div>
+        </aside>
+      </div>
+
+      <p class="ra-disclaimer">
+        Estimates for educational purposes only. Not a loan offer or financial advice. The ratings are WorthSheet's own
+        educational bands, not lender approval rules.
+      </p>
+    </div>
+  </Section>
+
+  <Section id="programs" aria-labelledby="programs-title">
+    <div class="split">
+      <div>
+        <Eyebrow>Loan-to-value notes</Eyebrow>
+        <h2 id="programs-title">LTV and loan programs</h2>
+      </div>
+      <Prose>
+        <p>
+          A general goal is a 20% down payment (80% LTV), but government programs allow lower down payments. Maximum
+          LTV depends on the program, your credit and the lender, so confirm the details with a lender.
+        </p>
+        <ul>
+          <li>
+            <strong>Conventional mortgages:</strong> lenders often prefer a maximum LTV of 80% or lower. With less than
+            20% down you may have to pay private mortgage insurance (<a href={url('/glossary/pmi/')}>PMI</a>).
+          </li>
+          <li>
+            <strong>FHA loans:</strong> the Federal Housing Administration allows higher LTV; FHA loans often have a
+            maximum LTV of 96.5%, which means a down payment as low as 3.5%. See
+            <a href="https://www.hud.gov/sites/default/files/hudclips/documents/2026-11hsgml.pdf" rel="noopener" target="_blank">HUD Mortgagee Letter 2026-11</a>
+            for the current credit score tiers.
+          </li>
+          <li>
+            <strong>VA loans:</strong> available to eligible veterans and service members, and they typically do not
+            require a down payment, so LTV can be 100% or higher. VA says
+            <a href="https://www.va.gov/housing-assistance/home-loans/" rel="noopener" target="_blank">nearly 90% of VA-backed loans are made with no down payment</a>.
+          </li>
+          <li>
+            <strong>USDA loans:</strong> the U.S. Department of Agriculture focuses on rural and suburban areas, and
+            its loans may also allow higher LTV. See the
+            <a href="https://www.rd.usda.gov/programs-services/single-family-housing-programs/single-family-housing-guaranteed-loan-program" rel="noopener" target="_blank">USDA Single Family Housing Guaranteed Loan Program</a>.
+          </li>
+        </ul>
+        <p>
+          The CFPB's
+          <a href="https://www.consumerfinance.gov/consumer-tools/mortgages/ready-to-buy-a-home" rel="noopener" target="_blank">Ready to buy a home?</a>
+          tool is another good place to check your budget.
+        </p>
+      </Prose>
+    </div>
+  </Section>
+
+  <Section tone="surface" aria-labelledby="method-title">
+    <div class="split">
+      <div>
+        <Eyebrow>Method</Eyebrow>
+        <h2 id="method-title">How the assessment is scored</h2>
+      </div>
+      <Prose>
+        <p>
+          This page replicates the <strong>Homebuyer Readiness</strong> tab of the free WorthSheet template. The five
+          criteria are your credit score, income and employment, loan-to-value ratio, debt-to-income ratio and personal
+          financial statement. The bands are WorthSheet's educational ratings based on commonly cited lender guidelines;
+          they are not approval rules, and every lender and loan program sets its own requirements.
+        </p>
+        <ul>
+          <li>
+            <strong>Mortgage payment:</strong> principal and interest from the price, down payment, rate and term, using
+            the standard fixed-rate formula (the same as the spreadsheet's PMT function).
+          </li>
+          <li>
+            <strong>Front-end and back-end DTI:</strong> the template divides the principal-and-interest payment by gross
+            monthly income. This page also lets you add monthly property tax, homeowners insurance and HOA dues (blank
+            counts as $0), so leaving them empty gives the template's result. Back-end DTI adds your other monthly debt
+            payments.
+          </li>
+          <li>
+            <strong>Credit score bands:</strong> the ranges are contiguous: 670–739 is Good and 740–799 is Very Good,
+            so every score from 300 to 850 receives a rating.
+          </li>
+          <li>
+            <strong>Overall score:</strong> the gauge shows the average rating of the criteria you have filled in. For
+            debt-to-income it uses the weaker of front-end and back-end.
+          </li>
+          <li>
+            <strong>Personal financial statement:</strong> Excellent if you have created one (or entered asset or
+            liability totals), Poor if not, as in the template.
+          </li>
+        </ul>
+        <p>
+          Want to see the same logic in a spreadsheet, wired to your full asset and liability list? The free template
+          includes it. <a href={url('/download/')}>Get the template</a>.
+        </p>
+      </Prose>
+    </div>
+  </Section>
+
+  <Section aria-labelledby="faq-title">
+    <div class="split">
+      <div>
+        <Eyebrow>FAQ</Eyebrow>
+        <h2 id="faq-title">Mortgage readiness questions</h2>
+      </div>
+      <Faq items={faq} />
+    </div>
+  </Section>
+
+  <Section tone="surface" aria-labelledby="related-title">
+    <h2 id="related-title">Related tools and guides</h2>
+    <div class="grid grid-4 related">
+      {
+        related.map((r) => (
+          <a class="card" href={url(r.href)}>
+            <h3>{r.title}</h3>
+            <p class="muted">{r.text}</p>
+          </a>
+        ))
+      }
+    </div>
+  </Section>
+
+  <CtaBand
+    title="Run this with your real numbers in the free template"
+    text="The free WorthSheet template has the same Homebuyer Readiness tab next to its Personal Financial Statement tab, so your net worth feeds the score automatically."
+  >
+    <CtaTiles slot="art" />
+  </CtaBand>
+</Base>
+
+<style>
+  .hero {
+    padding-block: clamp(40px, 7vw, 96px) clamp(40px, 6vw, 80px);
+  }
+
+  .hero-grid {
+    display: grid;
+    gap: clamp(28px, 5vw, 64px);
+    align-items: center;
+  }
+
+  @media (min-width: 900px) {
+    .hero-grid {
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+    }
+  }
+
+  .hero-copy {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+
+  .hero-copy h1,
+  .hero-copy p {
+    margin: 0;
+  }
+
+  .hero-points {
+    margin: 0;
+    padding-left: 1.2em;
+    color: var(--muted);
+  }
+
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .hero-art {
+    max-width: 520px;
+    width: 100%;
+    margin-inline: auto;
+  }
+
+  .split {
+    display: grid;
+    gap: clamp(24px, 4vw, 56px);
+  }
+
+  @media (min-width: 900px) {
+    .split {
+      grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+      align-items: start;
+    }
+  }
+
+  .split h2 {
+    margin: 12px 0 0;
+  }
+
+  /* ---------- Assessment ---------- */
+  .ra {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .ra-intro h2 {
+    margin: 0 0 8px;
+  }
+
+  .ra-intro p {
+    margin: 0;
+    max-width: 62ch;
+  }
+
+  .ra-layout {
+    display: grid;
+    gap: clamp(20px, 3vw, 32px);
+    align-items: start;
+  }
+
+  @media (min-width: 1000px) {
+    .ra-layout {
+      grid-template-columns: minmax(0, 1.6fr) minmax(300px, 1fr);
+    }
+
+    .ra-results {
+      position: sticky;
+      top: calc(var(--header-h) + 16px);
+    }
+  }
+
+  .ra-criteria,
+  .ra-results {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(16px, 2.4vw, 24px);
+  }
+
+  .ra-card {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .ra-card-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 16px;
+  }
+
+  .ra-card-head h3 {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .ra-num {
+    display: inline-grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    background: var(--ink);
+    color: var(--white);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    letter-spacing: 0;
+  }
+
+  .ra-lede {
+    margin: -4px 0 0;
+    font-size: 0.9375rem;
+  }
+
+  .ra-fields {
+    display: grid;
+    gap: 16px;
+  }
+
+  @media (min-width: 560px) {
+    .ra-fields-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .ra-fields-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  .field-error:empty {
+    display: none;
+  }
+
+  .ra-readout {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin: 0;
+    padding: 14px 16px;
+    background: var(--surface);
+    border-radius: var(--radius-sm);
+  }
+
+  .ra-readout div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .ra-readout dt {
+    font-size: 0.8125rem;
+    color: var(--muted);
+  }
+
+  .ra-readout dd {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 10px;
+  }
+
+  .ra-or {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.875rem;
+  }
+
+  .ra-or::before,
+  .ra-or::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--line-strong);
+  }
+
+  details.ra-bands,
+  details.ra-optional {
+    border-top: 1px solid var(--line);
+    padding-top: 12px;
+  }
+
+  details.ra-optional {
+    border-top: 0;
+    padding-top: 0;
+  }
+
+  details summary {
+    cursor: pointer;
+    font-weight: 540;
+    font-size: 0.9375rem;
+  }
+
+  details.ra-bands > *:not(summary) {
+    margin-top: 12px;
+  }
+
+  details.ra-optional > *:not(summary) {
+    margin-top: 12px;
+  }
+
+  details p {
+    margin-bottom: 0;
+    font-size: 0.9375rem;
+  }
+
+  .ra-bands table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9375rem;
+  }
+
+  .ra-bands caption {
+    padding: 8px 12px;
+    text-align: left;
+    font-weight: 600;
+  }
+
+  .ra-bands th,
+  .ra-bands td {
+    padding: 8px 12px;
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .ra-bands tr[aria-current='true'] th,
+  .ra-bands tr[aria-current='true'] td {
+    background: var(--tint-green);
+    font-weight: 600;
+  }
+
+  /* Rating badges: data-level 0 Poor … 4 Excellent. Ink text on pastel fills keeps AA contrast. */
+  .ra-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25em 0.8em;
+    border-radius: 999px;
+    border: 1px solid var(--line-strong);
+    background: var(--white);
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.4;
+    white-space: nowrap;
+    color: var(--ink);
+  }
+
+  .ra-badge-sm {
+    padding: 0.1em 0.65em;
+    font-size: 0.8125rem;
+  }
+
+  .ra-badge[data-level='none'] {
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  .ra-badge[data-level='0'] {
+    background: #f7d3ca;
+    border-color: #ee9a86;
+  }
+
+  .ra-badge[data-level='1'] {
+    background: #fde7b0;
+    border-color: #fac344;
+  }
+
+  .ra-badge[data-level='2'] {
+    background: #e4f2cf;
+    border-color: #a8d672;
+  }
+
+  .ra-badge[data-level='3'] {
+    background: #cdeccf;
+    border-color: #40aa4a;
+  }
+
+  .ra-badge[data-level='4'] {
+    background: #bfe9d3;
+    border-color: #0f9d58;
+  }
+
+  /* ---------- Results ---------- */
+  .ra-results-card h3,
+  .ra-steps h3 {
+    margin: 0 0 12px;
+  }
+
+  .ra-gauge {
+    max-width: 340px;
+    margin-inline: auto;
+  }
+
+  .ra-headline {
+    margin: 8px 0 0;
+    text-align: center;
+    font-size: clamp(1.25rem, 2.4vw, 1.5rem);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+  }
+
+  .ra-overall,
+  .ra-scored {
+    margin: 6px 0 0;
+    text-align: center;
+    font-size: 0.9375rem;
+  }
+
+  .ra-empty {
+    margin: 0 0 12px;
+  }
+
+  .ra-summary {
+    list-style: none;
+    margin: 16px 0 0;
+    padding: 12px 0 0;
+    border-top: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 0.9375rem;
+  }
+
+  .ra-summary li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .ra-step-list {
+    margin: 0 0 12px;
+    padding-left: 1.2em;
+    font-size: 0.9375rem;
+  }
+
+  .ra-step-list li + li {
+    margin-top: 10px;
+  }
+
+  .ra-steps p {
+    font-size: 0.9375rem;
+  }
+
+  .ra-disclaimer {
+    margin: 0;
+    font-size: 0.9375rem;
+    color: var(--muted);
+  }
+
+  .related {
+    margin-top: 28px;
+  }
+
+  .related h3 {
+    margin: 0 0 6px;
+    font-size: 1.0625rem;
+  }
+
+  .related p {
+    margin: 0;
+    font-size: 0.9375rem;
+  }
+</style>
+
+<script>
+  import { track } from '../lib/analytics';
+  import { formatPercent, formatUSD, monthlyPayment, parseAmount } from '../lib/finance';
+  import {
+    RATINGS,
+    countGoodOrBetter,
+    dtiRatio,
+    ltvRatio,
+    overallLevel,
+    rateBackDti,
+    rateCreditScore,
+    rateDti,
+    rateFrontDti,
+    rateIncome,
+    rateLtv,
+    ratePfs,
+    ratingLevel,
+    type Level,
+    type Rating,
+  } from '../lib/readiness';
+
+  const root = document.querySelector<HTMLElement>('[data-ra]');
+
+  if (root) {
+    const q = <T extends Element>(selector: string) => root.querySelector<T>(selector)!;
+    const field = (id: string) => q<HTMLInputElement>(`#ra-${id}`);
+    const filled = (id: string) => field(id).value.trim() !== '';
+    /** NaN when empty, not a number or negative. */
+    const read = (id: string) => {
+      if (!filled(id)) return Number.NaN;
+      const value = parseAmount(field(id).value);
+      return value >= 0 ? value : Number.NaN;
+    };
+    /** 0 when empty, NaN when filled but invalid. */
+    const optional = (id: string) => (filled(id) ? read(id) : 0);
+
+    const setError = (id: string, message: string) => {
+      const el = q<HTMLElement>(`[data-error="${id}"]`);
+      el.textContent = message;
+      el.hidden = message === '';
+      if (message) field(id).setAttribute('aria-invalid', 'true');
+      else field(id).removeAttribute('aria-invalid');
+    };
+    const out = (key: string, text: string) => {
+      q<HTMLElement>(`[data-out="${key}"]`).textContent = text;
+    };
+    const AMOUNT_ERROR = 'Enter a dollar amount of 0 or more.';
+    const checkAmounts = (ids: string[]) => ids.forEach((id) => setError(id, filled(id) && Number.isNaN(read(id)) ? AMOUNT_ERROR : ''));
+
+    function showRating(key: string, rating: Rating | null) {
+      const level = rating === null ? 'none' : String(ratingLevel(rating));
+      const text = rating ?? 'Not scored';
+      for (const el of Array.from(root!.querySelectorAll<HTMLElement>(`[data-badge="${key}"], [data-sum="${key}"]`))) {
+        el.dataset.level = level;
+        el.textContent = el.hasAttribute('data-badge') && rating === null && !el.classList.contains('ra-badge-sm') ? 'Not scored yet' : text;
+      }
+      const tableKeys = key === 'dti' ? [] : [key];
+      for (const tableKey of tableKeys) {
+        for (const row of Array.from(root!.querySelectorAll<HTMLElement>(`[data-bands="${tableKey}"] [data-band]`))) {
+          if (rating !== null && row.dataset.band === rating) row.setAttribute('aria-current', 'true');
+          else row.removeAttribute('aria-current');
+        }
+      }
+    }
+
+    /**
+     * Updates the ReadinessGauge SVG in place (same geometry as components/illustrations/ReadinessGauge.astro):
+     * segment/label emphasis, needle position and centre label.
+     */
+    function setGauge(level: Level) {
+      const group = q<SVGGElement>('[data-gauge] .wsi-gauge-f1');
+      group.querySelectorAll(':scope > g[opacity]').forEach((seg, i) => seg.setAttribute('opacity', i === level ? '1' : '0.4'));
+      group.querySelectorAll(':scope > g[font-size] > text').forEach((label, i) => label.setAttribute('fill-opacity', i === level ? '1' : '0.6'));
+      const cx = 300;
+      const cy = 276;
+      const angle = 180 - 36 * level - 18;
+      const point = (radius: number, deg: number) =>
+        `${(cx + radius * Math.cos((deg * Math.PI) / 180)).toFixed(1)} ${(cy - radius * Math.sin((deg * Math.PI) / 180)).toFixed(1)}`;
+      group.querySelector(':scope > path')?.setAttribute('d', `M${point(110, angle)}L${point(11, angle + 90)}L${point(11, angle - 90)}z`);
+      const label = group.querySelector(':scope > text');
+      if (label) label.textContent = RATINGS[level];
+    }
+
+    const OVERALL_NOTE: Record<Level, string> = {
+      0: 'Several criteria need work before most lenders would be comfortable. Start with the steps below.',
+      1: 'You are partway there. Strengthen the criteria rated Poor or Fair first.',
+      2: 'Solid footing. A few improvements could widen your options.',
+      3: 'Strong across most criteria.',
+      4: 'Excellent across the criteria scored. This is an educational rating, not an approval.',
+    };
+
+    let tracked = false;
+
+    function compute() {
+      // 1) Credit score
+      const score = read('credit');
+      const credit = rateCreditScore(score);
+      setError('credit', filled('credit') && credit === null ? 'Enter a score between 300 and 850.' : '');
+
+      // 2) Income
+      const incomeIds = ['inc1', 'inc2', 'inc-other'];
+      checkAmounts(incomeIds);
+      const totalIncome = incomeIds.map(optional).reduce((sum, v) => sum + v, 0);
+      const income = rateIncome(totalIncome);
+      out('income-total', Number.isFinite(totalIncome) && totalIncome > 0 ? formatUSD(totalIncome) : '—');
+
+      // 3) Loan-to-value and payment
+      const price = read('price');
+      const down = read('down');
+      setError('price', filled('price') && !(price > 0) ? 'Enter the purchase price as a dollar amount above 0.' : '');
+      setError(
+        'down',
+        filled('down') && Number.isNaN(down)
+          ? AMOUNT_ERROR
+          : price > 0 && down > price
+            ? "Down payment can't exceed the purchase price."
+            : '',
+      );
+      const ltv = price > 0 && down <= price ? ltvRatio(price, down) : Number.NaN;
+      const ltvRating = rateLtv(ltv);
+      const loan = Number.isFinite(ltv) ? price - down : Number.NaN;
+      const ratePercent = read('rate');
+      setError('rate', filled('rate') && !(ratePercent <= 25) ? 'Enter an interest rate between 0% and 25%.' : '');
+      const term = Number(q<HTMLSelectElement>('#ra-term').value);
+      const principalInterest = Number.isFinite(loan) && ratePercent <= 25 ? monthlyPayment(loan, ratePercent / 100, term) : Number.NaN;
+      out('loan', Number.isFinite(loan) ? formatUSD(loan) : '—');
+      out('ltv', Number.isFinite(ltv) ? formatPercent(ltv) : '—');
+      out('pi', Number.isFinite(principalInterest) ? formatUSD(principalInterest, true) : '—');
+
+      // 4) Debt-to-income (front-end and back-end)
+      checkAmounts(['debts', 'tax', 'ins', 'hoa']);
+      const housing = principalInterest + optional('tax') + optional('ins') + optional('hoa');
+      const monthlyIncome = totalIncome / 12;
+      const front = dtiRatio(housing, monthlyIncome);
+      const back = dtiRatio(housing + read('debts'), monthlyIncome);
+      const frontRating = rateFrontDti(front);
+      const backRating = rateBackDti(back);
+      const dti = backRating === null ? null : rateDti(frontRating, backRating);
+      out('housing', Number.isFinite(housing) ? formatUSD(housing, true) : '—');
+      out('front', Number.isFinite(front) ? formatPercent(front) : '—');
+      out('back', Number.isFinite(back) ? formatPercent(back) : '—');
+
+      // 5) Personal financial statement
+      checkAmounts(['assets', 'liab']);
+      let pfs: Rating | null = null;
+      let netWorth = '—';
+      if (filled('assets') || filled('liab')) {
+        const assets = optional('assets');
+        const liabilities = optional('liab');
+        if (Number.isFinite(assets) && Number.isFinite(liabilities)) {
+          pfs = ratePfs(assets > 0 || liabilities > 0);
+          netWorth = formatUSD(assets - liabilities);
+        }
+      } else {
+        const choice = q<HTMLSelectElement>('#ra-pfs').value;
+        pfs = choice === 'yes' ? ratePfs(true) : choice === 'no' ? ratePfs(false) : null;
+      }
+      out('networth', netWorth);
+
+      // Ratings, overall gauge, summary
+      const ratings: Record<string, Rating | null> = { credit, income, ltv: ltvRating, dti, pfs };
+      for (const [key, rating] of Object.entries(ratings)) showRating(key, rating);
+      showRating('front', frontRating);
+      showRating('back', backRating);
+
+      const list = Object.values(ratings);
+      const scored = list.filter((r) => r !== null).length;
+      const level = overallLevel(list);
+      const good = countGoodOrBetter(list);
+
+      q<HTMLElement>('[data-empty]').hidden = scored > 0;
+      q<HTMLElement>('[data-result]').hidden = scored === 0;
+
+      if (level !== null) {
+        setGauge(level);
+        q<HTMLElement>('[data-headline]').textContent = `${good} of 5 criteria rated Good or better`;
+        q<HTMLElement>('[data-overall]').textContent = `Overall: ${RATINGS[level]}.`;
+        q<HTMLElement>('[data-overall-note]').textContent = OVERALL_NOTE[level];
+        q<HTMLElement>('[data-scored]').textContent =
+          scored === 5 ? 'Based on all 5 criteria.' : `Based on ${scored} of 5 criteria so far. Fill in the rest for a complete score.`;
+      }
+
+      // Next steps for criteria rated below Good
+      let weak = 0;
+      for (const [key, rating] of Object.entries(ratings)) {
+        const isWeak = rating !== null && ratingLevel(rating) < 2;
+        q<HTMLElement>(`[data-step="${key}"]`).hidden = !isWeak;
+        if (isWeak) weak += 1;
+      }
+      q<HTMLElement>('[data-steps-card]').hidden = scored === 0;
+      q<HTMLElement>('[data-steps-none]').hidden = weak > 0;
+
+      if (!tracked && scored > 0) {
+        tracked = true;
+        track('calculator_use', { calculator: 'mortgage-readiness' });
+      }
+    }
+
+    root.addEventListener('input', compute);
+    root.addEventListener('change', compute);
+    compute();
+  }
+</script>

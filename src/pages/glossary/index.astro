@@ -1,0 +1,269 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Section from '../../components/Section.astro';
+import Eyebrow from '../../components/Eyebrow.astro';
+import Button from '../../components/Button.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import GlossaryBook from '../../components/illustrations/GlossaryBook.astro';
+import CtaTiles from '../../components/illustrations/CtaTiles.astro';
+import { url } from '../../lib/url';
+import { abs } from '../../lib/seo';
+import { GLOSSARY_META } from '../../data/glossary-meta';
+
+const entries = (await getCollection('glossary'))
+  .map((e) => ({
+    slug: e.id,
+    term: e.data.term,
+    definition: e.data.definition,
+    topic: GLOSSARY_META[e.id]?.topic,
+  }))
+  .sort((a, b) => a.term.localeCompare(b.term, 'en', { sensitivity: 'base' }));
+
+const groups = new Map<string, typeof entries>();
+for (const entry of entries) {
+  const letter = entry.term.charAt(0).toUpperCase();
+  groups.set(letter, [...(groups.get(letter) ?? []), entry]);
+}
+const letters = [...groups.keys()];
+const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+
+const title = 'Personal Finance & Mortgage Glossary | WorthSheet';
+const description =
+  "Plain-English definitions of personal finance and lending terms: net worth statement, DTI, LTV, the 5 C's of credit, pre-approval, escrow, SBA Form 413 and more";
+
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'DefinedTermSet',
+    '@id': abs('/glossary/') + '#glossary',
+    name: 'WorthSheet personal finance and mortgage glossary',
+    description,
+    url: abs('/glossary/'),
+    inLanguage: 'en-US',
+    hasDefinedTerm: entries.map((e) => ({
+      '@type': 'DefinedTerm',
+      name: e.term,
+      description: e.definition,
+      url: abs(`/glossary/${e.slug}/`),
+    })),
+  },
+];
+---
+
+<Base
+  title={title}
+  description={description}
+  path="/glossary/"
+  jsonLd={jsonLd}
+  breadcrumbs={[{ name: 'Glossary', path: '/glossary/' }]}
+>
+  <Section tone="surface">
+    <div class="hero">
+      <div class="stack" style="--stack-gap: 1.25rem">
+        <Eyebrow>Glossary</Eyebrow>
+        <h1>Personal finance and mortgage glossary</h1>
+        <p class="lead">
+          Plain-English definitions of {entries.length} terms you meet when you build a personal
+          financial statement or apply for a loan. Each entry opens with the definition, then shows an
+          example, how lenders use the term and the mix-ups to avoid.
+        </p>
+        <div class="hero-actions">
+          <Button href="/glossary/net-worth-statement/" variant="primary">Net worth statement</Button>
+          <Button href="/glossary/five-cs-of-credit/" variant="secondary">Five C's of credit</Button>
+          <Button href="/glossary/debt-to-income-ratio/" variant="secondary">Debt-to-income ratio</Button>
+        </div>
+      </div>
+      <GlossaryBook class="hero-art float" />
+    </div>
+  </Section>
+
+  <Section tone="paper" tight>
+    <nav class="az" aria-label="Jump to letter">
+      <ul>
+        {
+          alphabet.map((letter) => (
+            <li>
+              {letters.includes(letter) ? (
+                <a href={`#letter-${letter}`} aria-label={`Terms starting with ${letter}`}>
+                  {letter}
+                </a>
+              ) : (
+                <span aria-hidden="true">{letter}</span>
+              )}
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="groups">
+      {
+        letters.map((letter) => (
+          <section class="group" id={`letter-${letter}`} aria-labelledby={`heading-${letter}`}>
+            <h2 id={`heading-${letter}`} class="group-letter">
+              {letter}
+            </h2>
+            <ul class="terms">
+              {groups.get(letter)!.map((e) => (
+                <li class="term">
+                  <p class="term-name">
+                    <a href={url(`/glossary/${e.slug}/`)}>{e.term}</a>
+                    {e.topic && <span class="pill">{e.topic}</span>}
+                  </p>
+                  <p class="term-def">{e.definition}</p>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))
+      }
+    </div>
+  </Section>
+
+  <CtaBand>
+    <CtaTiles slot="art" />
+  </CtaBand>
+</Base>
+
+<style>
+  .hero {
+    display: grid;
+    gap: 32px;
+    align-items: center;
+  }
+
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding-top: 0.5rem;
+  }
+
+  .hero-art {
+    width: 100%;
+    max-width: 480px;
+    height: auto;
+    justify-self: center;
+  }
+
+  @media (min-width: 900px) {
+    .hero {
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 56px;
+    }
+  }
+
+  .az ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .az li > a,
+  .az li > span {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-sm);
+    font-weight: 560;
+  }
+
+  .az li > a {
+    background: var(--white);
+    border: 1px solid var(--line-strong);
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .az li > a:hover {
+    background: var(--ink);
+    color: var(--white);
+  }
+
+  .az li > span {
+    color: var(--muted-soft);
+    opacity: 0.6;
+  }
+
+  .groups {
+    margin-top: clamp(32px, 5vw, 56px);
+    display: grid;
+    gap: clamp(28px, 4vw, 48px);
+  }
+
+  .group {
+    display: grid;
+    gap: 16px;
+    scroll-margin-top: 96px;
+  }
+
+  @media (min-width: 800px) {
+    .group {
+      grid-template-columns: 80px 1fr;
+      gap: 24px;
+    }
+  }
+
+  .group-letter {
+    margin: 0;
+    font-size: clamp(2rem, 4vw, 3rem);
+    line-height: 1;
+    color: var(--muted-soft);
+  }
+
+  .terms {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 12px;
+  }
+
+  .term {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+  }
+
+  .term-name {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  .term-name a {
+    color: var(--ink);
+    text-decoration: underline;
+    text-decoration-color: var(--line-strong);
+    text-underline-offset: 0.2em;
+    text-decoration-thickness: 1.5px;
+  }
+
+  .term-name a:hover {
+    text-decoration-color: var(--ink);
+  }
+
+  .term-name .pill {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--muted);
+    padding: 0.15em 0.7em;
+  }
+
+  .term-def {
+    margin: 8px 0 0;
+    color: var(--muted);
+    text-wrap: pretty;
+  }
+</style>

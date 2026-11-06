@@ -1,0 +1,136 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { Image } from 'astro:assets';
+import DocumentStack from './illustrations/DocumentStack.astro';
+import { url } from '../lib/url';
+
+interface Props {
+  post: CollectionEntry<'blog'>;
+  /** Heading level for the card title (default 3). */
+  level?: 2 | 3;
+  /** Load the card image eagerly (first row of the index). */
+  eager?: boolean;
+}
+
+const { post, level = 3, eager = false } = Astro.props;
+const { title, description, pubDate, heroImage, heroAlt } = post.data;
+const Heading = `h${level}` as 'h2' | 'h3';
+const date = pubDate.toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+  timeZone: 'UTC',
+});
+---
+
+<article class="post-card card">
+  <a class="post-card-link" href={url(`/${post.id}/`)}>
+    <div class="post-card-media">
+      {
+        heroImage ? (
+          <Image
+            src={heroImage}
+            alt={heroAlt ?? ''}
+            width={640}
+            height={400}
+            widths={[320, 480, 640]}
+            sizes="(min-width: 960px) 360px, (min-width: 640px) 45vw, 100vw"
+            loading={eager ? 'eager' : 'lazy'}
+            decoding="async"
+          />
+        ) : (
+          <DocumentStack class="post-card-art" />
+        )
+      }
+    </div>
+    <div class="post-card-body">
+      <Heading class="post-card-title">{title}</Heading>
+      <p class="post-card-desc">{description}</p>
+      <p class="post-card-date muted">
+        <time datetime={pubDate.toISOString().slice(0, 10)}>{date}</time>
+      </p>
+    </div>
+  </a>
+</article>
+
+<style>
+  .post-card {
+    padding: 0;
+    overflow: hidden;
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+
+  .post-card:hover,
+  .post-card:focus-within {
+    transform: translateY(-2px);
+    box-shadow:
+      0 1px 0 var(--line),
+      0 18px 40px -16px rgba(46, 41, 38, 0.24);
+  }
+
+  .post-card-link {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .post-card-media {
+    aspect-ratio: 16 / 10;
+    background: var(--tint-blue);
+    overflow: hidden;
+  }
+
+  .post-card-media :global(img),
+  .post-card-media :global(svg) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .post-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+    padding: clamp(18px, 2.4vw, 26px);
+  }
+
+  .post-card-title {
+    font-size: 1.25rem;
+    line-height: 1.25;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  .post-card-desc {
+    color: var(--muted);
+    font-size: 0.975rem;
+    line-height: 1.55;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .post-card-date {
+    margin-top: auto;
+    padding-top: 6px;
+    font-size: 0.875rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .post-card {
+      transition: none;
+    }
+    .post-card:hover,
+    .post-card:focus-within {
+      transform: none;
+    }
+  }
+</style>

@@ -1,0 +1,496 @@
+---
+import Base from '../layouts/Base.astro';
+import Section from '../components/Section.astro';
+import Prose from '../components/Prose.astro';
+import Faq from '../components/Faq.astro';
+import CtaBand from '../components/CtaBand.astro';
+import CalculatorTile from '../components/illustrations/CalculatorTile.astro';
+import CtaTiles from '../components/illustrations/CtaTiles.astro';
+import CalcLayout from '../components/calculators/CalcLayout.astro';
+import MoneyInput from '../components/calculators/MoneyInput.astro';
+import RelatedLinks from '../components/calculators/RelatedLinks.astro';
+import { faqLd, webAppLd } from '../lib/seo';
+import { formatPercent, formatUSD } from '../lib/finance';
+import { url } from '../lib/url';
+import {
+	DTI_DEFAULTS,
+	DTI_KEYS,
+	STATUS_ICON,
+	defaultDti as d,
+	dtiOutputs,
+	type DtiKey,
+	evaluateDti,
+} from '../components/calculators/dtiModel';
+
+const path = '/debt-to-income-ratio-calculator/';
+const title = 'Debt-to-Income Ratio (DTI) Calculator | WorthSheet';
+const description =
+	'Free debt-to-income ratio calculator: enter income, debts and a proposed housing payment to see front-end and back-end DTI against the 28/36 benchmark.';
+
+const faq = [
+	{
+		q: 'What is a debt-to-income ratio?',
+		a: 'DTI is your total monthly debt payments divided by your gross monthly income, shown as a percentage.',
+	},
+	{
+		q: 'What is the 28/36 rule?',
+		a: "A rule of thumb that housing costs stay at or under 28% of gross monthly income (front-end) and total debt at or under 36% (back-end). Lenders' actual limits vary.",
+	},
+	{
+		q: 'What debts does the calculator include?',
+		a: 'Your proposed housing payment plus monthly payments on credit cards, car, student, personal and other loans; enter minimum monthly payments, not balances.',
+	},
+	{
+		q: 'Do lenders use gross or net income?',
+		a: 'Gross income, before taxes and deductions.',
+	},
+	{
+		q: 'What DTI do lenders allow?',
+		a: 'It varies. Fannie Mae allows up to 36% for manual underwriting (45% with compensating strengths) and up to 50% through Desktop Underwriter.',
+	},
+];
+
+const out = dtiOutputs(d);
+const t = out.text;
+
+// Second worked example: the default budget plus a new car payment.
+const rawDefaults = Object.fromEntries(DTI_KEYS.map((k) => [k, String(DTI_DEFAULTS[k])])) as Record<DtiKey, string>;
+const withCar = evaluateDti({ ...rawDefaults, car: String(DTI_DEFAULTS.car + 350) }, 'monthly');
+const car = withCar.ok ? withCar.result : d;
+
+const related = [
+	{ href: '/how-to-calculate-debt-to-income-ratio/', title: 'How to calculate your DTI', text: 'The formula, what counts as debt and current program limits.' },
+	{ href: '/how-much-house-can-i-afford/', title: 'How much house can I afford?', text: 'Turn the 28/36 rule into a maximum home price.' },
+	{ href: '/mortgage-calculator/', title: 'Mortgage calculator', text: 'Estimate the principal and interest part of your housing payment.' },
+	{ href: '/mortgage-readiness-assessment/', title: 'Mortgage readiness assessment', text: 'Score DTI alongside credit, income, loan-to-value and net worth.' },
+	{ href: '/glossary/debt-to-income-ratio/', title: 'Debt-to-income ratio (glossary)', text: 'A one-sentence definition and how lenders use it.' },
+	{ href: '/glossary/front-end-dti/', title: 'Front-end vs. back-end DTI', text: 'Definitions of the housing ratio and the total-debt ratio.' },
+];
+
+const rows = [
+	{ key: 'front', name: 'Front-end (housing)', limit: '28%' },
+	{ key: 'back', name: 'Back-end (all debts)', limit: '36%' },
+] as const;
+---
+
+<Base
+	title={title}
+	description={description}
+	path={path}
+	breadcrumbs={[{ name: 'Debt-to-income ratio calculator', path }]}
+	jsonLd={[
+		webAppLd({ name: 'Debt-to-income ratio (DTI) calculator', description, path, category: 'Debt-to-income calculator' }),
+		faqLd(faq),
+	]}
+>
+	<CalcLayout
+		eyebrow="Free calculator"
+		title="Debt-to-income ratio (DTI) calculator"
+		lead="Your debt-to-income ratio is your monthly debt payments divided by your gross monthly income. Enter your income, your monthly debts and a proposed housing payment to see front-end and back-end DTI next to the 28/36 benchmarks."
+		formId="dti-form"
+		inputsTitle="Income and monthly payments"
+		resultsTone="blue"
+	>
+		<CalculatorTile slot="art" />
+
+		<fieldset class="period">
+			<legend>Income entered as</legend>
+			<div class="radios">
+				<label class="radio"><input type="radio" name="incomePeriod" id="period-monthly" value="monthly" checked /> Monthly</label>
+				<label class="radio"><input type="radio" name="incomePeriod" id="period-annual" value="annual" /> Annual</label>
+			</div>
+		</fieldset>
+		<MoneyInput id="income" label="Gross income (before taxes)" value={DTI_DEFAULTS.income} hint="Pay before taxes and deductions, for the period selected above." required />
+		<MoneyInput id="housing" label="Proposed housing payment (PITI)" value={DTI_DEFAULTS.housing} hint="Monthly principal, interest, property taxes and insurance (add HOA dues if any). Leave blank to skip front-end DTI." />
+
+		<fieldset class="debts">
+			<legend>Other monthly debt payments</legend>
+			<p class="field-hint">Enter the minimum monthly payment on each, not the balance.</p>
+			<div class="field-grid">
+				<MoneyInput id="car" label="Car loans or leases" value={DTI_DEFAULTS.car} />
+				<MoneyInput id="student" label="Student loans" value={DTI_DEFAULTS.student} />
+				<MoneyInput id="card" label="Credit card minimums" value={DTI_DEFAULTS.card} />
+				<MoneyInput id="personal" label="Personal loans" value={DTI_DEFAULTS.personal} />
+				<MoneyInput id="other" label="Other (child support, alimony, other loans)" value={DTI_DEFAULTS.other} />
+			</div>
+		</fieldset>
+
+		<div slot="results" data-results class="stack" style="--stack-gap: 16px">
+			<div class="ratios">
+				<div class="ratio">
+					<p class="ratio-label">Front-end DTI (housing only)</p>
+					<p class="ratio-value num" data-out="front">{t.front}</p>
+					<p class="badge" data-badge="front" data-status={out.status.front}>
+						<span class="badge-icon" data-icon="front" aria-hidden="true">{STATUS_ICON[out.status.front]}</span>
+						<span data-out="frontLabel">{t.frontLabel}</span>
+					</p>
+					<p class="ratio-detail" data-out="frontDetail">{t.frontDetail}</p>
+				</div>
+				<div class="ratio">
+					<p class="ratio-label">Back-end DTI (housing + all debts)</p>
+					<p class="ratio-value num" data-out="back">{t.back}</p>
+					<p class="badge" data-badge="back" data-status={out.status.back}>
+						<span class="badge-icon" data-icon="back" aria-hidden="true">{STATUS_ICON[out.status.back]}</span>
+						<span data-out="backLabel">{t.backLabel}</span>
+					</p>
+					<p class="ratio-detail" data-out="backDetail">{t.backDetail}</p>
+				</div>
+			</div>
+
+			<div class="table-wrap">
+				<table>
+					<caption>Your payments against the 28% and 36% benchmarks</caption>
+					<thead>
+						<tr>
+							<th scope="col">Ratio</th>
+							<th scope="col" class="num">Benchmark</th>
+							<th scope="col" class="num">Monthly at benchmark</th>
+							<th scope="col" class="num">Your payments</th>
+							<th scope="col" class="num">Difference</th>
+						</tr>
+					</thead>
+					<tbody>
+						{
+							rows.map((row) => (
+								<tr>
+									<th scope="row">{row.name}</th>
+									<td class="num">{row.limit}</td>
+									<td class="num" data-out={`${row.key}LimitAmt`}>{t[`${row.key}LimitAmt`]}</td>
+									<td class="num" data-out={`${row.key}Yours`}>{t[`${row.key}Yours`]}</td>
+									<td class="num" data-out={`${row.key}Diff`}>{t[`${row.key}Diff`]}</td>
+								</tr>
+							))
+						}
+					</tbody>
+				</table>
+			</div>
+
+			<dl class="summary">
+				<div><dt>Gross monthly income used</dt><dd class="num" data-out="income">{t.income}</dd></div>
+				<div><dt>Housing payment</dt><dd class="num" data-out="housing">{t.housing}</dd></div>
+				<div><dt>Other monthly debts</dt><dd class="num" data-out="debts">{t.debts}</dd></div>
+				<div><dt>Total monthly payments</dt><dd class="num" data-out="payments">{t.payments}</dd></div>
+			</dl>
+		</div>
+	</CalcLayout>
+
+	<Section tone="surface" aria-labelledby="how">
+		<div class="two-col">
+			<Prose>
+				<h2 id="how">How DTI is calculated</h2>
+				<p>
+					Debt-to-income compares what you owe each month with what you earn before taxes. The CFPB defines it as all monthly debt payments divided by gross monthly income. This calculator computes two versions:
+				</p>
+				<ul>
+					<li><strong>Front-end DTI (housing ratio)</strong> = proposed monthly housing payment ÷ gross monthly income.</li>
+					<li><strong>Back-end DTI (total DTI)</strong> = (housing payment + car, student, credit card, personal and other monthly debt payments) ÷ gross monthly income.</li>
+				</ul>
+				<p>
+					If you enter an annual income, it is divided by 12 first. Enter the minimum monthly payment for each debt, not the balance. Fannie Mae counts installment debts that extend beyond 10 months, minimum payments on revolving accounts, leases and alimony or child support beyond 10 months; add leases and support payments under "Other".
+				</p>
+				<p>
+					The housing payment is normally PITI: principal, interest, property taxes and homeowners insurance (plus HOA dues, where they apply). The WorthSheet template's Homebuyer Readiness tab computes front-end DTI from the mortgage principal and interest only, so its front-end figure can be lower than the one here.
+				</p>
+			</Prose>
+			<Prose>
+				<h2 id="example">Worked example</h2>
+				<p>
+					This is the CFPB's own example. Gross monthly income is {formatUSD(d.monthlyIncome)}. The monthly payments are {formatUSD(DTI_DEFAULTS.housing)} for the mortgage, {formatUSD(DTI_DEFAULTS.car)} for a car loan and {formatUSD(DTI_DEFAULTS.other)} for other debts.
+				</p>
+				<ul>
+					<li>Front-end: {formatUSD(DTI_DEFAULTS.housing)} ÷ {formatUSD(d.monthlyIncome)} = <strong>{formatPercent(d.frontEnd ?? 0)}</strong>, under the 28% benchmark ({formatUSD(d.frontLimit)} a month).</li>
+					<li>Back-end: ({formatUSD(DTI_DEFAULTS.housing)} + {formatUSD(DTI_DEFAULTS.car)} + {formatUSD(DTI_DEFAULTS.other)}) = {formatUSD(d.housing + d.debts)}; {formatUSD(d.housing + d.debts)} ÷ {formatUSD(d.monthlyIncome)} = <strong>{formatPercent(d.backEnd)}</strong>, under the 36% benchmark ({formatUSD(d.backLimit)} a month).</li>
+					<li>Add a {formatUSD(350)} monthly car payment and the total becomes {formatUSD(car.housing + car.debts)}, so back-end DTI is {formatUSD(car.housing + car.debts)} ÷ {formatUSD(car.monthlyIncome)} = <strong>{formatPercent(car.backEnd)}</strong>, above 36%.</li>
+				</ul>
+			</Prose>
+		</div>
+	</Section>
+
+	<Section aria-labelledby="limits">
+		<div class="two-col">
+			<Prose>
+				<h2 id="limits">What DTI do lenders allow?</h2>
+				<p>
+					The 28/36 rule is a rule of thumb, not a lender requirement. Actual limits depend on the loan program and the lender:
+				</p>
+				<ul>
+					<li>
+						<strong>Fannie Mae (conventional loans):</strong> a maximum DTI of 36% for manually underwritten loans, up to 45% if the credit score and reserve requirements in its Eligibility Matrix are met, and up to 50% for loans underwritten through Desktop Underwriter. Source: <a href="https://selling-guide.fanniemae.com/sel/b3-6-02/debt-income-ratios" rel="noopener">Fannie Mae Selling Guide B3-6-02</a>.
+					</li>
+					<li>
+						<strong>The old 43% cap:</strong> the CFPB's 2020 General Qualified Mortgage rule removed the 43% DTI limit and replaced it with price-based thresholds, so 43% is no longer a universal ceiling. Source: <a href="https://www.consumerfinance.gov/rules-policy/final-rules/qualified-mortgage-definition-under-truth-lending-act-regulation-z-general-qm-loan-definition/" rel="noopener">CFPB General QM final rule</a>.
+					</li>
+					<li><strong>FHA, VA and USDA loans:</strong> follow each program's published guidelines; their DTI rules differ from conventional loans.</li>
+				</ul>
+				<p>
+					Source for the basics: the CFPB's <a href="https://www.consumerfinance.gov/ask-cfpb/what-is-a-debt-to-income-ratio-en-1791/" rel="noopener">What is a debt-to-income ratio?</a> Lower is better, and different loan products and lenders have different DTI limits.
+				</p>
+			</Prose>
+			<Prose>
+				<h2>What the status labels mean</h2>
+				<p>The labels compare your back-end ratio with the limits above and always appear as text, with a symbol, next to the color:</p>
+				<ul>
+					<li><strong>✓ At or under 36%:</strong> within the rule of thumb and Fannie Mae's manual-underwriting limit.</li>
+					<li><strong>! Above 36%, up to 45%:</strong> a lender may still approve with strong credit and reserves.</li>
+					<li><strong>✕ Above 45%:</strong> possible only through automated underwriting (up to 50% at Fannie Mae); above 50% exceeds Fannie Mae's maximum.</li>
+				</ul>
+				<p>
+					These labels are educational. They do not predict an approval or denial. To see what a lower DTI could do for your price range, use the <a href={url('/how-much-house-can-i-afford/')}>home affordability calculator</a>, or check all five readiness criteria with the <a href={url('/mortgage-readiness-assessment/')}>mortgage readiness assessment</a>.
+				</p>
+			</Prose>
+		</div>
+	</Section>
+
+	<Section tone="surface" aria-labelledby="faq-title">
+		<div class="two-col">
+			<div class="stack">
+				<h2 id="faq-title">DTI calculator FAQ</h2>
+				<p class="lead">Short answers about the ratios, the 28/36 rule and lender limits.</p>
+			</div>
+			<Faq items={faq} />
+		</div>
+	</Section>
+
+	<Section aria-labelledby="related-title">
+		<div class="stack" style="--stack-gap: 24px">
+			<h2 id="related-title">Related tools and guides</h2>
+			<RelatedLinks items={related} />
+		</div>
+	</Section>
+
+	<CtaBand>
+		<CtaTiles slot="art" />
+	</CtaBand>
+</Base>
+
+<script>
+	import {
+		bindCalculator,
+		createUseTracker,
+		readInputs,
+		setOutAll,
+		showErrors,
+		showResults,
+	} from '../components/calculators/calc';
+	import { DTI_KEYS, STATUS_ICON, dtiOutputs, evaluateDti } from '../components/calculators/dtiModel';
+
+	const trackUse = createUseTracker('dti');
+
+	function update(interacted: boolean) {
+		const period = document.querySelector<HTMLInputElement>('input[name="incomePeriod"]:checked')?.value === 'annual' ? 'annual' : 'monthly';
+		const outcome = evaluateDti(readInputs(DTI_KEYS), period);
+		if (!outcome.ok) {
+			showErrors(DTI_KEYS, outcome.errors);
+			showResults(false);
+			return;
+		}
+		showErrors(DTI_KEYS, {});
+		showResults(true);
+
+		const { text, status } = dtiOutputs(outcome.result);
+		setOutAll(text);
+		for (const side of ['front', 'back'] as const) {
+			document.querySelector(`[data-badge="${side}"]`)?.setAttribute('data-status', status[side]);
+			const icon = document.querySelector(`[data-icon="${side}"]`);
+			if (icon) icon.textContent = STATUS_ICON[status[side]];
+		}
+		if (interacted) trackUse();
+	}
+
+	bindCalculator('dti-form', update);
+</script>
+
+<style>
+	.radios {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px 20px;
+	}
+
+
+	.period legend {
+		margin-bottom: 8px;
+		font-size: 0.9375rem;
+		font-weight: 540;
+	}
+
+	.radio {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		font-weight: 450;
+		cursor: pointer;
+	}
+
+	.debts {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+	}
+
+	.debts legend {
+		margin-bottom: 4px;
+		font-size: 0.9375rem;
+		font-weight: 540;
+	}
+
+	.field-grid {
+		display: grid;
+		gap: 14px;
+		margin-top: 4px;
+	}
+
+	.ratios {
+		display: grid;
+		gap: 12px;
+	}
+
+	.ratio {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		padding: 18px 20px;
+		border: 1px solid var(--line);
+		border-radius: var(--radius-sm);
+		background: var(--white);
+	}
+
+	.ratio-label {
+		font-size: 0.875rem;
+		font-weight: 500;
+		color: var(--muted);
+	}
+
+	.ratio-value {
+		font-size: clamp(2rem, 5vw, 2.75rem);
+		font-weight: 580;
+		letter-spacing: -0.035em;
+		line-height: 1.05;
+	}
+
+	.ratio-detail {
+		font-size: 0.875rem;
+		color: var(--muted);
+		line-height: 1.45;
+	}
+
+	.badge {
+		display: inline-flex;
+		align-items: center;
+		align-self: flex-start;
+		gap: 8px;
+		padding: 4px 12px 4px 6px;
+		border-radius: 999px;
+		border: 1px solid transparent;
+		font-size: 0.875rem;
+		font-weight: 600;
+		line-height: 1.3;
+	}
+
+	.badge-icon {
+		display: inline-grid;
+		place-items: center;
+		width: 22px;
+		height: 22px;
+		border-radius: 50%;
+		font-size: 0.8125rem;
+		font-weight: 700;
+		color: var(--white);
+	}
+
+	.badge[data-status='good'] {
+		background: var(--tint-green);
+		border-color: #1f7a2a;
+		color: #14551d;
+	}
+	.badge[data-status='good'] .badge-icon {
+		background: #1f7a2a;
+	}
+
+	.badge[data-status='caution'] {
+		background: var(--tint-yellow);
+		border-color: #8a5a00;
+		color: #6b4600;
+	}
+	.badge[data-status='caution'] .badge-icon {
+		background: #8a5a00;
+	}
+
+	.badge[data-status='high'] {
+		background: #fbe9e7;
+		border-color: var(--danger);
+		color: var(--danger);
+	}
+	.badge[data-status='high'] .badge-icon {
+		background: var(--danger);
+	}
+
+	.badge[data-status='none'] {
+		background: var(--surface);
+		border-color: var(--line-strong);
+		color: var(--muted);
+	}
+	.badge[data-status='none'] .badge-icon {
+		background: var(--muted);
+	}
+
+	.summary {
+		display: grid;
+		gap: 0;
+		margin: 0;
+		padding: 4px 18px;
+		border: 1px solid var(--line);
+		border-radius: var(--radius-sm);
+		background: var(--white);
+	}
+
+	.summary > div {
+		display: flex;
+		justify-content: space-between;
+		gap: 16px;
+		padding: 10px 0;
+		border-bottom: 1px solid var(--line);
+		font-size: 0.9375rem;
+	}
+
+	.summary > div:last-child {
+		border-bottom: 0;
+		font-weight: 600;
+	}
+
+	.summary dt {
+		color: var(--muted);
+	}
+
+	.summary > div:last-child dt {
+		color: var(--ink);
+	}
+
+	.summary dd {
+		margin: 0;
+	}
+
+	.two-col {
+		display: grid;
+		gap: clamp(32px, 5vw, 64px);
+		align-items: start;
+	}
+
+	@media (min-width: 520px) {
+		.field-grid {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+
+	@media (min-width: 900px) {
+		.two-col {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+
+	@media (min-width: 560px) and (max-width: 899px), (min-width: 1100px) {
+		.ratios {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+</style>

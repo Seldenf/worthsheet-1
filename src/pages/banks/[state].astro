@@ -1,0 +1,478 @@
+---
+import Base from '../../layouts/Base.astro';
+import Section from '../../components/Section.astro';
+import Eyebrow from '../../components/Eyebrow.astro';
+import Button from '../../components/Button.astro';
+import Faq from '../../components/Faq.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import StatRow from '../../components/StatRow.astro';
+import BankFinder from '../../components/BankFinder.astro';
+import CtaTiles from '../../components/illustrations/CtaTiles.astro';
+import { faqLd } from '../../lib/seo';
+import { url } from '../../lib/url';
+import {
+  FDIC_META,
+  STATES,
+  STATE_BY_CODE,
+  assetBucket,
+  fmt,
+  formatAssets,
+  getDetail,
+  pct,
+  sharePct,
+  shortName,
+  stateDescription,
+  stateTitle,
+} from '../../data/banks';
+
+export function getStaticPaths() {
+  return STATES.map((s) => ({ params: { state: s.slug }, props: { code: s.code } }));
+}
+
+const { code } = Astro.props as { code: string };
+const state = STATE_BY_CODE[code];
+const d = getDetail(code);
+const path = `/banks/${state.slug}/`;
+const title = stateTitle(state, d);
+const description = stateDescription(state, d);
+
+const place = state.withArticle; // "Tennessee" | "the District of Columbia"
+const based = `${state.short}-based`;
+const hqName = (st: string) => STATE_BY_CODE[st]?.name ?? st;
+
+if (d.operators.length < 3) throw new Error(`${code}: fewer than 3 branch operators`);
+const [op1, op2, op3] = d.operators;
+const largest = d.largest;
+const topAssets = d.hq.slice(0, 10);
+const restAssets = d.hq.slice(10);
+const communityShare = sharePct(d.community, d.banks);
+const branchLeaderIsLargest = op1.cert === largest.cert;
+
+const dataDate = new Date(`${FDIC_META.dataDate}T12:00:00Z`).toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+  timeZone: 'UTC',
+});
+
+const neighbors = state.neighbors.map((c) => STATE_BY_CODE[c]);
+
+const faq = [
+  {
+    q: `How many banks are in ${place}?`,
+    a: `${fmt(d.banks)} active FDIC-insured banks are headquartered in ${place}, and ${fmt(d.community)} of them (${communityShare}) are FDIC-defined community banks. FDIC data also lists ${fmt(d.branches)} full-service branch offices in ${place}; banks headquartered elsewhere run ${pct(d.outOfStatePct)} of them.`,
+  },
+  {
+    q: `What is the largest bank in ${place}?`,
+    a: branchLeaderIsLargest
+      ? `${shortName(op1.name)} is the largest by both measures: it operates the most full-service branches in ${place} (${fmt(op1.branches)}) and is the largest ${based} bank by total assets (${formatAssets(largest.assets)}).`
+      : `By total assets, the largest ${based} bank is ${shortName(largest.name)} (${formatAssets(largest.assets)}). By full-service branches in ${place}, ${shortName(op1.name)} leads with ${fmt(op1.branches)}${op1.hq === code ? '' : `, and it is headquartered in ${hqName(op1.hq)}`}.`,
+  },
+  {
+    q: `Are banks in ${place} FDIC-insured?`,
+    a: `Every bank listed on this page is an active FDIC-insured institution in FDIC data. FDIC deposit insurance covers deposits up to $250,000 per depositor, per insured bank, for each account ownership category. To confirm a specific bank, look it up in FDIC BankFind.`,
+  },
+];
+
+const itemList = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  name: `Banks with the most full-service branches in ${place}`,
+  itemListOrder: 'https://schema.org/ItemListOrderDescending',
+  numberOfItems: d.operators.length,
+  itemListElement: d.operators.map((o, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    name: shortName(o.name),
+  })),
+};
+---
+
+<Base
+  title={title}
+  description={description}
+  path={path}
+  breadcrumbs={[
+    { name: 'Banks', path: '/banks/' },
+    { name: state.name, path },
+  ]}
+  jsonLd={[itemList, faqLd(faq)]}
+>
+  <section class="hero">
+    <div class="container hero-copy">
+      <Eyebrow>Banks by state</Eyebrow>
+      <h1>Banks in {place}</h1>
+      <p class="intro">
+        <strong>{fmt(d.banks)}</strong> active FDIC-insured banks are headquartered in {place}, and
+        <strong>{fmt(d.community)}</strong> of them (<strong>{communityShare}</strong>) are FDIC-defined
+        community banks. FDIC data lists <strong>{fmt(d.branches)}</strong> full-service branch offices in
+        {place}. <strong>{shortName(op1.name)}</strong> (<strong>{fmt(op1.branches)}</strong>) operates
+        the most, followed by <strong>{shortName(op2.name)}</strong> and <strong>{shortName(op3.name)}</strong>;
+        together those three hold <strong>{pct(d.top3Pct)}</strong> of full-service branches in {place}, and banks
+        headquartered elsewhere run <strong>{pct(d.outOfStatePct)}</strong> of all branches. The largest {based}
+        bank by total assets is <strong>{shortName(largest.name)}</strong> (<strong>{formatAssets(largest.assets)}</strong>).
+        Of the {fmt(d.banks)} {based} banks, <strong>{fmt(d.regulators.FDIC)}</strong> are supervised primarily by
+        the FDIC, <strong>{fmt(d.regulators.OCC)}</strong> by the OCC and <strong>{fmt(d.regulators.FED)}</strong> by
+        the Federal Reserve{d.regulators.STATE > 0 && <Fragment>, and <strong>{fmt(d.regulators.STATE)}</strong> by {d.regulators.STATE === 1 ? 'a state authority' : 'state authorities'} alone</Fragment>}; <strong>{fmt(d.stateChartered)}</strong> hold state charters. For complaints or licensing questions,
+        contact the <a href={state.regulator.url} rel="noopener" target="_blank">{state.regulator.name}</a>.
+      </p>
+      <p class="small muted">Source: FDIC BankFind Suite, data as of {dataDate}.</p>
+    </div>
+  </section>
+
+  <Section tight tone="surface" aria-labelledby="stats-title">
+    <h2 id="stats-title" class="sr-only">{state.name} bank statistics</h2>
+    <StatRow
+      items={[
+        { value: fmt(d.banks), label: `Banks headquartered in ${place}` },
+        { value: `${fmt(d.community)} (${communityShare})`, label: 'FDIC-defined community banks' },
+        { value: fmt(d.branches), label: 'Full-service branch offices' },
+        { value: pct(d.outOfStatePct), label: 'Branches run by out-of-state banks' },
+      ]}
+    />
+  </Section>
+
+  <Section aria-labelledby="operators-title">
+    <div class="head stack" style="--stack-gap: 12px">
+      <h2 id="operators-title">Banks with the most branches in {place}</h2>
+      <p class="muted">
+        The {fmt(Math.min(10, d.operatorCount))} largest operators of full-service branch offices in {place},
+        out of {fmt(d.operatorCount)} banks that have at least one. Branches count wherever the bank is
+        headquartered, so national banks appear here even when they are based in another state.
+      </p>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <caption class="sr-only">Top {Math.min(10, d.operatorCount)} banks by full-service branches in {place}</caption>
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Bank</th>
+            <th scope="col" class="num">Branches</th>
+            <th scope="col" class="num">Share of {state.short} branches</th>
+            <th scope="col">Headquartered in</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            d.operators.map((o, i) => (
+              <tr>
+                <td class="num">{i + 1}</td>
+                <th scope="row" class="bank-name">{shortName(o.name)}</th>
+                <td class="num">{fmt(o.branches)}</td>
+                <td class="num">{pct((o.branches / d.branches) * 100)}</td>
+                <td>{o.hq === code ? `${hqName(o.hq)} (in-state)` : hqName(o.hq)}</td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+  </Section>
+
+  <Section tone="surface" aria-labelledby="hq-title">
+    <div class="head stack" style="--stack-gap: 12px">
+      <h2 id="hq-title">{state.short}-based banks by total assets</h2>
+      <p class="muted">
+        {fmt(d.banks)} FDIC-insured banks are headquartered in {place}. The ten largest by total assets are
+        below{restAssets.length > 0 ? '; the full list follows' : ''}. Asset size is not a measure of service or
+        safety, only of scale.
+      </p>
+    </div>
+
+    <div class="largest grid grid-2">
+      <div class="card">
+        <p class="eyebrow">Most branches in {state.short}</p>
+        <p class="big">{shortName(op1.name)}</p>
+        <p class="muted">{fmt(op1.branches)} full-service offices; headquartered in {hqName(op1.hq)}</p>
+      </div>
+      <div class="card">
+        <p class="eyebrow">Largest {based} bank by assets</p>
+        <p class="big">{shortName(largest.name)}</p>
+        <p class="muted">{formatAssets(largest.assets)} in total assets</p>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <caption class="sr-only">{restAssets.length > 0 ? 'Ten largest' : 'All'} {based} banks by total assets</caption>
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Bank</th>
+            <th scope="col">City</th>
+            <th scope="col" class="num">Total assets</th>
+            <th scope="col">Size</th>
+            <th scope="col">Type</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            topAssets.map((b, i) => (
+              <tr>
+                <td class="num">{i + 1}</td>
+                <th scope="row" class="bank-name">{shortName(b[0])}</th>
+                <td>{b[1]}</td>
+                <td class="num">{formatAssets(b[4])}</td>
+                <td>{assetBucket(b[4])}</td>
+                <td>{b[3] ? <span class="badge">Community bank</span> : <span class="muted">Other</span>}</td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+
+    {
+      restAssets.length > 0 && (
+        <details class="more">
+          <summary>Show the other {fmt(restAssets.length)} banks headquartered in {place}</summary>
+          <div class="table-wrap">
+            <table>
+              <caption class="sr-only">
+                Remaining {based} banks by total assets, ranks 11 to {fmt(d.banks)}
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">#</th>
+                  <th scope="col">Bank</th>
+                  <th scope="col">City</th>
+                  <th scope="col" class="num">Total assets</th>
+                  <th scope="col">Size</th>
+                  <th scope="col">Type</th>
+                </tr>
+              </thead>
+              <tbody>
+                {restAssets.map((b, i) => (
+                  <tr>
+                    <td class="num">{i + 11}</td>
+                    <th scope="row" class="bank-name">{shortName(b[0])}</th>
+                    <td>{b[1]}</td>
+                    <td class="num">{formatAssets(b[4])}</td>
+                    <td>{assetBucket(b[4])}</td>
+                    <td>{b[3] ? <span class="badge">Community bank</span> : <span class="muted">Other</span>}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </details>
+      )
+    }
+    <p class="small muted note">
+      "Community bank" follows the FDIC's community bank definition, which is based on how a bank earns and lends,
+      not only on its size. Listing is public data, not a ranking of the best banks.
+    </p>
+  </Section>
+
+  <Section id="find" aria-labelledby="find-title">
+    <div class="split">
+      <div class="stack">
+        <h2 id="find-title">Find a bank by ZIP code in {place}</h2>
+        <p class="muted">
+          This search is scoped to {place}: it lists full-service FDIC-insured offices in the ZIP code you enter and
+          only shows results located in {place}. To search another state, use the
+          <a href={url('/banks/')}>ZIP finder for all states</a>.
+        </p>
+      </div>
+      <div class="card">
+        <BankFinder stateCode={code} stateName={place} />
+      </div>
+    </div>
+  </Section>
+
+  <Section tone="surface" aria-labelledby="reg-title">
+    <div class="split">
+      <div class="stack">
+        <h2 id="reg-title">Your {state.short} state bank regulator</h2>
+        <p class="muted">
+          State-chartered banks answer to their state banking agency as well as a federal regulator. Complaints,
+          chartering and licensing questions go to the agency below, as listed by the Conference of State Bank
+          Supervisors (CSBS).
+        </p>
+      </div>
+      <div class="stack">
+        <div class="card">
+          <p class="eyebrow">State banking agency</p>
+          <p class="big">{state.regulator.name}</p>
+          <p>
+            <a href={state.regulator.url} rel="noopener" target="_blank">{state.regulator.url.replace(/^https?:\/\//, '').replace(/\/$/, '')}</a>
+          </p>
+        </div>
+        <p class="small muted">
+          Check any bank's insurance status in
+          <a href="https://banks.data.fdic.gov/bankfind-suite/bankfind" rel="noopener" target="_blank">FDIC BankFind</a>,
+          or find another state's agency in the
+          <a href="https://www.csbs.org/contact-your-state-bank-agency" rel="noopener" target="_blank">CSBS directory</a>.
+        </p>
+      </div>
+    </div>
+  </Section>
+
+  <Section aria-labelledby="pfs-title">
+    <div class="split">
+      <div class="stack">
+        <h2 id="pfs-title">Listing your {state.short} accounts on a financial statement</h2>
+        <p class="muted">
+          A personal financial statement names the bank behind every account and loan. Use the banks above to
+          confirm legal names, then enter balances in the free template or total them in the
+          <a href={url('/net-worth-calculator/')}>net worth calculator</a>. Lenders review those figures during
+          <a href={url('/glossary/underwriting/')}>underwriting</a>.
+        </p>
+        <div class="actions">
+          <Button href="/download/" variant="primary">Get the free template</Button>
+        </div>
+      </div>
+      <div class="stack">
+        <h3>Banks in neighboring states</h3>
+        <ul class="chips">
+          {
+            neighbors.map((n) => (
+              <li>
+                <a class="pill" href={url(`/banks/${n.slug}/`)}>
+                  Banks in {n.name}
+                </a>
+              </li>
+            ))
+          }
+          <li>
+            <a class="pill" href={url('/banks/')}>All states</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </Section>
+
+  <Section tone="surface" aria-labelledby="faq-title">
+    <div class="split">
+      <div>
+        <Eyebrow>FAQ</Eyebrow>
+        <h2 id="faq-title">Banks in {place}: common questions</h2>
+      </div>
+      <Faq items={faq} />
+    </div>
+    <p class="small muted note">
+      Source: FDIC BankFind Suite, data as of {dataDate}. Counts reflect active FDIC-insured institutions by
+      headquarters state and full-service branch offices (brick-and-mortar and retail) by office state. Not an
+      endorsement of any institution.
+    </p>
+  </Section>
+
+  <CtaBand>
+    <CtaTiles slot="art" />
+  </CtaBand>
+</Base>
+
+<style>
+  .hero {
+    padding-block: clamp(24px, 5vw, 64px) clamp(32px, 5vw, 56px);
+  }
+
+  .hero-copy {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+
+  .intro {
+    max-width: 52em;
+    font-size: clamp(1.0625rem, 1.5vw, 1.25rem);
+    line-height: 1.6;
+    text-wrap: pretty;
+  }
+
+  .intro a {
+    text-decoration-color: var(--line-strong);
+  }
+
+  .head {
+    margin-bottom: clamp(20px, 3vw, 32px);
+    max-width: 52em;
+  }
+
+  .bank-name {
+    font-weight: 560;
+    white-space: normal;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 0.1em 0.65em;
+    border-radius: 999px;
+    background: var(--tint-green);
+    border: 1px solid rgba(64, 170, 74, 0.35);
+    font-size: 0.8125rem;
+    font-weight: 540;
+    white-space: nowrap;
+  }
+
+  .largest {
+    margin-bottom: clamp(16px, 2.4vw, 28px);
+  }
+
+  .big {
+    margin: 6px 0;
+    font-size: clamp(1.375rem, 2.4vw, 1.875rem);
+    font-weight: 560;
+    letter-spacing: -0.025em;
+    line-height: 1.15;
+  }
+
+  .more {
+    margin-top: 20px;
+  }
+
+  .more > summary {
+    cursor: pointer;
+    font-weight: 560;
+    padding: 12px 0;
+  }
+
+  .more .table-wrap {
+    margin-top: 12px;
+  }
+
+  .note {
+    margin-top: 20px;
+    max-width: 56em;
+  }
+
+  .split {
+    display: grid;
+    gap: clamp(24px, 4vw, 56px);
+  }
+
+  @media (min-width: 900px) {
+    .split {
+      grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+      align-items: start;
+    }
+  }
+
+  .split h2 {
+    margin-top: 12px;
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .chips {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .chips .pill {
+    text-decoration: none;
+    min-height: 40px;
+  }
+
+  .chips .pill:hover {
+    border-color: var(--ink);
+  }
+</style>

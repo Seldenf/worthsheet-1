@@ -1,0 +1,854 @@
+---
+import { getCollection } from 'astro:content';
+import { Image } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import Button from '../components/Button.astro';
+import Section from '../components/Section.astro';
+import Eyebrow from '../components/Eyebrow.astro';
+import Faq from '../components/Faq.astro';
+import StatRow from '../components/StatRow.astro';
+import CtaBand from '../components/CtaBand.astro';
+import HeroSheet from '../components/illustrations/HeroSheet.astro';
+import IsoTiles from '../components/illustrations/IsoTiles.astro';
+import CategoriesStack from '../components/illustrations/CategoriesStack.astro';
+import StepsFlow from '../components/illustrations/StepsFlow.astro';
+import ShieldSecure from '../components/illustrations/ShieldSecure.astro';
+import CtaTiles from '../components/illustrations/CtaTiles.astro';
+import chaseLogo from '../assets/banks/chase.svg';
+import bofaLogo from '../assets/banks/bank-of-america.svg';
+import wellsLogo from '../assets/banks/wells-fargo.svg';
+import { STATS } from '../config';
+import { url } from '../lib/url';
+import { faqLd, webAppLd } from '../lib/seo';
+
+const title = 'Free Personal Financial Statement Template | WorthSheet';
+const description =
+  'Free personal financial statement template for Google Sheets and Excel: 27 asset and 13 liability categories, automatic net worth, bank-ready. 9,000+ downloads.';
+
+const banks = [
+  { name: 'Chase', logo: chaseLogo },
+  { name: 'Bank of America', logo: bofaLogo },
+  { name: 'Wells Fargo', logo: wellsLogo },
+];
+
+const steps = [
+  {
+    title: 'Download the template',
+    text: 'Enter your name and email on the download page. You get your own copy in Google Sheets, with an Excel (.xlsx) download one click away.',
+    cta: true,
+  },
+  {
+    title: 'Open the spreadsheet',
+    text: 'Open your copy in Google Sheets, or open the .xlsx file in Excel. The Personal Finance Statement (PFS) tab is the main sheet; Homebuyer Readiness is a second tab.',
+  },
+  {
+    title: 'Enter your accounts',
+    text: 'Under each asset and liability category, type the institution name and the latest balance. Add a row if you have more accounts than the template shows. Category totals, total assets, total liabilities and net worth calculate automatically.',
+  },
+  {
+    title: 'Review, print and sign',
+    text: 'Check the numbers against your latest statements, set the "as of" date, then print the PFS tab or export it to PDF. Sign and date it before you send it to your lender or advisor.',
+  },
+];
+
+const securityCards = [
+  {
+    title: 'Trusted',
+    text: 'A universal template that can be tailored for personal or financial services needs.',
+  },
+  {
+    title: 'Safe & Secure',
+    text: 'Available to download for Google Sheets or Excel. Save and store it in your own folder.',
+  },
+  {
+    title: 'Easy to use',
+    text: 'Add categories and accounts to create your own custom personal financial statement.',
+  },
+  {
+    title: 'Automated',
+    text: 'Sections are pre-built to calculate category totals, asset totals, liability totals and net worth.',
+  },
+  {
+    title: 'Simple customization',
+    text: 'Create tabs for multiple time periods and add notes or links to documents for future reference.',
+  },
+];
+
+const testimonials = [
+  {
+    quote: 'Bank requested Personal Financial Statement as part of a SBIC business loan application',
+    name: 'Zach, 39',
+    place: 'Nashville, Tennessee',
+  },
+  {
+    quote: 'My Financial Advisor asked me for my financial data to create a personal balance sheet',
+    name: 'William, 22',
+    place: 'Whitefish, Montana',
+  },
+  {
+    quote: 'Created Personal Financial Statement for two banks to get pre-approved for a mortgage',
+    name: 'Wendy, 34',
+    place: 'Austin, Texas',
+  },
+];
+
+const tools = [
+  {
+    href: '/mortgage-calculator/',
+    title: 'Mortgage calculator',
+    text: 'Monthly principal and interest, total interest and a yearly amortization schedule.',
+  },
+  {
+    href: '/net-worth-calculator/',
+    title: 'Net worth calculator',
+    text: 'Add up assets and liabilities by the template’s categories.',
+  },
+  {
+    href: '/debt-to-income-ratio-calculator/',
+    title: 'Debt-to-income calculator',
+    text: 'Front-end and back-end DTI against the 28/36 benchmarks.',
+  },
+  {
+    href: '/how-much-house-can-i-afford/',
+    title: 'Home affordability calculator',
+    text: 'Estimate a price range from income, debts, down payment and rate.',
+  },
+  {
+    href: '/mortgage-readiness-assessment/',
+    title: 'Mortgage readiness assessment',
+    text: 'Score your credit, income, loan-to-value, DTI and PFS on five criteria.',
+  },
+  {
+    href: '/banks/',
+    title: 'Find banks near you',
+    text: 'Search FDIC-insured banks by ZIP code or browse by state.',
+  },
+  {
+    href: '/sba-form-413/',
+    title: 'SBA Form 413 guide',
+    text: 'What the SBA personal financial statement asks for, line by line.',
+  },
+  {
+    href: '/personal-financial-statement-example/',
+    title: 'PFS example',
+    text: 'A filled-in sample plus printable blank and example PDFs.',
+  },
+];
+
+const faq = [
+  {
+    q: 'What is a personal financial statement?',
+    a: 'A personal financial statement (PFS) is a formal report that shows what an individual owns (assets), what they owe (liabilities), and the difference between the two (net worth). Lenders and advisors use it to see your financial position on a given date. WorthSheet’s free template walks you through every section and calculates the totals for you.',
+  },
+  {
+    q: 'Is the WorthSheet template free?',
+    a: 'Yes. You enter your name and email on the download page, then open your own copy in Google Sheets or download an Excel (.xlsx) file.',
+  },
+  {
+    q: 'Does it work in Excel?',
+    a: 'Yes. After the form you can open a copy in Google Sheets or download the .xlsx version for Excel.',
+  },
+  {
+    q: 'Why do I need to prepare a personal financial statement?',
+    a: 'Lenders often ask for one with a business, SBA or personal loan application, and some mortgage lenders ask for one too. It is also useful for planning your finances, comparing investment decisions and working with a financial advisor, because it gives a clear picture of where you stand.',
+  },
+  {
+    q: 'What should be included in a personal financial statement?',
+    a: 'List all assets, such as bank accounts, real estate, investments and valuable personal property, and all liabilities, such as mortgages, personal loans, credit card balances and other obligations. Net worth is total assets minus total liabilities.',
+  },
+  {
+    q: 'Will my bank accept it?',
+    a: 'Many lenders accept a clear, signed statement, but each lender decides. The SBA accepts equivalent formats that contain the same information as SBA Form 413 for 7(a), 504 and surety applications; ask your lender first.',
+  },
+  {
+    q: 'How often should I update my personal financial statement?',
+    a: 'Update it at least once a year and whenever your financial situation changes significantly. When you submit one to a lender, use current balances and the “as of” date they ask for.',
+  },
+  {
+    q: 'What else is in the template?',
+    a: 'A second tab, Homebuyer Readiness, scores your credit score, income, loan-to-value, debt-to-income and PFS against five criteria.',
+  },
+];
+
+const posts = (await getCollection('blog', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+  .slice(0, 3);
+
+const fmtDate = (d: Date) =>
+  d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
+
+const jsonLd = [
+  webAppLd({
+    name: 'WorthSheet Personal Financial Statement Template',
+    description:
+      'Free personal financial statement template for Google Sheets and Excel with 27 asset and 13 liability categories and automatic net worth.',
+    path: '/',
+    category: 'Spreadsheet template',
+  }),
+  faqLd(faq),
+];
+---
+
+<Base title={title} description={description} path="/" jsonLd={jsonLd}>
+  <!-- Hero -->
+  <section class="hero tone-paper" aria-labelledby="hero-title">
+    <div class="container hero-grid">
+      <div class="hero-copy">
+        <Eyebrow>Free for Google Sheets and Excel</Eyebrow>
+        <h1 id="hero-title">Free personal financial statement template for Google Sheets and Excel</h1>
+        <ul class="ticks hero-points">
+          <li>Customizable spreadsheet</li>
+          <li>Bank-ready format</li>
+          <li>Wave goodbye to manual calculations</li>
+        </ul>
+        <div class="hero-actions">
+          <Button href="/download/" variant="primary" size="lg">Get the template for free</Button>
+          <Button href="#features" variant="secondary" size="lg">Learn more</Button>
+        </div>
+        <p class="small muted">{STATS.downloads} downloads · {STATS.assetCategories} asset and {STATS.liabilityCategories} liability categories built in</p>
+      </div>
+      <div class="hero-art">
+        <HeroSheet />
+      </div>
+    </div>
+  </section>
+
+  <!-- Built based on -->
+  <section class="banks-strip tone-paper" aria-labelledby="banks-title">
+    <div class="container banks-row">
+      <p id="banks-title" class="eyebrow">Built based on</p>
+      <ul class="bank-logos">
+        {
+          banks.map((b) => (
+            <li>
+              <Image src={b.logo} alt={`${b.name} logo`} width={70} height={70} loading="lazy" />
+            </li>
+          ))
+        }
+      </ul>
+      <p class="small muted bank-note">The template follows the structure of common bank personal financial statement forms. It is not affiliated with or endorsed by these banks.</p>
+    </div>
+  </section>
+
+  <!-- Saves time -->
+  <Section id="features" tone="surface" aria-labelledby="saves-title">
+    <div class="split">
+      <div class="stack split-copy" style="--stack-gap: 1.25rem">
+        <Eyebrow>WorthSheet™ saves time</Eyebrow>
+        <h2 id="saves-title">Avoid manual calculations and messy bank personal financial statement forms</h2>
+        <p class="lead">The WorthSheet™ template is built to be faster than filling out a blank bank personal financial statement by hand.</p>
+        <ul class="ticks">
+          <li>Time-saving layout for quick financial data organization.</li>
+          <li>Designed for error reduction and accuracy in your personal financial statement.</li>
+          <li>Spreadsheet format that covers what banks typically ask for.</li>
+        </ul>
+        <div>
+          <Button href="/download/" variant="primary">Get the template for free</Button>
+        </div>
+      </div>
+      <div class="split-art"><IsoTiles /></div>
+    </div>
+  </Section>
+
+  <!-- Dynamic categories -->
+  <Section id="categories" tone="paper" aria-labelledby="categories-title">
+    <div class="split split-reverse">
+      <div class="stack split-copy" style="--stack-gap: 1.25rem">
+        <Eyebrow>Dynamic categories</Eyebrow>
+        <h2 id="categories-title">Tailored to create a personal financial statement super-fast</h2>
+        <p class="lead">A comprehensive list of categories modeled on common personal financial statement forms, with the flexibility to add your own.</p>
+        <ul class="ticks">
+          <li>{STATS.assetCategories} asset categories</li>
+          <li>{STATS.liabilityCategories} liability categories</li>
+          <li>Dynamic calculation formulas</li>
+        </ul>
+        <div>
+          <Button href="/download/" variant="primary">Get the template for free</Button>
+        </div>
+      </div>
+      <div class="split-art"><CategoriesStack /></div>
+    </div>
+  </Section>
+
+  <!-- How to use -->
+  <Section id="how-to-use" tone="surface" aria-labelledby="how-title">
+    <div class="section-head stack" style="--stack-gap: 1rem">
+      <Eyebrow>Getting started</Eyebrow>
+      <h2 id="how-title">How to use the WorthSheet™ personal financial statement template</h2>
+      <p class="lead">Preparing a statement for a bank loan takes four steps, and the template does the arithmetic for you.</p>
+    </div>
+    <div class="steps-art"><StepsFlow /></div>
+    <ol class="steps">
+      {
+        steps.map((s, i) => (
+          <li class="card step">
+            <span class="step-num num" aria-hidden="true">{i + 1}</span>
+            <h3><span class="sr-only">Step {i + 1}: </span>{s.title}</h3>
+            <p class="muted">{s.text}</p>
+            {s.cta && (
+              <div class="step-cta">
+                <Button href="/download/" variant="secondary" size="sm">Download PFS template</Button>
+              </div>
+            )}
+          </li>
+        ))
+      }
+    </ol>
+    <p class="steps-more muted">
+      Want to see a finished statement first? Browse the <a href={url('/personal-financial-statement-example/')}>personal financial statement example</a>.
+    </p>
+  </Section>
+
+  <!-- Safe and secure -->
+  <Section id="safe-and-secure" tone="paper" aria-labelledby="safe-title">
+    <div class="split">
+      <div class="stack split-copy" style="--stack-gap: 1.25rem">
+        <Eyebrow>Why WorthSheet</Eyebrow>
+        <h2 id="safe-title">Safe and secure template</h2>
+        <p class="lead">Your copy lives in your own Google account or on your own computer, so you decide where your financial data is stored.</p>
+      </div>
+      <div class="split-art split-art-small"><ShieldSecure /></div>
+    </div>
+    <ul class="feature-grid">
+      {
+        securityCards.map((c) => (
+          <li class="card feature">
+            <h3>{c.title}</h3>
+            <p class="muted">{c.text}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </Section>
+
+  <!-- Community / social proof -->
+  <Section id="community" tone="cream" aria-labelledby="community-title">
+    <div class="section-head stack" style="--stack-gap: 1rem">
+      <Eyebrow>Join our community</Eyebrow>
+      <h2 id="community-title">Over {STATS.downloads.replace('+', '')} downloads of WorthSheet personal financial statements</h2>
+      <p class="lead">Prepare, tailor and submit your personal financial statement for a bank loan, a mortgage or your advisor with one reusable template.</p>
+      <div>
+        <Button href="/download/" variant="primary">Get the template for free</Button>
+      </div>
+    </div>
+    <StatRow
+      class="community-stats"
+      items={[
+        { value: STATS.downloads, label: 'Downloads of the PFS template' },
+        { value: STATS.assetCategories, label: 'Defined asset categories' },
+        { value: STATS.liabilityCategories, label: 'Defined liability categories' },
+      ]}
+    />
+    <ul class="testimonials">
+      {
+        testimonials.map((t) => (
+          <li>
+            <figure class="card testimonial">
+              <blockquote>
+                <p>“{t.quote}”</p>
+              </blockquote>
+              <figcaption>
+                <strong>{t.name}</strong>
+                <span class="muted">{t.place}</span>
+              </figcaption>
+            </figure>
+          </li>
+        ))
+      }
+    </ul>
+  </Section>
+
+  <!-- Free tools -->
+  <Section id="free-tools" tone="paper" aria-labelledby="tools-title">
+    <div class="section-head stack" style="--stack-gap: 1rem">
+      <Eyebrow>Free tools</Eyebrow>
+      <h2 id="tools-title">Free calculators and guides for your loan application</h2>
+      <p class="lead">Check your numbers before you apply, then put them in a bank-ready statement.</p>
+    </div>
+    <ul class="grid grid-4 tools">
+      {
+        tools.map((t) => (
+          <li>
+            <a class="card tool" href={url(t.href)}>
+              <h3>{t.title}</h3>
+              <p class="muted">{t.text}</p>
+              <span class="tool-arrow" aria-hidden="true">→</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+    <p class="tools-note small muted">Calculators are estimates for educational purposes only and are not a loan offer or financial advice.</p>
+  </Section>
+
+  <!-- FAQ -->
+  <Section id="faq" tone="surface" aria-labelledby="faq-title">
+    <div class="faq-wrap">
+      <div class="stack faq-head" style="--stack-gap: 1rem">
+        <Eyebrow>Still have questions?</Eyebrow>
+        <h2 id="faq-title">Frequently asked questions</h2>
+        <p class="muted">Short answers about the template and the personal financial statement.</p>
+      </div>
+      <Faq items={faq} />
+    </div>
+  </Section>
+
+  <!-- Latest guides -->
+  {
+    posts.length > 0 && (
+      <Section id="latest" tone="paper" aria-labelledby="latest-title">
+        <div class="latest-head">
+          <div class="stack" style="--stack-gap: 1rem">
+            <Eyebrow>From the blog</Eyebrow>
+            <h2 id="latest-title">Read our latest guides</h2>
+          </div>
+          <Button href="/blog/" variant="secondary">All guides</Button>
+        </div>
+        <ul class="grid grid-3 posts">
+          {posts.map((p) => (
+            <li>
+              <a class="card post" href={url(`/${p.id}/`)}>
+                {p.data.heroImage ? (
+                  <Image
+                    class="post-img"
+                    src={p.data.heroImage}
+                    alt={p.data.heroAlt ?? ''}
+                    width={640}
+                    height={400}
+                    widths={[320, 480, 640]}
+                    sizes="(min-width: 960px) 360px, (min-width: 640px) 45vw, 92vw"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div class="post-img post-img-empty" aria-hidden="true" />
+                )}
+                <div class="post-body">
+                  <time class="small muted" datetime={p.data.pubDate.toISOString()}>
+                    {fmtDate(p.data.pubDate)}
+                  </time>
+                  <h3>{p.data.title}</h3>
+                  <span class="post-more">Read more »</span>
+                </div>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </Section>
+    )
+  }
+
+  <CtaBand
+    title="Download the personal financial statement template for free"
+    text="Make your next loan or mortgage application easier: fill in your accounts once and let the template calculate the totals and your net worth."
+  >
+    <CtaTiles slot="art" />
+  </CtaBand>
+</Base>
+
+<style>
+  /* ---------- Shared bits ---------- */
+  .ticks {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .ticks li {
+    position: relative;
+    padding-left: 34px;
+    font-size: 1.0625rem;
+  }
+
+  .ticks li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.1em;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--tint-green);
+    border: 1px solid rgba(64, 170, 74, 0.45);
+  }
+
+  .ticks li::after {
+    content: '';
+    position: absolute;
+    left: 7px;
+    top: calc(0.1em + 5px);
+    width: 6px;
+    height: 10px;
+    border: solid #2b8a35;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg) scale(0.9);
+    transform-origin: center;
+  }
+
+  .section-head {
+    max-width: 44rem;
+    margin-bottom: clamp(32px, 5vw, 56px);
+  }
+
+  #features,
+  #how-to-use {
+    scroll-margin-top: 72px;
+  }
+
+  /* ---------- Hero ---------- */
+  .hero {
+    padding-block: clamp(40px, 7vw, 96px) clamp(32px, 5vw, 64px);
+    overflow: hidden;
+  }
+
+  .hero-grid {
+    display: grid;
+    gap: clamp(32px, 5vw, 64px);
+    align-items: center;
+  }
+
+  .hero-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    align-items: flex-start;
+  }
+
+  .hero-points {
+    gap: 10px;
+  }
+
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .hero-art {
+    max-width: 640px;
+    width: 100%;
+    margin-inline: auto;
+  }
+
+  @media (min-width: 960px) {
+    .hero-grid {
+      grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+    }
+  }
+
+  /* ---------- Banks strip ---------- */
+  .banks-strip {
+    padding-block: 0 clamp(40px, 6vw, 72px);
+  }
+
+  .banks-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px 28px;
+    padding-block: 24px;
+    border-block: 1px solid var(--line);
+  }
+
+  .bank-logos {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .bank-logos li {
+    display: grid;
+    place-items: center;
+    width: 76px;
+    height: 76px;
+    overflow: hidden;
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+
+  .bank-logos img {
+    width: 70px;
+    height: 70px;
+    display: block;
+  }
+
+  .bank-note {
+    flex: 1 1 260px;
+    max-width: 34em;
+  }
+
+  /* ---------- Split sections ---------- */
+  .split {
+    display: grid;
+    gap: clamp(32px, 5vw, 72px);
+    align-items: center;
+  }
+
+  .split-art {
+    width: 100%;
+    max-width: 600px;
+    margin-inline: auto;
+  }
+
+  .split-art-small {
+    max-width: 380px;
+  }
+
+  @media (min-width: 900px) {
+    .split {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+
+    .split-reverse .split-art {
+      order: -1;
+    }
+
+    .split-art {
+      margin-inline: 0;
+    }
+
+    .split-reverse .split-art {
+      margin-inline: 0 auto;
+    }
+  }
+
+  /* ---------- Steps ---------- */
+  .steps-art {
+    max-width: 960px;
+    margin: 0 auto clamp(24px, 4vw, 48px);
+  }
+
+  .steps {
+    list-style: none;
+    display: grid;
+    gap: clamp(16px, 2.4vw, 24px);
+    grid-template-columns: 1fr;
+  }
+
+  @media (min-width: 640px) {
+    .steps {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1100px) {
+    .steps {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  .step {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .step-num {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--ink);
+    color: var(--white);
+    font-weight: 600;
+  }
+
+  .step h3 {
+    font-size: 1.25rem;
+  }
+
+  .step-cta {
+    margin-top: auto;
+    padding-top: 8px;
+  }
+
+  .steps-more {
+    margin-top: 28px;
+    text-align: center;
+  }
+
+  /* ---------- Safe and secure ---------- */
+  .feature-grid {
+    list-style: none;
+    display: grid;
+    gap: clamp(16px, 2.4vw, 24px);
+    grid-template-columns: 1fr;
+    margin-top: clamp(32px, 5vw, 56px);
+  }
+
+  @media (min-width: 640px) {
+    .feature-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 1100px) {
+    .feature-grid {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+  }
+
+  .feature {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .feature h3 {
+    font-size: 1.1875rem;
+  }
+
+  /* ---------- Community ---------- */
+  .community-stats {
+    margin-bottom: clamp(32px, 5vw, 56px);
+  }
+
+  .testimonials {
+    list-style: none;
+    display: grid;
+    gap: clamp(16px, 2.4vw, 24px);
+    grid-template-columns: 1fr;
+  }
+
+  @media (min-width: 900px) {
+    .testimonials {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  .testimonial {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 24px;
+  }
+
+  .testimonial blockquote p {
+    font-size: 1.1875rem;
+    line-height: 1.45;
+    letter-spacing: -0.01em;
+    text-wrap: pretty;
+  }
+
+  .testimonial figcaption {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 0.9375rem;
+  }
+
+  /* ---------- Tools ---------- */
+  .tools {
+    list-style: none;
+  }
+
+  .tool {
+    position: relative;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-bottom: 52px;
+  }
+
+  .tool h3 {
+    font-size: 1.1875rem;
+  }
+
+  .tool p {
+    font-size: 0.9688rem;
+  }
+
+  .tool-arrow {
+    position: absolute;
+    left: clamp(20px, 3vw, 32px);
+    bottom: 20px;
+    font-size: 1.25rem;
+    transition: transform 0.2s ease;
+  }
+
+  .tool:hover .tool-arrow {
+    transform: translateX(4px);
+  }
+
+  .tools-note {
+    margin-top: 24px;
+  }
+
+  /* ---------- FAQ ---------- */
+  .faq-wrap {
+    display: grid;
+    gap: clamp(28px, 5vw, 64px);
+  }
+
+  @media (min-width: 900px) {
+    .faq-wrap {
+      grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.4fr);
+      align-items: start;
+    }
+
+    .faq-head {
+      position: sticky;
+      top: 96px;
+    }
+  }
+
+  /* ---------- Latest posts ---------- */
+  .latest-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: clamp(28px, 4vw, 48px);
+  }
+
+  .posts {
+    list-style: none;
+  }
+
+  .post {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .post :global(.post-img) {
+    width: 100%;
+    aspect-ratio: 8 / 5;
+    object-fit: cover;
+    display: block;
+    background: var(--tint-blue);
+  }
+
+  .post-img-empty {
+    width: 100%;
+    aspect-ratio: 8 / 5;
+    background: var(--tint-blue);
+  }
+
+  .post-body {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+    padding: clamp(18px, 2.4vw, 26px);
+  }
+
+  .post h3 {
+    font-size: 1.25rem;
+    text-wrap: balance;
+  }
+
+  .post-more {
+    margin-top: auto;
+    padding-top: 8px;
+    font-weight: 560;
+  }
+</style>
