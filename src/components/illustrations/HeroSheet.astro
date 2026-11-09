@@ -2,8 +2,10 @@
 interface Props {
   class?: string;
   title?: string;
+  /** Floating Assets / Liabilities / Net worth pills. The home hero shows those values in sheet cells instead. */
+  pills?: boolean;
 }
-const { class: className, title } = Astro.props;
+const { class: className, title, pills: showPills = true } = Astro.props;
 
 const C = {
   ink: '#2e2926', beige: '#e8e7e5', surface: '#f5f3f2', blue: '#6cbee4', green: '#40aa4a',
@@ -151,9 +153,9 @@ const pills = [
 
   <!-- verified check (top) -->
   <g class="wsi-hero-top wsi-hero-f2" style={lag(0.8 + jit(7, 0.5))}>
-    <g class="wsi-hero-sh-top" style={lag(0.8 + jit(7, 0.5))}><circle cx="806" cy="262" r="28" fill={C.ink} fill-opacity=".08" transform="translate(0 8)"></circle></g>
-    <circle cx="806" cy="262" r="26" fill={C.green} stroke="#fff" stroke-width="3"></circle>
-    <path d="M794 263l8 8 15-17" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
+    <g class="wsi-hero-sh-top" style={lag(0.8 + jit(7, 0.5))}><circle cx="644" cy="232" r="28" fill={C.ink} fill-opacity=".08" transform="translate(0 8)"></circle></g>
+    <circle cx="644" cy="232" r="26" fill={C.green} stroke="#fff" stroke-width="3"></circle>
+    <path d="M632 233l8 8 15-17" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
   </g>
 
   <!-- =SUM() chip (top) -->
@@ -168,7 +170,7 @@ const pills = [
   </g>
 
   <!-- pills (top) -->
-  {pills.map((p, i) => (
+  {showPills && pills.map((p, i) => (
     <g transform={`translate(${p.x} ${p.y})`}>
       <g class={`wsi-hero-top wsi-hero-${p.cls}`} style={lag(0.8 + jit(i + 3, 0.5))}>
         <rect class="wsi-hero-sh-top" style={lag(0.8 + jit(i + 3, 0.5))} x={-p.w / 2} y={-p.h / 2 + 4} width={p.w} height={p.h} rx={p.h / 2} fill={C.ink} fill-opacity=".1"></rect>

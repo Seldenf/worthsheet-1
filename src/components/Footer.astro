@@ -7,27 +7,8 @@ const columns = [
     title: 'Template',
     links: [
       { name: 'Free PFS template', path: '/download/' },
-      { name: 'SBA Form 413', path: '/sba-form-413/' },
-      { name: 'PFS Example', path: '/personal-financial-statement-example/' },
-      { name: 'What is a PFS?', path: '/what-is-a-personal-financial-statement/' },
-    ],
-  },
-  {
-    title: 'Calculators',
-    links: [
-      { name: 'Mortgage Calculator', path: '/mortgage-calculator/' },
-      { name: 'Net Worth Calculator', path: '/net-worth-calculator/' },
-      { name: 'Debt-to-Income Calculator', path: '/debt-to-income-ratio-calculator/' },
-      { name: 'Home Affordability', path: '/how-much-house-can-i-afford/' },
-      { name: 'Mortgage Readiness', path: '/mortgage-readiness-assessment/' },
-    ],
-  },
-  {
-    title: 'Learn',
-    links: [
-      { name: 'Banks by State', path: '/banks/' },
-      { name: 'Glossary', path: '/glossary/' },
-      { name: 'Blog', path: '/blog/' },
+      { name: 'How to use it', path: '/#how-to-use' },
+      { name: 'FAQ', path: '/#faq' },
     ],
   },
 ];
@@ -77,7 +58,7 @@ const year = new Date().getFullYear();
 <style>
   .site-footer {
     padding-block: clamp(48px, 7vw, 88px) 32px;
-    background: var(--surface);
+    background: var(--white);
     border-top: 1px solid var(--line);
     font-size: 0.9375rem;
   }
@@ -128,9 +109,24 @@ const year = new Date().getFullYear();
     color: var(--ink);
   }
 
-  .footer-col a:hover,
-  .link-button:hover {
-    text-decoration: underline;
+  @media (hover: hover) {
+    .footer-col a:hover,
+    .link-button:hover {
+      text-decoration: underline;
+    }
+  }
+
+  /* 44px touch targets for the link lists on coarse pointers. */
+  @media (pointer: coarse) {
+    .footer-col ul {
+      gap: 0;
+    }
+
+    .footer-col a,
+    .link-button {
+      display: inline-block;
+      padding-block: 10px;
+    }
   }
 
   .footer-bottom {

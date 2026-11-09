@@ -1,24 +1,21 @@
 ---
-import { getCollection } from 'astro:content';
 import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import Button from '../components/Button.astro';
-import Section from '../components/Section.astro';
+import Sheet from '../components/Sheet.astro';
 import Eyebrow from '../components/Eyebrow.astro';
 import Faq from '../components/Faq.astro';
-import StatRow from '../components/StatRow.astro';
 import CtaBand from '../components/CtaBand.astro';
 import HeroSheet from '../components/illustrations/HeroSheet.astro';
 import IsoTiles from '../components/illustrations/IsoTiles.astro';
 import CategoriesStack from '../components/illustrations/CategoriesStack.astro';
-import StepsFlow from '../components/illustrations/StepsFlow.astro';
+import StepTile from '../components/illustrations/StepTile.astro';
 import ShieldSecure from '../components/illustrations/ShieldSecure.astro';
 import CtaTiles from '../components/illustrations/CtaTiles.astro';
 import chaseLogo from '../assets/banks/chase.svg';
 import bofaLogo from '../assets/banks/bank-of-america.svg';
 import wellsLogo from '../assets/banks/wells-fargo.svg';
 import { STATS } from '../config';
-import { url } from '../lib/url';
 import { faqLd, webAppLd } from '../lib/seo';
 
 const title = 'Free Personal Financial Statement Template | WorthSheet';
@@ -29,6 +26,31 @@ const banks = [
   { name: 'Chase', logo: chaseLogo, height: 22 },
   { name: 'Bank of America', logo: bofaLogo, height: 38 },
   { name: 'Wells Fargo', logo: wellsLogo, height: 30 },
+];
+
+// Highlighted grid cells around the hero sheet (soft fading gradients + grain, after equals.com).
+// [column, row, tone, strength %, strongest end]. Columns/rows count from the sheet's top-left cell;
+// rows >= 26 sit below the sheet. Columns -1 and 12 show at 1400px; -2, -3, 13, 14 on wider screens.
+type Tone = 'green' | 'blue' | 'yellow' | 'pink';
+const glow: [number, number, Tone, number, 'l' | 'r'][] = [
+  [1, -1, 'green', 30, 'r'], [2, -1, 'green', 16, 'r'],
+  [6, -2, 'yellow', 34, 'l'], [7, -2, 'yellow', 16, 'l'],
+  [9, -1, 'blue', 28, 'r'], [10, -2, 'pink', 22, 'l'], [10, -1, 'blue', 14, 'r'],
+  [-1, 2, 'green', 46, 'l'], [-1, 3, 'green', 34, 'l'], [-1, 4, 'green', 22, 'l'], [-1, 5, 'green', 11, 'l'],
+  [-1, 11, 'yellow', 42, 'l'], [-1, 12, 'yellow', 26, 'l'], [-1, 13, 'yellow', 12, 'l'],
+  [-1, 19, 'blue', 36, 'l'], [-1, 20, 'blue', 20, 'l'],
+  [-2, 6, 'blue', 34, 'r'], [-2, 7, 'blue', 22, 'r'], [-2, 8, 'blue', 12, 'r'],
+  [-2, 15, 'pink', 28, 'r'], [-2, 16, 'pink', 16, 'r'],
+  [-3, 3, 'yellow', 30, 'r'], [-3, 4, 'yellow', 16, 'r'],
+  [12, 1, 'blue', 44, 'r'], [12, 2, 'blue', 30, 'r'], [12, 3, 'blue', 16, 'r'],
+  [12, 9, 'pink', 30, 'r'], [12, 10, 'pink', 18, 'r'],
+  [12, 15, 'green', 40, 'r'], [12, 16, 'green', 28, 'r'], [12, 17, 'green', 14, 'r'],
+  [12, 23, 'yellow', 34, 'r'], [12, 24, 'yellow', 18, 'r'],
+  [13, 5, 'green', 30, 'l'], [13, 6, 'green', 16, 'l'],
+  [13, 12, 'yellow', 34, 'l'], [13, 13, 'yellow', 20, 'l'],
+  [14, 2, 'pink', 24, 'l'], [14, 19, 'blue', 30, 'l'],
+  [2, 26, 'yellow', 32, 'r'], [3, 27, 'yellow', 16, 'r'],
+  [7, 26, 'blue', 26, 'l'], [11, 27, 'green', 30, 'r'],
 ];
 
 const steps = [
@@ -92,49 +114,6 @@ const testimonials = [
   },
 ];
 
-const tools = [
-  {
-    href: '/mortgage-calculator/',
-    title: 'Mortgage calculator',
-    text: 'Monthly principal and interest, total interest and a yearly amortization schedule.',
-  },
-  {
-    href: '/net-worth-calculator/',
-    title: 'Net worth calculator',
-    text: 'Add up assets and liabilities by the template’s categories.',
-  },
-  {
-    href: '/debt-to-income-ratio-calculator/',
-    title: 'Debt-to-income calculator',
-    text: 'Front-end and back-end DTI against the 28/36 benchmarks.',
-  },
-  {
-    href: '/how-much-house-can-i-afford/',
-    title: 'Home affordability calculator',
-    text: 'Estimate a price range from income, debts, down payment and rate.',
-  },
-  {
-    href: '/mortgage-readiness-assessment/',
-    title: 'Mortgage readiness assessment',
-    text: 'Score your credit, income, loan-to-value, DTI and PFS on five criteria.',
-  },
-  {
-    href: '/banks/',
-    title: 'Find banks near you',
-    text: 'Search FDIC-insured banks by ZIP code or browse by state.',
-  },
-  {
-    href: '/sba-form-413/',
-    title: 'SBA Form 413 guide',
-    text: 'What the SBA personal financial statement asks for, line by line.',
-  },
-  {
-    href: '/personal-financial-statement-example/',
-    title: 'PFS example',
-    text: 'A filled-in sample plus printable blank and example PDFs.',
-  },
-];
-
 const faq = [
   {
     q: 'What is a personal financial statement?',
@@ -170,13 +149,6 @@ const faq = [
   },
 ];
 
-const posts = (await getCollection('blog', ({ data }) => !data.draft))
-  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
-  .slice(0, 3);
-
-const fmtDate = (d: Date) =>
-  d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
-
 const jsonLd = [
   webAppLd({
     name: 'WorthSheet Personal Financial Statement Template',
@@ -190,33 +162,68 @@ const jsonLd = [
 ---
 
 <Base title={title} description={description} path="/" jsonLd={jsonLd}>
-  <!-- Hero -->
-  <section class="hero tone-paper" aria-labelledby="hero-title">
-    <div class="container hero-grid">
-      <div class="hero-copy">
-        <Eyebrow>Free template</Eyebrow>
-        <h1 id="hero-title">Free personal financial statement template</h1>
-        <ul class="list-check hero-points">
-          <li>Works in Google Sheets and Excel</li>
-          <li>Customizable spreadsheet</li>
-          <li>Bank-ready format</li>
-          <li>Wave goodbye to manual calculations</li>
-        </ul>
-        <div class="hero-actions">
-          <Button href="/download/" variant="primary" size="lg">Get the template for free</Button>
-          <Button href="#features" variant="secondary" size="lg">Learn more</Button>
-        </div>
-        <p class="small muted">{STATS.downloads} downloads · {STATS.assetCategories} asset and {STATS.liabilityCategories} liability categories built in</p>
+  <!-- Hero (Figma "Section" 1:1277): built by hand on the shared sheet classes for exact placement -->
+  <section class="sheet-section has-grid hero" style="--rows-above:2;--rows-below:2" aria-labelledby="hero-title">
+    <div class="sheet-frame">
+      <div class="sheet-glow" aria-hidden="true">
+        {
+          glow.map(([c, r, tone, a, end], i) => (
+            <i
+              class:list={[`tone-${tone}`, { below: r >= 26, twinkle: i % 3 === 1 }]}
+              style={`--c:${c};--r:${r >= 26 ? r - 26 : r};--a:${a}%;--dir:${end === 'l' ? '90deg' : '270deg'};--i:${i}`}
+            />
+          ))
+        }
       </div>
-      <div class="hero-art">
-        <HeroSheet />
+      <div class="sheet hero-sheet" data-sheet>
+        <div class="sheet-card">
+          <div class="hero-body" data-sheet-body>
+            <div class="hero-copy">
+              <p class="hero-proof">
+                <span class="proof-checks" aria-hidden="true"><i></i><i></i><i></i></span>
+                {STATS.downloads} downloads
+              </p>
+              <h1 id="hero-title" class="hero-title">
+                <span class="title-line"><span>Free personal financial</span></span>
+                <span class="title-line">
+                  <span class="title-row">
+                    statement
+                    <span class="title-pill">
+                      <svg class="title-icon" viewBox="0 0 48 48" aria-hidden="true">
+                        <rect x="15" y="6" width="29" height="36" rx="5" fill="#21a366"></rect>
+                        <path d="M30 6v36M15 18h29M15 30h29" stroke="#fff" stroke-opacity=".35" stroke-width="1.5"></path>
+                        <rect x="4" y="12" width="24" height="24" rx="5" fill="#107c41"></rect>
+                        <path d="M9.6 17.5h4.1l2.3 4 2.3-4h4.1l-4.3 6.5 4.4 6.5h-4.1l-2.4-4.1-2.4 4.1H9.5l4.4-6.5z" fill="#fff"></path>
+                      </svg>
+                      template
+                    </span>
+                  </span>
+                </span>
+              </h1>
+              <ul class="hero-points">
+                <li>Works in Google Sheets and Excel</li>
+                <li>Customizable spreadsheet</li>
+                <li>Bank-ready format</li>
+                <li>Wave goodbye to manual calculations</li>
+              </ul>
+              <div class="hero-actions">
+                <Button href="/download/" variant="primary">Get the template for free</Button>
+                <Button href="#features" variant="secondary">Learn more</Button>
+              </div>
+            </div>
+
+            <div class="hero-art">
+              <HeroSheet pills={false} />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
 
   <!-- Built based on -->
-  <section class="banks-strip tone-paper" aria-labelledby="banks-title">
-    <div class="container banks-row">
+  <Sheet id="banks" compact aria-labelledby="banks-title">
+    <div class="banks-row">
       <p id="banks-title" class="eyebrow">Built based on</p>
       <ul class="bank-logos">
         {
@@ -236,13 +243,13 @@ const jsonLd = [
       </ul>
       <p class="disclaimer">The template follows the structure of common bank personal financial statement forms. It is not affiliated with or endorsed by these banks.</p>
     </div>
-  </section>
+  </Sheet>
 
   <!-- Saves time -->
-  <Section id="features" tone="surface" aria-labelledby="saves-title">
+  <Sheet id="features" aria-labelledby="saves-title">
     <div class="split">
       <div class="stack split-copy" style="--stack-gap: 1.25rem">
-        <Eyebrow>WorthSheet™ saves time</Eyebrow>
+        <Eyebrow tone="green">WorthSheet™ saves time</Eyebrow>
         <h2 id="saves-title">Avoid manual calculations and messy bank personal financial statement forms</h2>
         <p class="lead">The WorthSheet™ template is built to be faster than filling out a blank bank personal financial statement by hand.</p>
         <ul class="list-check">
@@ -256,14 +263,14 @@ const jsonLd = [
       </div>
       <div class="split-art"><IsoTiles /></div>
     </div>
-  </Section>
+  </Sheet>
 
   <!-- Dynamic categories -->
-  <Section id="categories" tone="paper" aria-labelledby="categories-title">
+  <Sheet id="categories" tone="green" aria-labelledby="categories-title">
     <div class="split split-reverse">
       <div class="stack split-copy" style="--stack-gap: 1.25rem">
-        <Eyebrow>Dynamic categories</Eyebrow>
-        <h2 id="categories-title">Tailored to create a personal financial statement super-fast</h2>
+        <Eyebrow tone="green">Dynamic categories</Eyebrow>
+        <h2 id="categories-title">Tailored to create a personal financial statement <span class="accent">super-fast</span></h2>
         <p class="lead">A comprehensive list of categories modeled on common personal financial statement forms, with the flexibility to add your own.</p>
         <ul class="list-check">
           <li>{STATS.assetCategories} asset categories</li>
@@ -274,179 +281,119 @@ const jsonLd = [
           <Button href="/download/" variant="primary">Get the template for free</Button>
         </div>
       </div>
-      <div class="split-art"><CategoriesStack /></div>
+      <div class="split-art iso-panel art-plate"><CategoriesStack /></div>
     </div>
-  </Section>
+  </Sheet>
 
   <!-- How to use -->
-  <Section id="how-to-use" tone="surface" aria-labelledby="how-title">
-    <div class="section-head stack" style="--stack-gap: 1rem">
-      <Eyebrow>Getting started</Eyebrow>
-      <h2 id="how-title">How to use the WorthSheet™ personal financial statement template</h2>
+  <Sheet id="how-to-use" aria-labelledby="how-title">
+    <div class="sec-head stack" style="--stack-gap: 1rem">
+      <Eyebrow tone="blue">Getting started</Eyebrow>
+      <h2 id="how-title">How to use the WorthSheet™ <span class="accent accent-blue">personal financial statement template</span></h2>
       <p class="lead">Preparing a statement for a bank loan takes four steps, and the template does the arithmetic for you.</p>
     </div>
-    <div class="steps-art"><StepsFlow /></div>
     <ol class="steps">
       {
         steps.map((s, i) => (
-          <li class="card step">
-            <span class="step-num num" aria-hidden="true">{i + 1}</span>
-            <h3><span class="sr-only">Step {i + 1}: </span>{s.title}</h3>
+          <li class="step tile">
+            <StepTile step={(i + 1) as 1 | 2 | 3 | 4} />
+            <div class="step-head">
+              <span class="step-num num" aria-hidden="true">{i + 1}</span>
+              <h3><span class="sr-only">Step {i + 1}: </span>{s.title}</h3>
+            </div>
             <p class="muted">{s.text}</p>
             {s.cta && (
               <div class="step-cta">
-                <Button href="/download/" variant="secondary" size="sm">Download PFS template</Button>
+                <Button href="/download/" variant="secondary">Download PFS template</Button>
               </div>
             )}
           </li>
         ))
       }
     </ol>
-    <p class="steps-more muted">
-      Want to see a finished statement first? Browse the <a href={url('/personal-financial-statement-example/')}>personal financial statement example</a>.
-    </p>
-  </Section>
+  </Sheet>
 
   <!-- Safe and secure -->
-  <Section id="safe-and-secure" tone="paper" aria-labelledby="safe-title">
+  <Sheet id="safe-and-secure" aria-labelledby="safe-title">
     <div class="split split-safe">
       <div class="stack split-copy" style="--stack-gap: 1.25rem">
-        <Eyebrow>Why WorthSheet</Eyebrow>
-        <h2 id="safe-title">Safe and secure template</h2>
+        <Eyebrow tone="yellow">Why WorthSheet</Eyebrow>
+        <h2 id="safe-title">Safe and secure <span class="accent">template</span></h2>
         <p class="lead">Your copy lives in your own Google account or on your own computer, so you decide where your financial data is stored.</p>
       </div>
-      <div class="split-art split-art-small"><ShieldSecure /></div>
+      <div class="split-art split-art-small iso-panel art-plate"><ShieldSecure /></div>
     </div>
     <ul class="feature-grid">
       {
         securityCards.map((c) => (
-          <li class="card feature">
+          <li class="feature tile">
             <h3>{c.title}</h3>
             <p class="muted">{c.text}</p>
           </li>
         ))
       }
     </ul>
-  </Section>
+  </Sheet>
 
   <!-- Community / social proof -->
-  <Section id="community" tone="cream" aria-labelledby="community-title">
-    <div class="section-head stack" style="--stack-gap: 1rem">
-      <Eyebrow>Join our community</Eyebrow>
-      <h2 id="community-title">Over {STATS.downloads.replace('+', '')} downloads of WorthSheet personal financial statements</h2>
-      <p class="lead">Prepare, tailor and submit your personal financial statement for a bank loan, a mortgage or your advisor with one reusable template.</p>
-      <div>
+  <Sheet id="community" tone="blue" aria-labelledby="community-title">
+    <div class="community-top">
+      <div class="sec-head stack" style="--stack-gap: 1rem">
+        <Eyebrow tone="green">Join our community</Eyebrow>
+        <h2 id="community-title">Over {STATS.downloads.replace('+', '')} downloads <span class="accent">of WorthSheet personal financial statements</span></h2>
+        <p class="lead">Prepare, tailor and submit your personal financial statement for a bank loan, a mortgage or your advisor with one reusable template.</p>
+      </div>
+      <div class="community-cta">
         <Button href="/download/" variant="primary">Get the template for free</Button>
       </div>
     </div>
-    <div class="community-stats">
-      <StatRow
-        items={[
-          { value: STATS.downloads, label: 'Downloads of the PFS template' },
-          { value: STATS.assetCategories, label: 'Defined asset categories' },
-          { value: STATS.liabilityCategories, label: 'Defined liability categories' },
-        ]}
-      />
-    </div>
+    <dl class="stats">
+      <div class="tile">
+        <dt>Downloads of the PFS template</dt>
+        <dd class="num">{STATS.downloads}</dd>
+      </div>
+      <div class="tile">
+        <dt>Defined asset categories</dt>
+        <dd class="num">{STATS.assetCategories}</dd>
+      </div>
+      <div class="tile">
+        <dt>Defined liability categories</dt>
+        <dd class="num">{STATS.liabilityCategories}</dd>
+      </div>
+    </dl>
     <ul class="testimonials">
       {
         testimonials.map((t) => (
-          <li>
-            <figure class="card testimonial">
+          <li class="tile">
+            <figure class="testimonial">
               <blockquote>
                 <p>“{t.quote}”</p>
               </blockquote>
               <figcaption>
-                <strong>{t.name}</strong>
-                <span class="muted">{t.place}</span>
+                <span class="avatar" aria-hidden="true">{t.name.charAt(0)}</span>
+                <span class="who">
+                  <strong>{t.name}</strong>
+                  <span class="muted">{t.place}</span>
+                </span>
               </figcaption>
             </figure>
           </li>
         ))
       }
     </ul>
-  </Section>
-
-  <!-- Free tools -->
-  <Section id="free-tools" tone="paper" aria-labelledby="tools-title">
-    <div class="section-head stack" style="--stack-gap: 1rem">
-      <Eyebrow>Free tools</Eyebrow>
-      <h2 id="tools-title">Free calculators and guides for your loan application</h2>
-      <p class="lead">Check your numbers before you apply, then put them in a bank-ready statement.</p>
-    </div>
-    <ul class="grid grid-4 tools">
-      {
-        tools.map((t) => (
-          <li>
-            <a class="card tool" href={url(t.href)}>
-              <div class="tool-head">
-                <h3>{t.title}</h3>
-                <span class="tool-arrow" aria-hidden="true">→</span>
-              </div>
-              <p class="muted">{t.text}</p>
-            </a>
-          </li>
-        ))
-      }
-    </ul>
-    <p class="tools-note small muted">Calculators are estimates for educational purposes only and are not a loan offer or financial advice.</p>
-  </Section>
+  </Sheet>
 
   <!-- FAQ -->
-  <Section id="faq" tone="surface" aria-labelledby="faq-title">
+  <Sheet id="faq" aria-labelledby="faq-title">
     <div class="faq-wrap">
       <div class="stack faq-head" style="--stack-gap: 1rem">
-        <Eyebrow>Still have questions?</Eyebrow>
+        <Eyebrow tone="navy">Still have questions?</Eyebrow>
         <h2 id="faq-title">Frequently asked questions</h2>
         <p class="muted">Short answers about the template and the personal financial statement.</p>
       </div>
       <Faq items={faq} />
     </div>
-  </Section>
-
-  <!-- Latest guides -->
-  {
-    posts.length > 0 && (
-      <Section id="latest" tone="paper" aria-labelledby="latest-title">
-        <div class="latest-head">
-          <div class="stack" style="--stack-gap: 1rem">
-            <Eyebrow>From the blog</Eyebrow>
-            <h2 id="latest-title">Read our latest guides</h2>
-          </div>
-          <Button href="/blog/" variant="secondary">All guides</Button>
-        </div>
-        <ul class="grid grid-3 posts">
-          {posts.map((p) => (
-            <li>
-              <a class="card post" href={url(`/${p.id}/`)}>
-                {p.data.heroImage ? (
-                  <Image
-                    class="post-img"
-                    src={p.data.heroImage}
-                    alt={p.data.heroAlt ?? ''}
-                    width={640}
-                    height={400}
-                    widths={[320, 480, 640]}
-                    sizes="(min-width: 960px) 360px, (min-width: 640px) 45vw, 92vw"
-                    loading="lazy"
-                  />
-                ) : (
-                  <div class="post-img post-img-empty" aria-hidden="true" />
-                )}
-                <div class="post-body">
-                  <time class="small muted" datetime={p.data.pubDate.toISOString()}>
-                    {fmtDate(p.data.pubDate)}
-                  </time>
-                  <h3>{p.data.title}</h3>
-                  <span class="post-more">Read more »</span>
-                </div>
-              </a>
-            </li>
-          ))}
-        </ul>
-      </Section>
-    )
-  }
+  </Sheet>
 
   <CtaBand
     title="Download the personal financial statement template for free"
@@ -457,38 +404,121 @@ const jsonLd = [
 </Base>
 
 <style>
+  /* Grid, sheets, cards and highlighted cells come from global.css (.sheet-*) and Sheet.astro.
+     Every section below the hero is a <Sheet>; this file only lays out what sits inside them. */
+
   /* ---------- Shared bits ---------- */
-  .section-head {
+  .sec-head {
     max-width: 44rem;
-    margin-bottom: clamp(32px, 5vw, 56px);
+    margin-bottom: clamp(32px, 4.5vw, 56px);
   }
 
-  #features,
-  #how-to-use {
+  :global(#features),
+  :global(#how-to-use) {
     scroll-margin-top: 72px;
   }
 
-  /* ---------- Hero ---------- */
-  .hero {
-    padding-block: clamp(40px, 7vw, 96px) clamp(32px, 5vw, 64px);
-    overflow: hidden;
-  }
-
-  .hero-grid {
-    display: grid;
-    gap: clamp(32px, 5vw, 64px);
-    align-items: center;
-  }
-
+  /* ---------- Hero (Figma "Section" 1:1277) ----------
+     Sheet 1200 x 676 (26 rows) inside two rows of cells above and below; the card is inset 7px
+     (shared .sheet), white with the #e8e7e5 hairline and 24px radius. */
   .hero-copy {
+    position: relative;
+    z-index: 2;
     display: flex;
     flex-direction: column;
-    gap: 24px;
     align-items: flex-start;
+    gap: 24px;
+    padding: 35px clamp(20px, 2.8vw, 39px) 0;
+  }
+
+  .hero-proof {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1rem;
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+    color: var(--muted);
+  }
+
+  .proof-checks {
+    display: flex;
+    gap: 4px;
+  }
+
+  .proof-checks i {
+    position: relative;
+    display: block;
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    background: var(--sheen), var(--green);
+  }
+
+  .proof-checks i:nth-child(2) {
+    background: var(--sheen), var(--yellow);
+  }
+
+  .proof-checks i:nth-child(3) {
+    background: var(--sheen), var(--blue);
+  }
+
+  .proof-checks i::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--icon-check) center / 60% no-repeat;
+  }
+
+  /* Pill sizes are in em so they track the fluid h1 (Figma at 64.8px: 48px icon, 12px gap). */
+  .hero-title {
+    max-width: 650px;
+    animation: none;
+  }
+
+  .title-line {
+    display: block;
+    overflow: hidden;
+    padding-bottom: 0.1em;
+    margin-bottom: -0.1em;
+  }
+
+  .title-line > span {
+    display: block;
+  }
+
+  .title-line > .title-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 0.06em 0.185em;
+  }
+
+  .title-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.105em;
+    padding: 0 0.185em 0 0.123em;
+    border: 1px solid var(--line-strong);
+    border-radius: 0.37em;
+    background: var(--white);
+    color: var(--green);
+  }
+
+  /* Excel-style mark: a green "X" tile over a sheet. */
+  .title-icon {
+    flex: none;
+    width: 0.74em;
+    height: 0.74em;
   }
 
   .hero-points {
-    gap: 10px;
+    list-style: none;
+    display: grid;
+    gap: 6px;
+    font-size: 1rem;
+    line-height: 1.6;
+    letter-spacing: -0.02em;
   }
 
   .hero-actions {
@@ -497,30 +527,108 @@ const jsonLd = [
     gap: 12px;
   }
 
+  /* Small screens: the illustration flows under the copy and bleeds off the card. */
   .hero-art {
-    max-width: 640px;
-    width: 100%;
-    margin-inline: auto;
+    position: relative;
+    width: 124%;
+    margin: 8px -12% -18%;
   }
 
   @media (min-width: 960px) {
-    .hero-grid {
-      grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+    .hero-sheet {
+      --sheet-min: calc(var(--cell-h) * 26);
+    }
+
+    /* Figma: art container at (459.42, 232.42) in the 1185px card; the svg fits its 549px-tall
+       frame, so it renders 824px wide, 6.9px in. Positioned against the card. */
+    .hero-art {
+      position: absolute;
+      top: 232px;
+      left: 39.32%;
+      width: 69.5%;
+      margin: 0;
+    }
+  }
+
+  /* Entrance, 100ms apart (better-ui staged entrance): proof row, title, points, actions + art,
+     then the highlighted cells settle in around the sheet. Fades run for everyone; rise, blur,
+     scale and the title mask only without reduced motion. The h1 text is never transparent. */
+  @keyframes title-rise {
+    from {
+      translate: 0 105%;
+    }
+  }
+
+  @keyframes cell-twinkle {
+    50% {
+      opacity: 0.45;
+    }
+  }
+
+  .hero-proof {
+    animation: ws-fade var(--enter-ms) var(--ease-out) backwards;
+  }
+
+  .hero .sheet-glow i {
+    animation: ws-fade 600ms var(--ease-out) backwards;
+    animation-delay: calc(500ms + var(--i) * 25ms);
+  }
+
+  /* Checks and the Excel mark appear like contextual icons: scale 0.25 -> 1, opacity, 4px blur. */
+  .proof-checks i::after,
+  .title-icon {
+    animation: ws-fade var(--enter-ms) var(--ease-icon) backwards;
+  }
+
+  .proof-checks i:nth-child(1)::after {
+    animation-delay: 150ms;
+  }
+
+  .proof-checks i:nth-child(2)::after {
+    animation-delay: 250ms;
+  }
+
+  .proof-checks i:nth-child(3)::after {
+    animation-delay: 350ms;
+  }
+
+  .title-icon {
+    animation-delay: 450ms;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .hero-proof {
+      animation-name: ws-rise;
+    }
+
+    .proof-checks i::after,
+    .title-icon {
+      animation-name: ws-icon-in;
+    }
+
+    /* Display headline: each line rises out of its own mask, 80ms apart. */
+    .title-line > span {
+      animation: title-rise 500ms var(--ease-out) 100ms backwards;
+    }
+
+    .title-line + .title-line > span {
+      animation-delay: 180ms;
+    }
+
+    /* A third of the hero's cells slowly breathe, like a sheet recalculating in the background. */
+    .hero .sheet-glow i.twinkle {
+      animation:
+        ws-fade 600ms var(--ease-out) calc(500ms + var(--i) * 25ms) backwards,
+        cell-twinkle calc(7s + var(--i) * 97ms) var(--ease-soft) calc(1.2s + var(--i) * 0.31s) infinite;
     }
   }
 
   /* ---------- Banks strip ---------- */
-  .banks-strip {
-    padding-block: 0 clamp(40px, 6vw, 72px);
-  }
-
   .banks-row {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 20px;
-    padding-block: 32px;
-    border-block: 1px solid var(--line);
     text-align: center;
   }
 
@@ -538,10 +646,10 @@ const jsonLd = [
     width: auto;
     opacity: 0.6;
     filter: grayscale(1);
-    transition: opacity 250ms cubic-bezier(0.23, 1, 0.32, 1);
+    transition: opacity 150ms var(--ease-out);
   }
 
-  @media (hover: hover) and (pointer: fine) {
+  @media (hover: hover) {
     .bank-logos :global(img:hover) {
       opacity: 1;
     }
@@ -550,7 +658,6 @@ const jsonLd = [
   .banks-row .disclaimer {
     max-width: 36em;
     margin-inline: auto;
-    text-align: center;
   }
 
   /* ---------- Split sections ---------- */
@@ -567,7 +674,6 @@ const jsonLd = [
   }
 
   .split-art-small {
-    width: 100%;
     max-width: 560px;
   }
 
@@ -584,32 +690,23 @@ const jsonLd = [
       margin-inline: 0;
     }
 
-    .split-reverse .split-art {
-      margin-inline: 0 auto;
-    }
-  }
-
-  @media (min-width: 900px) {
     .split-safe {
       grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
     }
   }
 
-  /* ---------- Steps ---------- */
-  .steps-art {
-    margin-bottom: clamp(24px, 4vw, 48px);
-  }
-
+  /* ---------- Steps: a tile above each step, joined by a dashed line in the 4-up layout ---------- */
   .steps {
     list-style: none;
     display: grid;
-    gap: clamp(16px, 2.4vw, 24px);
     grid-template-columns: 1fr;
+    gap: 40px;
   }
 
   @media (min-width: 640px) {
     .steps {
       grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 48px 40px;
     }
   }
 
@@ -620,21 +717,62 @@ const jsonLd = [
   }
 
   .step {
+    position: relative;
     display: flex;
     flex-direction: column;
     gap: 12px;
-    padding-inline: clamp(16px, 1.6vw, 22px);
   }
 
+  /* Pull the tile up and left so its pad lines up optically with the text below. */
+  .step :global(.step-tile) {
+    margin: -8px 0 4px -8px;
+  }
+
+  /* Connector from this tile's pad (centre 52px down, right edge ~104px in) to the next one. */
+  @media (min-width: 1100px) {
+    .step:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      top: 51px;
+      left: 112px;
+      right: -32px;
+      height: 2px;
+      background: linear-gradient(to right, rgba(12, 38, 53, 0.22) 50%, transparent 0) 0 0 / 8px 2px repeat-x;
+    }
+  }
+
+  .step-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  /* Step numbers: rounded squares in the same colours as their tiles. */
   .step-num {
     display: grid;
     place-items: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: var(--ink);
-    color: var(--white);
+    flex: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    background: var(--sheen), var(--blue);
+    color: var(--ink);
     font-weight: 600;
+  }
+
+  .step:nth-child(2) .step-num {
+    background: var(--sheen), var(--green);
+    color: var(--white);
+  }
+
+  .step:nth-child(3) .step-num {
+    background: var(--sheen), var(--yellow);
+    color: var(--ink);
+  }
+
+  .step:nth-child(4) .step-num {
+    background: var(--sheen), var(--navy);
+    color: var(--white);
   }
 
   .step h3 {
@@ -646,36 +784,35 @@ const jsonLd = [
     padding-top: 8px;
   }
 
-  .steps-more {
-    margin-top: 28px;
-    text-align: center;
+  /* The only motion here: the hovered step's tile lifts off its pad (200ms, interruptible). */
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .step :global(.lift) {
+      transition: translate 200ms var(--ease-out);
+    }
+
+    .step :global(.shadow) {
+      transition-property: scale, opacity;
+      transition-duration: 200ms;
+      transition-timing-function: var(--ease-out);
+    }
+
+    .step:hover :global(.lift) {
+      translate: 0 -6px;
+    }
+
+    .step:hover :global(.shadow) {
+      scale: 0.9;
+      opacity: 0.7;
+    }
   }
 
-  .steps > li {
-    transition:
-      opacity 500ms ease-out,
-      filter 500ms ease-out,
-      transform 500ms ease-out;
-  }
-
-  html.js .steps.is-sequencing > li:not(.is-active) {
-    opacity: 0.55;
-    filter: grayscale(0.6);
-  }
-
-  html.js .steps.is-sequencing > li.is-active {
-    opacity: 1;
-    filter: none;
-    transform: translateY(-2px);
-  }
-
-  /* ---------- Safe and secure ---------- */
+  /* ---------- Safe and secure: tinted bento tiles ---------- */
   .feature-grid {
     list-style: none;
     display: grid;
-    gap: clamp(16px, 2.4vw, 24px);
+    gap: 12px;
     grid-template-columns: 1fr;
-    margin-top: clamp(32px, 5vw, 56px);
+    margin-top: clamp(32px, 4.5vw, 56px);
   }
 
   @media (min-width: 640px) {
@@ -705,9 +842,26 @@ const jsonLd = [
   }
 
   .feature {
+    --tile-a: #edf7fc;
+    --tile-b: #dcf0f9;
     display: flex;
     flex-direction: column;
     gap: 10px;
+    min-height: 148px;
+    padding: 22px 24px;
+    border-radius: 16px;
+    background-image: var(--grain), linear-gradient(160deg, var(--tile-a), var(--tile-b));
+  }
+
+  .feature:nth-child(2),
+  .feature:nth-child(4) {
+    --tile-a: #ecfbf1;
+    --tile-b: #dbf2e3;
+  }
+
+  .feature:nth-child(3) {
+    --tile-a: #fcf8ef;
+    --tile-b: #f6edd8;
   }
 
   .feature h3 {
@@ -715,14 +869,77 @@ const jsonLd = [
   }
 
   /* ---------- Community ---------- */
-  .community-stats {
-    margin-bottom: clamp(40px, 5vw, 64px);
+  .community-top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px 48px;
+    margin-bottom: clamp(32px, 4.5vw, 56px);
+  }
+
+  .community-top .sec-head {
+    margin-bottom: 0;
+  }
+
+  .community-cta {
+    flex: none;
+  }
+
+  /* Stats read as one spreadsheet row: three cells between hairlines. */
+  .stats {
+    display: grid;
+    grid-template-columns: 1fr;
+    margin: 0 0 clamp(32px, 4.5vw, 56px);
+    border-block: 1px solid rgba(12, 38, 53, 0.12);
+  }
+
+  .stats > div {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 6px;
+    padding: 20px 0;
+  }
+
+  .stats > div + div {
+    border-top: 1px solid rgba(12, 38, 53, 0.12);
+  }
+
+  @media (min-width: 720px) {
+    .stats {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .stats > div {
+      padding: 24px 28px;
+    }
+
+    .stats > div:first-child {
+      padding-left: 0;
+    }
+
+    .stats > div + div {
+      border-top: 0;
+      border-left: 1px solid rgba(12, 38, 53, 0.12);
+    }
+  }
+
+  .stats dd {
+    margin: 0;
+    font-size: clamp(2.25rem, 4.6vw, 3.5rem);
+    font-weight: 560;
+    letter-spacing: -0.035em;
+    line-height: 1;
+  }
+
+  .stats dt {
+    color: var(--muted);
   }
 
   .testimonials {
     list-style: none;
     display: grid;
-    gap: clamp(16px, 2.4vw, 24px);
+    gap: 12px;
     grid-template-columns: 1fr;
   }
 
@@ -737,65 +954,54 @@ const jsonLd = [
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    gap: 24px;
+    gap: 28px;
+    padding: 24px;
+    border: 1px solid transparent;
+    border-radius: 16px;
+    background: var(--white);
+    box-shadow: var(--shadow-border);
   }
 
   .testimonial blockquote p {
     font-size: 1.1875rem;
     line-height: 1.45;
     letter-spacing: -0.01em;
-    text-wrap: pretty;
   }
 
   .testimonial figcaption {
     display: flex;
-    flex-direction: column;
-    gap: 2px;
+    align-items: center;
+    gap: 12px;
     font-size: 0.9375rem;
   }
 
-  /* ---------- Tools ---------- */
-  .tools {
-    list-style: none;
-    gap: 20px;
+  /* Initials in a logo-coloured rounded square. */
+  .avatar {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: var(--sheen), var(--green);
+    color: var(--white);
+    font-weight: 600;
   }
 
-  .tool {
-    height: 100%;
+  .testimonials li:nth-child(2) .avatar {
+    background: var(--sheen), var(--yellow);
+    color: var(--ink);
+  }
+
+  .testimonials li:nth-child(3) .avatar {
+    background: var(--sheen), var(--blue);
+    color: var(--ink);
+  }
+
+  .who {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-  }
-
-  .tool-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-  }
-
-  .tool h3 {
-    font-size: 1.1875rem;
-  }
-
-  .tool p {
-    font-size: 0.9688rem;
-  }
-
-  .tool-arrow {
-    flex: none;
-    font-size: 1.25rem;
-    transition: transform 0.25s cubic-bezier(0.23, 1, 0.32, 1);
-  }
-
-  @media (hover: hover) and (pointer: fine) {
-    .tool:hover .tool-arrow {
-      transform: translateX(4px);
-    }
-  }
-
-  .tools-note {
-    margin-top: 24px;
+    gap: 2px;
   }
 
   /* ---------- FAQ ---------- */
@@ -815,105 +1021,4 @@ const jsonLd = [
       top: 96px;
     }
   }
-
-  /* ---------- Latest posts ---------- */
-  .latest-head {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 16px;
-    margin-bottom: clamp(28px, 4vw, 48px);
-  }
-
-  .posts {
-    list-style: none;
-  }
-
-  .post {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    padding: 0;
-    overflow: hidden;
-  }
-
-  .post :global(.post-img) {
-    width: 100%;
-    aspect-ratio: 8 / 5;
-    object-fit: cover;
-    display: block;
-    background: var(--tint-blue);
-  }
-
-  .post-img-empty {
-    width: 100%;
-    aspect-ratio: 8 / 5;
-    background: var(--tint-blue);
-  }
-
-  .post-body {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    flex: 1;
-    padding: clamp(18px, 2.4vw, 26px);
-  }
-
-  .post h3 {
-    font-size: 1.25rem;
-    text-wrap: balance;
-  }
-
-  .post-more {
-    margin-top: auto;
-    padding-top: 8px;
-    font-weight: 560;
-  }
 </style>
-
-<script>
-  const section = document.getElementById('how-to-use');
-  const list = section?.querySelector<HTMLOListElement>('.steps') ?? null;
-  const art = section?.querySelector<SVGSVGElement>('.steps-art svg.wsi') ?? null;
-  const items = list
-    ? Array.from(list.children).filter((el): el is HTMLElement => el instanceof HTMLElement)
-    : [];
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  if (list && art && items.length > 1 && !reduceMotion && 'IntersectionObserver' in window) {
-    const STEP_MS = 2400;
-    let index = 0;
-    let timer: number | undefined;
-
-    const render = (i: number) => {
-      items.forEach((item, j) => item.classList.toggle('is-active', j === i));
-      art.setAttribute('data-active', String(i + 1));
-    };
-
-    const start = () => {
-      if (timer === undefined) {
-        timer = window.setInterval(() => {
-          index = (index + 1) % items.length;
-          render(index);
-        }, STEP_MS);
-      }
-    };
-
-    const stop = () => {
-      if (timer !== undefined) {
-        window.clearInterval(timer);
-        timer = undefined;
-      }
-    };
-
-    list.classList.add('is-sequencing');
-    render(index);
-
-    new IntersectionObserver((entries) => {
-      const [entry] = entries;
-      if (entry?.isIntersecting) start();
-      else stop();
-    }, { threshold: 0.4 }).observe(list);
-  }
-</script>

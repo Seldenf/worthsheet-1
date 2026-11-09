@@ -47,8 +47,10 @@ const { class: className } = Astro.props;
     text-decoration-thickness: 1.5px;
   }
 
-  .prose a:hover {
-    text-decoration-color: var(--ink);
+  @media (hover: hover) {
+    .prose a:hover {
+      text-decoration-color: var(--ink);
+    }
   }
 
   .prose ul,

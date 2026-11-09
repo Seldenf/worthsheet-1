@@ -60,11 +60,10 @@ const { items, class: className } = Astro.props;
 
   summary svg {
     flex: none;
-    transition: transform 0.2s ease;
   }
 
   details[open] > summary svg {
-    transform: rotate(180deg);
+    rotate: 180deg;
   }
 
   .faq-item p {

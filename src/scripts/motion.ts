@@ -1,7 +1,10 @@
 const SELECTOR = [
+  'main section .eyebrow',
   'main section h2',
+  'main section ul.list-check',
   'main section .lead',
   'main .card',
+  'main .tile',
   'main .grid > *',
   'main section svg[class*="wsi-"]',
   'main .table-wrap',
@@ -18,8 +21,61 @@ const inView = (el: Element) => {
   return r.top < innerHeight * 0.9 && r.bottom > 0;
 };
 
+// ---- Masked line reveal for section headings ----
+// A heading is split into one masked block per rendered line while it waits to be revealed;
+// the original markup is restored once the last line has landed, so later resizes reflow normally.
+const original = new WeakMap<HTMLElement, string>();
+
+function splitLines(el: HTMLElement): boolean {
+  // Only plain text with optional one-level inline wrappers (e.g. <span class="accent">).
+  const parts: { word: string; tag?: string; cls?: string }[] = [];
+  for (const node of Array.from(el.childNodes)) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      for (const w of (node.textContent ?? '').split(/\s+/)) if (w) parts.push({ word: w });
+    } else if (node instanceof HTMLElement && node.children.length === 0) {
+      for (const w of node.textContent!.split(/\s+/))
+        if (w) parts.push({ word: w, tag: node.tagName.toLowerCase(), cls: node.className });
+    } else {
+      return false;
+    }
+  }
+  if (parts.length < 2) return false;
+
+  const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  const html = (p: (typeof parts)[number]) =>
+    p.tag ? `<${p.tag} class="${esc(p.cls ?? '')}">${esc(p.word)}</${p.tag}>` : esc(p.word);
+
+  original.set(el, el.innerHTML);
+  el.innerHTML = parts.map((p) => `<span class="ws-w">${html(p)}</span>`).join(' ');
+  const lines: string[][] = [];
+  let top = NaN;
+  el.querySelectorAll<HTMLElement>('.ws-w').forEach((w, i) => {
+    if (w.offsetTop !== top) {
+      top = w.offsetTop;
+      lines.push([]);
+    }
+    lines[lines.length - 1].push(html(parts[i]));
+  });
+  el.innerHTML = lines
+    .map((l, i) => `<span class="ws-line" style="--line-i:${i}"><span>${l.join(' ')}</span></span>`)
+    .join('');
+  return true;
+}
+
+function restoreLines(el: HTMLElement) {
+  const inner = el.querySelectorAll<HTMLElement>('.ws-line > span');
+  const last = inner[inner.length - 1];
+  const done = () => {
+    el.innerHTML = original.get(el) ?? el.innerHTML;
+    el.removeAttribute('data-reveal');
+  };
+  if (!last) return done();
+  last.addEventListener('transitionend', (e) => e.target === last && done());
+}
+
 function show(el: HTMLElement, attr: string) {
   el.classList.add('is-in');
+  if (el.dataset.reveal === 'lines') return restoreLines(el);
   el.addEventListener('transitionend', () => el.removeAttribute(attr), { once: true });
 }
 
@@ -61,13 +117,19 @@ function reveal(root: HTMLElement) {
   }
 
   for (const el of children) {
-    el.setAttribute('data-reveal', '');
-    const parent = el.parentElement;
-    if (parent?.classList.contains('grid')) {
-      el.style.setProperty('--reveal-i', String(Math.min(Array.from(parent.children).indexOf(el), 6)));
-    }
+    el.setAttribute('data-reveal', el.tagName === 'H2' && splitLines(el) ? 'lines' : '');
     // Children of a hidden section are revealed together with that section.
     if (!el.closest('[data-section-reveal]')) childIO.observe(el);
+  }
+
+  // Stagger: each chunk enters 100ms after the previous one in document order within its
+  // section (eyebrow, heading, lead, list, art, cards), capped so long grids never drag.
+  const order = new Map<Element, number>();
+  for (const el of children) {
+    const group = el.closest('section') ?? root;
+    const i = order.get(group) ?? 0;
+    el.style.setProperty('--reveal-i', String(Math.min(i, 6)));
+    order.set(group, i + 1);
   }
 }
 

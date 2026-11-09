@@ -1,8 +1,12 @@
 ---
 interface Props {
   class?: string;
+  /** Render with a leading rounded square in this logo colour (home page sections). */
+  tone?: 'green' | 'blue' | 'yellow' | 'navy';
 }
-const { class: className } = Astro.props;
+const { class: className, tone } = Astro.props;
 ---
 
-<p class:list={['eyebrow', className]}><slot /></p>
+<p class:list={['eyebrow', tone && ['eyebrow-chip', tone !== 'green' && `chip-${tone}`], className]}>
+  <slot />
+</p>

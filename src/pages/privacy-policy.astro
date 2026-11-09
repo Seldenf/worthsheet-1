@@ -27,7 +27,7 @@ const mailto = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('WorthSheet
       <Prose>
         <p>
           WorthSheet (“we”, “us”) runs worthsheet.com, a website with a free personal financial
-          statement template, calculators, guides and a bank finder. This policy explains what
+          statement template. This policy explains what
           personal data the site handles, why, who else receives it, and the choices you have. We
           keep it short because we collect very little.
         </p>
@@ -80,19 +80,12 @@ const mailto = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('WorthSheet
                 <td>To remember your choice.</td>
                 <td>Your browser only (see “Cookies and local storage”).</td>
               </tr>
-              <tr>
-                <th scope="row">ZIP code for bank search</th>
-                <td>You search for banks by ZIP code on <a href={url('/banks/')}>/banks/</a>.</td>
-                <td>To look up FDIC-insured institutions near you.</td>
-                <td>The FDIC, directly from your browser (see below).</td>
-              </tr>
             </tbody>
           </table>
         </div>
         <p>
           We do not ask for financial account numbers, Social Security numbers or the figures you
-          put into the template. The calculators on this site run in your browser; the numbers you
-          type into them are not sent to us.
+          put into the template.
         </p>
 
         <h2>The template form</h2>
@@ -152,16 +145,6 @@ const mailto = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('WorthSheet
           includes the purpose you selected (never your name, email or ZIP code), and a “template
           opened” event that records whether you chose Google Sheets or Excel. Google acts as our
           analytics provider; see <a href="https://support.google.com/analytics/answer/6004245" rel="noopener">how Google safeguards Google Analytics data</a>.
-        </p>
-
-        <h2>Bank search and the FDIC</h2>
-        <p>
-          When you search for banks by ZIP code, your browser sends the ZIP code you enter directly
-          to the Federal Deposit Insurance Corporation’s BankFind API, and the FDIC returns the
-          matching institutions. We do not receive or store that ZIP code. The FDIC receives it,
-          along with your IP address, as part of the request, and handles it under its own
-          <a href="https://www.fdic.gov/privacy" rel="noopener">privacy policy</a>. Nothing is sent to the FDIC
-          until you run a search.
         </p>
 
         <h2>Hosting</h2>
@@ -237,8 +220,8 @@ const mailto = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('WorthSheet
 
         <h2>Links to other sites</h2>
         <p>
-          Our guides link to government and other third-party sites, such as the SBA, CFPB and
-          FDIC. Those sites have their own privacy practices that we do not control.
+          The site links to third-party services, such as Google Sheets. Those services have their
+          own privacy practices that we do not control.
         </p>
 
         <h2>Changes to this policy</h2>
