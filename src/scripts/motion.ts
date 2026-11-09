@@ -680,9 +680,10 @@ function breathe(root: HTMLElement) {
 // starts a slide: a gradient of its colour fades in at one side, intensifies and travels across the cell until
 // it has left on the other side (5-7s, motion.css keyframes). When the animation ends the cell goes quiet and
 // another one starts. At most DRIFT_LIT slides run per sheet; a sheet only starts new ones while on screen.
-// Cells are held invisible (CSS) until the load sequence is over (html.intro-done); the first one lights right
-// after it, then one every 0.6-1.3s, so each sheet fills up gradually towards DRIFT_LIT.
+// At load a few cells (DRIFT_SEED) are already mid-slide, so the grid arrives with colour in it; after the
+// card intro (html.intro-done) the pool carries on from them, one new slide every 0.6-1.3s, up to DRIFT_LIT.
 const DRIFT_LIT = 7;
+const DRIFT_SEED = 3;
 
 // One pool per .sheet-glow (page grid behind a sheet, or a grid inside a card): each runs its own DRIFT_LIT budget.
 function drift(glow: HTMLElement, ready: Promise<void>) {
@@ -699,13 +700,22 @@ function drift(glow: HTMLElement, ready: Promise<void>) {
     });
   }
 
-  const start = () => {
+  const start = (progress = 0) => {
     if (cells.filter(lit).length >= DRIFT_LIT) return;
     const c = pick(cells.filter((x) => !lit(x)));
-    c.style.setProperty('--slide-ms', `${between(5000, 7000).toFixed(0)}ms`);
+    const ms = between(5000, 7000);
+    c.style.setProperty('--slide-ms', `${ms.toFixed(0)}ms`);
+    // A negative delay starts the slide part-way through (still inside its fade-in), i.e. already moving.
+    c.style.animationDelay = progress ? `${(-progress * ms).toFixed(0)}ms` : '';
     c.classList.toggle('is-rtl', Math.random() < 0.5);
     c.classList.add('is-lit');
   };
+
+  // Seed only pools visible at load (the hero); others start fresh when scrolled to.
+  const r = glow.getBoundingClientRect();
+  if (r.top < innerHeight && r.bottom > 0) {
+    for (let i = 0; i < DRIFT_SEED; i++) start(between(0.06, 0.14));
+  }
 
   let timer = 0;
   const tick = () => {

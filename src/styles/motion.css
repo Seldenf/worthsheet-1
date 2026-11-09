@@ -109,7 +109,8 @@ html.js [data-reveal='lines'] {
    t=150ms  the card (.sheet) fades and settles in (450ms).
    t=400ms  --intro-inner: the content inside the card starts (eyebrow, h1, pill, lead, list, buttons,
             illustration); every entrance delay below and in index.astro adds var(--intro-inner, 0ms).
-   t=1400ms motion.ts adds html.intro-done: the cells may light up, one at a time (drift()).
+   t=0      drift() seeds a few hero cells already mid-slide (their slide animation overrides the hold below);
+   t=1400ms motion.ts adds html.intro-done: the pool carries on from them, one new slide at a time (drift()).
    Everything is pure CSS animation with `backwards` fill from the first style recalc, so nothing paints early. */
 @keyframes ws-card-in {
   from {
@@ -131,7 +132,7 @@ html.js [data-reveal='lines'] {
     animation: ws-card-in 450ms var(--ease-out) 150ms backwards;
   }
 
-  /* Highlighted cells stay invisible until the intro is over. Cells that never drift (small pools) fade in then. */
+  /* Static (not sliding) cells stay invisible until the intro is over; small pools that never drift fade in then. */
   html.js:not(.intro-done) .sheet-glow i {
     opacity: 0;
   }
