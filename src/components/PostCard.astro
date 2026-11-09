@@ -1,6 +1,5 @@
 ---
 import type { CollectionEntry } from 'astro:content';
-import { Image } from 'astro:assets';
 import PostCover from './PostCover.astro';
 import { url } from '../lib/url';
 
@@ -13,7 +12,7 @@ interface Props {
 }
 
 const { post, level = 3, eager = false } = Astro.props;
-const { title, description, pubDate, heroImage, heroAlt, cover } = post.data;
+const { title, description, pubDate, cover } = post.data;
 const Heading = `h${level}` as 'h2' | 'h3';
 const date = pubDate.toLocaleDateString('en-US', {
   year: 'numeric',
@@ -42,29 +41,13 @@ const COVER_EDGE: Record<Cover, string | undefined> = {
   ReadinessGauge: GREEN,
   CtaTiles: undefined,
 };
-// Heroed posts show a photo, so no cover tint and no edge override.
-const edge = heroImage ? undefined : COVER_EDGE[cover ?? 'DocumentStack'];
+const edge = COVER_EDGE[cover ?? 'DocumentStack'];
 ---
 
 <article class="post-card card" style={edge ? `--edge: ${edge}` : undefined}>
   <a class="post-card-link" href={url(`/${post.id}/`)}>
     <div class="post-card-media">
-      {
-        heroImage ? (
-          <Image
-            src={heroImage}
-            alt={heroAlt ?? ''}
-            width={640}
-            height={400}
-            widths={[320, 480, 640]}
-            sizes="(min-width: 960px) 360px, (min-width: 640px) 45vw, 100vw"
-            loading={eager ? 'eager' : 'lazy'}
-            decoding="async"
-          />
-        ) : (
-          <PostCover cover={cover} />
-        )
-      }
+      <PostCover cover={cover} />
     </div>
     <div class="post-card-body">
       <Heading class="post-card-title">{title}</Heading>

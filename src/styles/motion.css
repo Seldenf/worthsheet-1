@@ -211,7 +211,7 @@ details[open]::details-content {
    generated grid), --mx/--my (the lagging mask centre) and .sheet-on while the pointer is over it. --ex/--ey go on
    edge-light hosts. Only small floating elements marked .wsi-pt move; the svg itself never transforms. */
 @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
-  svg.wsi .wsi-pt {
+  svg.wsi:not([data-no-push]) .wsi-pt {
     transform: translate(var(--rx, 0px), var(--ry, 0px)) rotate(var(--rr, 0deg)) scale(var(--rs, 1));
     transform-box: fill-box;
     transform-origin: center;

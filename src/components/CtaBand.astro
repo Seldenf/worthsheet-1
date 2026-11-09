@@ -20,6 +20,10 @@ const {
 } = Astro.props;
 
 const ticks = ['Free forever', 'Google Sheets & Excel', '9,000+ downloads'];
+
+// The word "template" renders as the hero H1's pill (spreadsheet mark + word).
+const match = title.match(/^(.*?)\btemplate\b(.*)$/s);
+const [before, after] = match ? [match[1], match[2]] : [title, ''];
 ---
 
 <Sheet
@@ -31,7 +35,30 @@ const ticks = ['Free forever', 'Google Sheets & Excel', '9,000+ downloads'];
   aria-labelledby="cta-band-title"
 >
   <div class="cta-band">
-    <h2 id="cta-band-title">{title}</h2>
+    <h2 id="cta-band-title">
+      {before}
+      {
+        match && (
+          <span class="title-pill">
+            <span class="title-icons" aria-hidden="true">
+              <svg class="title-icon title-icon-excel" viewBox="0 0 48 48">
+                <rect x="15" y="6" width="29" height="36" rx="5" fill="#21a366" />
+                <path d="M30 6v36M15 18h29M15 30h29" stroke="#fff" stroke-opacity=".35" stroke-width="1.5" />
+                <rect x="4" y="12" width="24" height="24" rx="5" fill="#107c41" />
+                <path d="M9.6 17.5h4.1l2.3 4 2.3-4h4.1l-4.3 6.5 4.4 6.5h-4.1l-2.4-4.1-2.4 4.1H9.5l4.4-6.5z" fill="#fff" />
+              </svg>
+              <svg class="title-icon title-icon-sheets" viewBox="0 0 48 48">
+                <path d="M12 3h18l10 10v28a4 4 0 0 1-4 4H12a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4z" fill="#0f9d58" />
+                <path d="M30 3v6a4 4 0 0 0 4 4h6z" fill="#87ceac" />
+                <path d="M15 22h18v16H15zM15 27.3h18M15 32.7h18M24 22v16" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round" />
+              </svg>
+            </span>
+            template
+          </span>
+        )
+      }
+      {after}
+    </h2>
     <p class="cta-band-text">{text}</p>
     <div class="cta-band-actions">
       <Button href="/download/" variant="secondary" size="lg" class="cta-band-btn">Get the free template</Button>
@@ -39,19 +66,7 @@ const ticks = ['Free forever', 'Google Sheets & Excel', '9,000+ downloads'];
     <ul class="cta-band-ticks">
       {
         ticks.map((t) => (
-          <li>
-            <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false">
-              <circle cx="8" cy="8" r="8" fill="#40aa4a"></circle>
-              <path
-                d="M4.6 8.3l2.2 2.2 4.6-4.9"
-                fill="none"
-                stroke="#fff"
-                stroke-width="1.7"
-                stroke-linecap="round"
-                stroke-linejoin="round"></path>
-            </svg>
-            <span>{t}</span>
-          </li>
+          <li>{t}</li>
         ))
       }
     </ul>
@@ -59,21 +74,77 @@ const ticks = ['Free forever', 'Google Sheets & Excel', '9,000+ downloads'];
 </Sheet>
 
 <style is:global>
-  /* Card surface: navy, a cool glow, a green wash bottom-left, a faint yellow wash top-right, grain. */
+  /* Card surface: navy base with grain. The coloured glows live on two oversized pseudo layers
+     (below) so they can drift on the compositor without repainting the grain. */
   .cta-band-wrap .sheet-card {
     border-color: rgba(255, 255, 255, 0.08);
     background-color: #0c2635;
-    background-image:
-      var(--grain),
-      radial-gradient(55% 80% at 50% 50%, rgba(108, 190, 228, 0.2), transparent 72%),
-      radial-gradient(45% 70% at 0% 100%, rgba(64, 170, 74, 0.16), transparent 70%),
-      radial-gradient(40% 60% at 100% 0%, rgba(250, 195, 68, 0.08), transparent 70%),
-      linear-gradient(160deg, #123447 0%, #0a1f2b 100%);
+    background-image: var(--grain), linear-gradient(160deg, #123447 0%, #0a1f2b 100%);
   }
 
-  /* No plate inset: the navy card itself is the sheet, so its edges sit on the page grid lines. */
-  .cta-band-wrap .sheet {
+  /* The layers extend 12% past the card (clipped by its overflow), so the gradient centres below
+     are given relative to the larger box: card corner = 10% / 90%. */
+  .cta-band-wrap .sheet-card::before,
+  .cta-band-wrap .sheet-card::after {
+    content: '';
+    position: absolute;
+    inset: -12%;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  /* A green wash bottom-left. */
+  .cta-band-wrap .sheet-card::before {
+    background-image: radial-gradient(56% 86% at 10% 90%, rgba(64, 170, 74, 0.16), transparent 70%);
+  }
+
+  /* A cool glow in the middle and a faint yellow wash top-right. */
+  .cta-band-wrap .sheet-card::after {
+    background-image:
+      radial-gradient(50% 74% at 90% 10%, rgba(250, 195, 68, 0.08), transparent 70%),
+      radial-gradient(66% 90% at 50% 50%, rgba(108, 190, 228, 0.2), transparent 72%);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .cta-band-wrap .sheet-card::before {
+      animation: cta-glow-a 22s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
+    }
+
+    .cta-band-wrap .sheet-card::after {
+      animation: cta-glow-b 26s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
+    }
+  }
+
+  @keyframes cta-glow-a {
+    from {
+      transform: translate3d(-4%, 3%, 0);
+    }
+    to {
+      transform: translate3d(9%, -8%, 0);
+    }
+  }
+
+  @keyframes cta-glow-b {
+    from {
+      transform: translate3d(5%, -3%, 0);
+    }
+    to {
+      transform: translate3d(-8%, 6%, 0);
+    }
+  }
+
+  /* No plate inset or white fill: the navy card itself is the sheet. Its outer box runs from grid
+     line to grid line inclusive: 1px up/left onto the row line above, 1px wider so the right border
+     lands on the next column line, and 1px taller so the bottom border lands on a row line. Whole
+     rows are measured by the Sheet snap script from the card's own height. */
+  .cta-band-wrap.has-grid .sheet {
     padding: 0;
+    top: -1px;
+    margin-bottom: -1px;
+    width: calc(100% + 1px);
+    min-height: calc(var(--rows, 0) * var(--cell-h) + 1px);
+    background: transparent;
+    box-shadow: none;
   }
 
   .cta-band-wrap .sheet-body {
@@ -97,6 +168,95 @@ const ticks = ['Free forever', 'Google Sheets & Excel', '9,000+ downloads'];
   .cta-band h2 {
     max-width: 17ch;
     color: #fff;
+  }
+
+  /* "template" pill, as in the home H1, with a translucent fill for the navy card. */
+  .title-pill {
+    position: relative;
+    isolation: isolate;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.105em;
+    padding: 0 0.185em 0 0.123em;
+    border: 1px solid transparent;
+    border-radius: 0.37em;
+    color: var(--green);
+  }
+
+  .title-pill::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    z-index: -1;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: inherit;
+    background: rgba(255, 255, 255, 0.08);
+    pointer-events: none;
+  }
+
+  /* Excel and Google Sheets marks stacked in one box, swapping slowly. Static Excel mark without motion. */
+  .title-icons {
+    position: relative;
+    flex: none;
+    width: 0.74em;
+    height: 0.74em;
+    perspective: 3em;
+  }
+
+  .title-icon {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .title-icon-sheets {
+    opacity: 0;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .title-icon-excel {
+      animation: cta-icon-excel 8s cubic-bezier(0.23, 1, 0.32, 1) 1s infinite backwards;
+    }
+
+    .title-icon-sheets {
+      animation: cta-icon-sheets 8s cubic-bezier(0.23, 1, 0.32, 1) 1s infinite backwards;
+    }
+  }
+
+  @keyframes cta-icon-excel {
+    0%,
+    40% {
+      opacity: 1;
+      transform: rotateY(0deg) scale(1);
+    }
+    48%,
+    90% {
+      opacity: 0;
+      transform: rotateY(-80deg) scale(0.85);
+    }
+    100% {
+      opacity: 1;
+      transform: rotateY(0deg) scale(1);
+    }
+  }
+
+  @keyframes cta-icon-sheets {
+    0%,
+    42% {
+      opacity: 0;
+      transform: rotateY(80deg) scale(0.85);
+    }
+    50%,
+    90% {
+      opacity: 1;
+      transform: rotateY(0deg) scale(1);
+    }
+    98%,
+    100% {
+      opacity: 0;
+      transform: rotateY(80deg) scale(0.85);
+    }
   }
 
   .cta-band-text {
@@ -146,8 +306,23 @@ const ticks = ['Free forever', 'Google Sheets & Excel', '9,000+ downloads'];
     color: rgba(255, 255, 255, 0.84);
   }
 
-  .cta-band-ticks svg {
+  /* Square rounded checkboxes like .list-check: green, blue, yellow, white check. */
+  .cta-band-ticks li::before {
+    content: '';
     flex: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 5px;
+    background: var(--icon-check) center / 12px no-repeat, var(--sheen);
+    background-color: var(--green);
+  }
+
+  .cta-band-ticks li:nth-child(3n + 2)::before {
+    background-color: var(--blue);
+  }
+
+  .cta-band-ticks li:nth-child(3n + 3)::before {
+    background-color: var(--yellow);
   }
 
   @media (max-width: 479px) {

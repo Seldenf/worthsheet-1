@@ -2,8 +2,7 @@
 title: "When to start looking for a mortgage?"
 description: "Start researching lenders and mortgage rates 3-6 months before house hunting and get pre-approved 1-3 months before an offer. Here is how to prepare."
 pubDate: 2024-02-09
-heroImage: "../../assets/blog/when-to-start-looking-for-a-mortgage/hero-money-growth.jpg"
-heroAlt: "Rolled-up dollar bills planted in soil next to a small garden rake, symbolizing money growing over time"
+cover: StepsFlow
 keywords:
   - when to start looking for a mortgage
   - mortgage pre-approval

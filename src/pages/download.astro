@@ -42,28 +42,30 @@ const benefits = ['Free PFS template', 'Regular template updates', 'Secure and p
   breadcrumbs={[{ name: 'Download', path: '/download/' }]}
   jsonLd={[faqLd(faq)]}
 >
-  <Sheet grid seed={32} id="hero" aria-labelledby="hero-title">
-    <div class="stack hero-copy" style="--stack-gap: 1.25rem">
-      <Eyebrow tone="green">Free template</Eyebrow>
-      <h1 id="hero-title">Download the free <span class="accent">personal financial statement template</span></h1>
-      <p class="lead">
-        Your journey to simplified finances starts here. Tell us where to send your copy and
-        pick Google Sheets or Excel in seconds.
-      </p>
-      <ul class="list-check benefits">
-        {
-          benefits.map((benefit) => (
-            <li>{benefit}</li>
-          ))
-        }
-      </ul>
-      <p class="muted">
-        Over {STATS.downloads.replace('+', '')} downloads. Name and email are used to deliver the
-        template; read the <a href={url('/privacy-policy/')}>Privacy Policy</a>.
-      </p>
-    </div>
-    <div class="hero-form">
-      <LeadForm id="download" />
+  <Sheet grid seed={32} id="hero" class="hero" aria-labelledby="hero-title">
+    <div class="split hero-split">
+      <div class="hero-copy">
+        <Eyebrow tone="green">Free template</Eyebrow>
+        <h1 id="hero-title">Download the free <span class="accent">personal financial statement template</span></h1>
+        <p class="lead">
+          Your journey to simplified finances starts here. Tell us where to send your copy and pick Google Sheets or Excel
+          in seconds.
+        </p>
+        <ul class="list-check benefits">
+          {
+            benefits.map((benefit) => (
+              <li>{benefit}</li>
+            ))
+          }
+        </ul>
+        <p class="muted">
+          Over {STATS.downloads.replace('+', '')} downloads. Name and email are used to deliver the
+          template; read the <a href={url('/privacy-policy/')}>Privacy Policy</a>.
+        </p>
+      </div>
+      <div class="hero-form">
+        <LeadForm id="download" />
+      </div>
     </div>
   </Sheet>
 
@@ -107,25 +109,74 @@ const benefits = ['Free PFS template', 'Regular template updates', 'Secure and p
 </Base>
 
 <style>
+  :global(#hero .sheet-body) {
+    padding-block: clamp(24px, 4vh, 44px);
+  }
+
+  .hero-split {
+    gap: clamp(32px, 5vw, 72px);
+  }
+
   .hero-copy {
-    max-width: 40rem;
-    margin-inline: auto;
-    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+    min-width: 0;
+    text-align: left;
   }
 
   .benefits {
     width: max-content;
     max-width: 100%;
-    margin-inline: auto;
+    margin: 0;
     font-weight: 540;
     font-size: 1.0625rem;
     text-align: left;
   }
 
   .hero-form {
+    width: 100%;
     max-width: 34rem;
-    margin: clamp(32px, 5vw, 48px) auto 0;
+    justify-self: center;
+    margin: 0;
     text-align: left;
+  }
+
+  @media (max-width: 899.98px) {
+    .hero-split {
+      gap: 18px;
+    }
+
+    /* Flatten the copy so the form sits between the lead and the checklist. */
+    .hero-copy {
+      display: contents;
+    }
+
+    .hero-copy > :nth-child(1) {
+      order: 1;
+    }
+
+    .hero-copy > :nth-child(2) {
+      order: 2;
+    }
+
+    .hero-copy > :nth-child(3) {
+      order: 3;
+    }
+
+    .hero-copy > :nth-child(4) {
+      order: 5;
+    }
+
+    .hero-copy > :nth-child(5) {
+      order: 6;
+    }
+
+    .hero-form {
+      order: 4;
+      max-width: none;
+    }
   }
 
   .hero-copy a,

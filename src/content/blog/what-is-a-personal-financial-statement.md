@@ -3,8 +3,7 @@ title: "What is a personal financial statement?"
 description: "Learn to create and use a Personal Financial Statement (PFS) for effective financial planning and loan assessment."
 pubDate: 2024-01-28
 updatedDate: 2024-02-02
-heroImage: "../../assets/blog/what-is-a-personal-financial-statement/hero-personal-financial-statement.jpg"
-heroAlt: "Illustration of a person reviewing a personal financial statement surrounded by assets such as a house, a car, cash and coins, with charts of assets and liabilities"
+cover: GlossaryBook
 keywords:
   - personal financial statement
   - PFS

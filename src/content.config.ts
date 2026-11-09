@@ -3,34 +3,31 @@ import { glob } from 'astro/loaders';
 
 const blog = defineCollection({
   loader: glob({ pattern: '*.{md,mdx}', base: './src/content/blog' }),
-  schema: ({ image }) =>
-    z.object({
-      title: z.string(),
-      seoTitle: z.string().max(60).optional(),
-      description: z.string(),
-      pubDate: z.coerce.date(),
-      updatedDate: z.coerce.date().optional(),
-      heroImage: image().optional(),
-      heroAlt: z.string().optional(),
-      cover: z
-        .enum([
-          'HeroSheet',
-          'IsoTiles',
-          'CategoriesStack',
-          'StepsFlow',
-          'ShieldSecure',
-          'CalculatorTile',
-          'BankMap',
-          'GlossaryBook',
-          'DocumentStack',
-          'ReadinessGauge',
-          'CtaTiles',
-        ])
-        .optional(),
-      keywords: z.array(z.string()).optional(),
-      faq: z.array(z.object({ q: z.string(), a: z.string() })).optional(),
-      draft: z.boolean().default(false),
-    }),
+  schema: z.object({
+    title: z.string(),
+    seoTitle: z.string().max(60).optional(),
+    description: z.string(),
+    pubDate: z.coerce.date(),
+    updatedDate: z.coerce.date().optional(),
+    cover: z
+      .enum([
+        'HeroSheet',
+        'IsoTiles',
+        'CategoriesStack',
+        'StepsFlow',
+        'ShieldSecure',
+        'CalculatorTile',
+        'BankMap',
+        'GlossaryBook',
+        'DocumentStack',
+        'ReadinessGauge',
+        'CtaTiles',
+      ])
+      .optional(),
+    keywords: z.array(z.string()).optional(),
+    faq: z.array(z.object({ q: z.string(), a: z.string() })).optional(),
+    draft: z.boolean().default(false),
+  }),
 });
 
 const glossary = defineCollection({

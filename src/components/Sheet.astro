@@ -18,7 +18,7 @@ interface Props {
   /** Highlighted grid cells (with `grid`). Generated from `seed` when omitted. */
   glow?: GlowCell[];
   seed?: number;
-  /** Grid rows above the sheet (default 2) and below it (default 0). */
+  /** Grid rows above the sheet (default 2) and below it (default 2 with `grid`, else 0). */
   rowsAbove?: number;
   rowsBelow?: number;
   /** Tighter inner padding for short content such as the logo strip. */
@@ -34,7 +34,7 @@ const {
   glow,
   seed = 1,
   rowsAbove = 2,
-  rowsBelow = 0,
+  rowsBelow = grid ? 2 : 0,
   compact = false,
   class: className,
 } = Astro.props;

@@ -360,8 +360,8 @@ const jsonLd = [
         <h2 id="categories-title">Tailored to create a personal financial statement <span class="accent">super-fast</span></h2>
         <p class="lead">A comprehensive list of categories modeled on common personal financial statement forms, with the flexibility to add your own.</p>
         <ul class="list-check">
-          <li data-view="assets" tabindex="0">{STATS.assetCategories} <span class="sel">asset<span class="sel-tint" aria-hidden="true"></span><svg class="sel-frame" aria-hidden="true" focusable="false"><rect rx="2" ry="2" pathLength="1"></rect></svg><span class="sel-handle" aria-hidden="true"></span></span> categories</li>
-          <li data-view="liabilities" tabindex="0">{STATS.liabilityCategories} <span class="sel">liability<span class="sel-tint" aria-hidden="true"></span><svg class="sel-frame" aria-hidden="true" focusable="false"><rect rx="2" ry="2" pathLength="1"></rect></svg><span class="sel-handle" aria-hidden="true"></span></span> categories</li>
+          <li data-view="assets" tabindex="0">{STATS.assetCategories} <span class="sel">asset<span class="sel-tint" aria-hidden="true"></span></span> categories</li>
+          <li data-view="liabilities" tabindex="0">{STATS.liabilityCategories} <span class="sel">liability<span class="sel-tint" aria-hidden="true"></span></span> categories</li>
           <li data-view="formulas" tabindex="0">Dynamic calculation formulas</li>
         </ul>
         <div>
@@ -531,20 +531,7 @@ const jsonLd = [
           {posts.map((p) => (
             <li>
               <a class="card post" href={url(`/${p.id}/`)}>
-                {p.data.heroImage ? (
-                  <Image
-                    class="post-img"
-                    src={p.data.heroImage}
-                    alt={p.data.heroAlt ?? ''}
-                    width={640}
-                    height={400}
-                    widths={[320, 480, 640]}
-                    sizes="(min-width: 960px) 360px, (min-width: 640px) 45vw, 92vw"
-                    loading="lazy"
-                  />
-                ) : (
-                  <PostCover cover={p.data.cover} class="post-img" />
-                )}
+                <PostCover cover={p.data.cover} class="post-img" />
                 <div class="post-body">
                   <time class="small muted" datetime={p.data.pubDate.toISOString()}>
                     {fmtDate(p.data.pubDate)}
@@ -1349,8 +1336,9 @@ const jsonLd = [
   }
 
   /* ---------- Dynamic categories: hover or focus on a row drives the illustration ----------
-     The row's text takes the bullet's tone and the bullet scales up. The key word gets a spreadsheet
-     cell selection: a 1.5px frame that draws itself, a fill handle at its corner and a faint tint. */
+     The row's text takes the bullet's tone and the bullet scales up. The asset and liability key
+     words get a soft tint behind them. The formulas row has no hover state; it only drives the
+     illustration. */
   :global(#categories) ul.list-check li[data-view] {
     --tone: #0a7a43;
     width: fit-content;
@@ -1366,7 +1354,7 @@ const jsonLd = [
     --tone: #9a6700;
   }
 
-  /* .sel wraps the key word; the tint, frame and handle sit around it without affecting layout. */
+  /* .sel wraps the key word; the tint sits behind it without affecting layout. */
   :global(#categories) .sel {
     position: relative;
     display: inline-block;
@@ -1374,50 +1362,14 @@ const jsonLd = [
     isolation: isolate;
   }
 
-  :global(#categories) .sel-tint,
-  :global(#categories) .sel-frame,
-  :global(#categories) .sel-handle {
-    position: absolute;
-    pointer-events: none;
-  }
-
   :global(#categories) .sel-tint {
+    position: absolute;
     inset: -2px -5px;
     z-index: -1;
     border-radius: 2px;
     background: color-mix(in srgb, var(--tone) 9%, transparent);
     opacity: 0;
-  }
-
-  :global(#categories) .sel-frame {
-    inset: -2px -5px;
-    width: calc(100% + 10px);
-    height: calc(100% + 4px);
-    overflow: visible;
-    opacity: 0;
-  }
-
-  :global(#categories) .sel-frame rect {
-    x: 0.75px;
-    y: 0.75px;
-    width: calc(100% - 1.5px);
-    height: calc(100% - 1.5px);
-    fill: none;
-    stroke: var(--tone);
-    stroke-width: 1.5px;
-    stroke-dasharray: 1;
-    stroke-dashoffset: 1;
-  }
-
-  :global(#categories) .sel-handle {
-    right: -8px;
-    bottom: -5px;
-    width: 6px;
-    height: 6px;
-    background: var(--tone);
-    border: 1px solid #fff;
-    box-sizing: border-box;
-    opacity: 0;
+    pointer-events: none;
   }
 
   :global(#categories) ul.list-check li[data-view]:focus-visible {
@@ -1431,33 +1383,21 @@ const jsonLd = [
     scale: 1.08;
   }
 
-  :global(#categories) ul.list-check li[data-view]:focus-visible .sel-tint,
-  :global(#categories) ul.list-check li[data-view]:focus-visible .sel-frame,
-  :global(#categories) ul.list-check li[data-view]:focus-visible .sel-handle {
+  :global(#categories) ul.list-check li[data-view]:focus-visible .sel-tint {
     opacity: 1;
   }
 
-  :global(#categories) ul.list-check li[data-view]:focus-visible .sel-frame rect {
-    stroke-dashoffset: 0;
-  }
-
   @media (hover: hover) and (pointer: fine) {
-    :global(#categories) ul.list-check li[data-view]:hover {
+    :global(#categories) ul.list-check li[data-view]:not([data-view="formulas"]):hover {
       color: var(--tone);
     }
 
-    :global(#categories) ul.list-check li[data-view]:hover:not([data-view="formulas"])::before {
+    :global(#categories) ul.list-check li[data-view]:not([data-view="formulas"]):hover::before {
       scale: 1.08;
     }
 
-    :global(#categories) ul.list-check li[data-view]:hover .sel-tint,
-    :global(#categories) ul.list-check li[data-view]:hover .sel-frame,
-    :global(#categories) ul.list-check li[data-view]:hover .sel-handle {
+    :global(#categories) ul.list-check li[data-view]:not([data-view="formulas"]):hover .sel-tint {
       opacity: 1;
-    }
-
-    :global(#categories) ul.list-check li[data-view]:hover .sel-frame rect {
-      stroke-dashoffset: 0;
     }
   }
 
@@ -1470,42 +1410,9 @@ const jsonLd = [
       transition: scale 200ms var(--ease-out);
     }
 
-    /* Leaving: everything fades out over 200ms, the stroke un-draws only once it is invisible. */
-    :global(#categories) .sel-tint,
-    :global(#categories) .sel-frame {
+    /* Fades in on hover or focus and out on leave. */
+    :global(#categories) .sel-tint {
       transition: opacity 200ms var(--ease-out);
-    }
-
-    :global(#categories) .sel-frame rect {
-      transition: stroke-dashoffset 0s linear 200ms;
-    }
-
-    :global(#categories) .sel-handle {
-      scale: 0.2;
-      transition:
-        opacity 200ms var(--ease-out),
-        scale 200ms var(--ease-out);
-    }
-
-    /* Entering: the stroke draws on over 350ms, then the handle pops in at the end of it. */
-    :global(#categories) ul.list-check li[data-view]:focus-visible .sel-frame rect {
-      transition: stroke-dashoffset 350ms var(--ease-out);
-    }
-
-    :global(#categories) ul.list-check li[data-view]:focus-visible .sel-handle {
-      scale: 1;
-      transition-delay: 250ms;
-    }
-
-    @media (hover: hover) and (pointer: fine) {
-      :global(#categories) ul.list-check li[data-view]:hover .sel-frame rect {
-        transition: stroke-dashoffset 350ms var(--ease-out);
-      }
-
-      :global(#categories) ul.list-check li[data-view]:hover .sel-handle {
-        scale: 1;
-        transition-delay: 250ms;
-      }
     }
   }
 

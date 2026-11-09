@@ -716,7 +716,7 @@ if (main) {
     breathe(main);
     main.querySelectorAll<HTMLElement>('.sheet-section.has-grid .sheet-glow').forEach(drift);
     if (matchMedia('(hover: hover) and (pointer: fine)').matches) {
-      main.querySelectorAll<SVGElement>('svg.wsi').forEach((svg) => {
+      main.querySelectorAll<SVGElement>('svg.wsi:not([data-no-push])').forEach((svg) => {
         const area = svg.closest<HTMLElement>('section') ?? svg.parentElement;
         if (area) pusher(svg, area);
       });
