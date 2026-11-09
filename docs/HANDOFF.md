@@ -98,13 +98,25 @@ Local services, if they are still running:
    - No Change of Address is needed (same domain).
 5. **Blog posts' og:image:** post pages no longer set their own image. They use the default from `Base.astro`, which has not been verified.
 
-## Last shipped round
+## Last shipped rounds
 
-Everything is on `main` and deployed; `prod-domain` is rebased on it. There is no in-flight work. The last round contained:
-- Mobile menu open/close motion in `Header.astro`: burger→× morph, panel fade/slide, row stagger, reduced-motion safe. The CTA sits in `.nav-cta-wrap`, and the submenu collapses 200ms after close.
+Everything below is on `main` and deployed; `prod-domain` is rebased on it.
+- Mobile menu (`Header.astro`):
+  - Open/close motion: burger→× morph, panel fade/slide, row stagger.
+  - The CTA (`.nav-cta-wrap`) is pinned to the bottom of the panel (sticky, safe-area padding).
+  - The Calculators submenu expands and collapses with animation. It uses `data-open`, not `hidden`, because global `[hidden]` is `display:none !important`.
+  - No duplicate CTA inside the submenu.
+  - Nav hover pills are gated to fine pointers.
 - `body { overflow-x: clip }` plus header `overflow-x: clip` to stop sideways panning on mobile.
 - Logo mark cropped to the squares (`viewBox="14 14 36 36"`, 22px) in the Header and Footer.
-- Blue ShieldSecure illustration and blue "Why WorthSheet" chip, a stronger cursor iso grid synced to the illustrations, more drifting cells, and more bottom padding in the FAQ card.
+- Blue ShieldSecure illustration and blue "Why WorthSheet" chip.
+- Cursor iso grid: navy lines at `.09` alpha (`SHEET_STROKE`), 260ms in and 1400ms out, synced to the illustration grids.
+- Cream page gap below the FAQ card (`#faq` margin-bottom). Reveal stagger is 70ms.
+
+## Experimental branch (not merged)
+
+- `icons-refresh`, in worktree `/tmp/ws-icons`: the iso-tile glyphs (IsoIcon, IsoTiles, StepTile, CtaTiles…) are swapped for a refined open-source set (Lucide, ISC).
+- The owner will decide after seeing it. If approved: `git checkout v3 && git merge icons-refresh`, then run the gates and ship. If rejected: delete the branch.
 
 Next session: see **Open items** above. The owner reviews visually and sends screenshots with small tweaks; iterate in rounds on `v3`, then fast-forward `main`.
 
