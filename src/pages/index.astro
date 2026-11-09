@@ -305,11 +305,10 @@ const jsonLd = [
     </div>
   </section>
 
-  <!-- Built based on -->
-  <Sheet id="banks" compact aria-labelledby="banks-title">
+  <!-- Bank logos strip -->
+  <Sheet id="banks" compact>
     <div class="banks-row">
-      <p id="banks-title" class="eyebrow">Built based on</p>
-      <ul class="bank-logos">
+      <ul class="bank-logos" aria-label="Banks whose personal financial statement forms the template is built on">
         {
           banks.map((b) => (
             <li>
@@ -1303,6 +1302,11 @@ const jsonLd = [
   }
 
   /* ---------- FAQ ---------- */
+  /* Extra room at the bottom of the card before the closing CTA's grid. */
+  :global(#faq .sheet-body) {
+    padding-bottom: clamp(56px, 8vw, 120px);
+  }
+
   .faq-wrap {
     display: grid;
     gap: clamp(28px, 5vw, 64px);

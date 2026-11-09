@@ -30,7 +30,8 @@ const [before, after] = match ? [match[1], match[2]] : [title, ''];
   class={['cta-band-wrap', className].filter(Boolean).join(' ')}
   tone="cta"
   grid
-  rowsBelow={2}
+  rowsAbove={3}
+  rowsBelow={3}
   seed={11}
   aria-labelledby="cta-band-title"
 >
@@ -145,6 +146,18 @@ const [before, after] = match ? [match[1], match[2]] : [title, ''];
     min-height: calc(var(--rows, 0) * var(--cell-h) + 1px);
     background: transparent;
     box-shadow: none;
+  }
+
+  /* The closing card runs half a grid column wider on each side than the other sheets. Its section's grid
+     is shifted by half a column to match, so both edges still land on column lines. */
+  @media (min-width: 1332px) {
+    .cta-band-wrap .sheet-frame {
+      width: 1300px;
+    }
+
+    .cta-band-wrap.has-grid::before {
+      background-position: 50% -1px;
+    }
   }
 
   .cta-band-wrap .sheet-body {

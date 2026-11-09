@@ -76,10 +76,11 @@ const lines = Array.from({ length: 7 }, (_, i) => `M0 ${(i + 1) * 32.75}H262M${(
     return (
       <g class={i === MAIN_TILE ? undefined : 'wsi-extra'}>
         <g class="wsi-in" style={t.enter}>
-        <g class="wsi-pt" style={`--d:${t.d}`}>
+        {/* The centre bank tile is the anchor: no cursor push/drag and no breathing. */}
+        <g class={i === MAIN_TILE ? undefined : 'wsi-pt'} style={`--d:${t.d}`}>
         <!-- ground shadow: first child of the tile's wsi-pt so it moves with the tile (intro comes from the wsi-in above) -->
-        <g fill={C.ink} fill-opacity=".08" filter="url(#wsi-tiles-blur)"><g class="wsi-tiles-sh-mid" style={lag(0.4 + jit(i, 0.2))}><g transform={iso(t.x + 8, t.y + t.z * 0.7 + 8, t.s)}><rect width={t.s} height={t.s} rx={t.s * 0.17}></rect></g></g></g>
-        <g class={`wsi-breathe wsi-tiles-mid wsi-tiles-f${t.f}`} style={lag(0.4 + jit(i, 0.2))}>
+        <g fill={C.ink} fill-opacity=".08" filter="url(#wsi-tiles-blur)"><g class={i === MAIN_TILE ? undefined : 'wsi-tiles-sh-mid'} style={lag(0.4 + jit(i, 0.2))}><g transform={iso(t.x + 8, t.y + t.z * 0.7 + 8, t.s)}><rect width={t.s} height={t.s} rx={t.s * 0.17}></rect></g></g></g>
+        <g class={i === MAIN_TILE ? undefined : `wsi-breathe wsi-tiles-mid wsi-tiles-f${t.f}`} style={lag(0.4 + jit(i, 0.2))}>
           <g transform={iso(t.x, t.y + 9, t.s)}><rect width={t.s} height={t.s} rx={t.s * 0.17} fill={t.side}></rect></g>
           <g transform={iso(t.x, t.y, t.s)}>
             <rect width={t.s} height={t.s} rx={t.s * 0.17} fill={t.fill} stroke={t.line ? C.beige : '#fff'} stroke-width="2"></rect>

@@ -198,10 +198,7 @@ html .site-header.is-scrolled {
   background: rgba(255, 255, 255, 0.8);
   -webkit-backdrop-filter: saturate(1.6) blur(18px);
   backdrop-filter: saturate(1.6) blur(18px);
-  border-bottom-color: var(--line-strong);
-  box-shadow:
-    0 1px 0 var(--line),
-    0 10px 30px -20px rgba(46, 41, 38, 0.22);
+  border-bottom-color: var(--line);
 }
 
 /* ---------- FAQ <details>: height and chevron move only without reduced motion ---------- */

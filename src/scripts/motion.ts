@@ -682,8 +682,8 @@ function breathe(root: HTMLElement) {
 // another one starts. At most DRIFT_LIT slides run per sheet; a sheet only starts new ones while on screen.
 // At load a few cells (DRIFT_SEED) are already mid-slide, so the grid arrives with colour in it; after the
 // card intro (html.intro-done) the pool carries on from them, one new slide every 0.6-1.3s, up to DRIFT_LIT.
-const DRIFT_LIT = 7;
-const DRIFT_SEED = 3;
+const DRIFT_LIT = 11;
+const DRIFT_SEED = 5;
 
 // One pool per .sheet-glow (page grid behind a sheet, or a grid inside a card): each runs its own DRIFT_LIT budget.
 function drift(glow: HTMLElement, ready: Promise<void>) {

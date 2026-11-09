@@ -1043,6 +1043,11 @@ th.num,
   top: calc(100% + var(--r) * var(--cell-h) + 1px);
 }
 
+/* Cells right of the sheet count columns from the sheet's right edge, whatever its width. */
+.sheet-glow i.right {
+  left: calc(100% + var(--c) * var(--cell-w) + 1px);
+}
+
 .sheet-glow .tone-blue {
   --tone: var(--blue);
 }
