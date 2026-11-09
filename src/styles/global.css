@@ -360,11 +360,12 @@ p {
   inset: 0;
   z-index: -1;
   border-radius: inherit;
+  --iso-line: color-mix(in srgb, var(--beige) 65%, #aaa49c);
   background-image:
-    repeating-linear-gradient(26.565deg, transparent 0 27px, var(--beige) 27px 28px),
-    repeating-linear-gradient(-26.565deg, transparent 0 27px, var(--beige) 27px 28px);
-  -webkit-mask-image: radial-gradient(closest-side, #000 30%, transparent);
-  mask-image: radial-gradient(closest-side, #000 30%, transparent);
+    repeating-linear-gradient(26.565deg, transparent 0 27px, var(--iso-line) 27px 28px),
+    repeating-linear-gradient(-26.565deg, transparent 0 27px, var(--iso-line) 27px 28px);
+  -webkit-mask-image: radial-gradient(closest-side, #000 45%, transparent);
+  mask-image: radial-gradient(closest-side, #000 45%, transparent);
 }
 
 .num {
