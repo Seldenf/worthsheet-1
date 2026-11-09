@@ -7,6 +7,7 @@ import Sheet from '../components/Sheet.astro';
 import Eyebrow from '../components/Eyebrow.astro';
 import Faq from '../components/Faq.astro';
 import CtaBand from '../components/CtaBand.astro';
+import CtaBandV2 from '../components/CtaBandV2.astro';
 import HeroSheet from '../components/illustrations/HeroSheet.astro';
 import IsoTiles from '../components/illustrations/IsoTiles.astro';
 import CategoriesStack from '../components/illustrations/CategoriesStack.astro';
@@ -362,7 +363,7 @@ const jsonLd = [
         <ul class="list-check">
           <li data-view="assets" tabindex="0">{STATS.assetCategories} <span class="sel">asset<span class="sel-tint" aria-hidden="true"></span><svg class="sel-frame" aria-hidden="true" focusable="false"><rect rx="2" ry="2" pathLength="1"></rect></svg><span class="sel-handle" aria-hidden="true"></span></span> categories</li>
           <li data-view="liabilities" tabindex="0">{STATS.liabilityCategories} <span class="sel">liability<span class="sel-tint" aria-hidden="true"></span><svg class="sel-frame" aria-hidden="true" focusable="false"><rect rx="2" ry="2" pathLength="1"></rect></svg><span class="sel-handle" aria-hidden="true"></span></span> categories</li>
-          <li data-view="formulas" tabindex="0">Dynamic <span class="sel">calculation formulas<span class="sel-tint" aria-hidden="true"></span><svg class="sel-frame" aria-hidden="true" focusable="false"><rect rx="2" ry="2" pathLength="1"></rect></svg><span class="sel-handle" aria-hidden="true"></span></span></li>
+          <li data-view="formulas" tabindex="0">Dynamic calculation formulas</li>
         </ul>
         <div>
           <Button href="/download/" variant="primary">Get the template for free</Button>
@@ -573,6 +574,10 @@ const jsonLd = [
   </Sheet>
 
   <CtaBand />
+
+  <!-- TEMPORARY: CTA v2 comparison for review. Remove once a variant is chosen. -->
+  <p class="cta-v2-label">CTA v2 — temporary</p>
+  <CtaBandV2 />
 </Base>
 
 <style>
@@ -1487,7 +1492,7 @@ const jsonLd = [
       color: var(--tone);
     }
 
-    :global(#categories) ul.list-check li[data-view]:hover::before {
+    :global(#categories) ul.list-check li[data-view]:hover:not([data-view="formulas"])::before {
       scale: 1.08;
     }
 
@@ -1548,6 +1553,17 @@ const jsonLd = [
         transition-delay: 250ms;
       }
     }
+  }
+
+  /* TEMPORARY: label above the CTA v2 comparison. Remove with it. */
+  .cta-v2-label {
+    margin: 0;
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ink);
+    opacity: 0.6;
   }
 
   /* ---------- Free tools ---------- */

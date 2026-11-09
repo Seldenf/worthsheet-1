@@ -60,13 +60,11 @@ const pills = [
   </g>
   </g>
 
-  <!-- shield shadow on tile (inverse to shield lift) -->
+  <!-- shield (mid); its shadow on the tile sits inside the piece so it moves with the shield -->
+  <g class="wsi-in" style={intro(560, 640, -24, 0.94)}><g class="wsi-pt" style="--d:0.6">
   <g class="wsi-in" style={intro(560, 640, 0, 0.98)}>
   <ellipse class="wsi-shield-sh-mid" style={lag(0.4)} cx="280" cy="388" rx="64" ry="21" fill={C.ink} fill-opacity=".22" filter="url(#wsi-shield-blur)"></ellipse>
   </g>
-
-  <!-- shield (mid) -->
-  <g class="wsi-in" style={intro(560, 640, -24, 0.94)}><g class="wsi-pt" style="--d:0.6">
   <g transform="translate(280 184)">
     <g class="wsi-breathe wsi-shield-mid" style={lag(0.4)}>
       <path d={SH} fill="#2f8a39" transform="translate(8 11)"></path>

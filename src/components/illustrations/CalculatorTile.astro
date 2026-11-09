@@ -38,10 +38,11 @@ const pills = [
   <!-- base layer (plain wrappers carry the animation; iso groups keep their attribute transform) -->
   <g class="wsi-in" style={inStyle(0, 1000, 10, 0.96)}><g class="wsi-pt" style="--d:0.25"><g class="wsi-calc-base wsi-breathe"><g transform={iso(280, 300, 240)}><rect width="240" height="240" rx="26" fill={C.tG} fill-opacity=".6" stroke="#fff" stroke-width="2"></rect></g></g></g></g>
   <g class="wsi-in" style={inStyle(100, 900, 10, 0.96)}><g class="wsi-pt" style="--d:0.25"><g class="wsi-calc-base wsi-breathe"><g transform={iso(280, 300, 196)}><rect width="196" height="196" rx="22" fill={C.tB} stroke="#fff" stroke-width="2"></rect></g></g></g></g>
-  <g class="wsi-in" style={inStyle(200, 1000, 0, 0.9)}><g class="wsi-calc-shadow"><g transform={iso(280, 320, 170)}><rect width="170" height="170" rx="16" fill={C.ink} fill-opacity=".09" filter="url(#wsi-calc-blur)"></rect></g></g></g>
 
   <!-- mid layer: calculator body (keys and display are part of the body face) -->
-  <g class="wsi-in" style={inStyle(250, 800, 22, 0.94)}><g class="wsi-pt" style="--d:0.6"><g class="wsi-calc-f1 wsi-breathe">
+  <g class="wsi-in" style={inStyle(250, 800, 22, 0.94)}><g class="wsi-pt" style="--d:0.6">
+    <g class="wsi-in" style={inStyle(200, 1000, 0, 0.9)}><g class="wsi-calc-shadow"><g transform={iso(280, 320, 170)}><rect width="170" height="170" rx="16" fill={C.ink} fill-opacity=".09" filter="url(#wsi-calc-blur)"></rect></g></g></g>
+    <g class="wsi-calc-f1 wsi-breathe">
     <g transform={iso(280, 266, 130, 1.18)}><rect width="130" height="130" rx="16" fill="#cfcdcb"></rect></g>
     <g transform={iso(280, 252, 130, 1.18)}>
       <rect width="130" height="130" rx="16" fill="#fff" stroke={C.ink} stroke-opacity=".2"></rect>

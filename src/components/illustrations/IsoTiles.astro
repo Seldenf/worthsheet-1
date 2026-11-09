@@ -71,17 +71,14 @@ const lines = Array.from({ length: 7 }, (_, i) => `M0 ${(i + 1) * 32.75}H262M${(
   </g></g>
   </g>
 
-  <!-- tile ground shadows (inverse to tile lift) -->
-  <g fill={C.ink} fill-opacity=".08" filter="url(#wsi-tiles-blur)">
-    {tiles.map((t, i) => <g class={i === MAIN_TILE ? undefined : 'wsi-extra'}><g class="wsi-tiles-sh-mid" style={lag(0.4 + jit(i, 0.2))}><g class="wsi-in" style={t.enter}><g transform={iso(t.x + 8, t.y + t.z * 0.7 + 8, t.s)}><rect width={t.s} height={t.s} rx={t.s * 0.17}></rect></g></g></g></g>)}
-  </g>
-
   {tiles.map((t, i) => {
     const k = (t.s * 0.58) / 24;
     return (
       <g class={i === MAIN_TILE ? undefined : 'wsi-extra'}>
         <g class="wsi-in" style={t.enter}>
         <g class="wsi-pt" style={`--d:${t.d}`}>
+        <!-- ground shadow: first child of the tile's wsi-pt so it moves with the tile (intro comes from the wsi-in above) -->
+        <g fill={C.ink} fill-opacity=".08" filter="url(#wsi-tiles-blur)"><g class="wsi-tiles-sh-mid" style={lag(0.4 + jit(i, 0.2))}><g transform={iso(t.x + 8, t.y + t.z * 0.7 + 8, t.s)}><rect width={t.s} height={t.s} rx={t.s * 0.17}></rect></g></g></g>
         <g class={`wsi-breathe wsi-tiles-mid wsi-tiles-f${t.f}`} style={lag(0.4 + jit(i, 0.2))}>
           <g transform={iso(t.x, t.y + 9, t.s)}><rect width={t.s} height={t.s} rx={t.s * 0.17} fill={t.side}></rect></g>
           <g transform={iso(t.x, t.y, t.s)}>

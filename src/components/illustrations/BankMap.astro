@@ -66,11 +66,12 @@ const pills = [
 
   <!-- base layer: plain wrappers carry the animation; matrix groups keep their attribute transform -->
   <g class="wsi-in" style={inStyle(0, 900, 10, 0.96)}><g class="wsi-map-base wsi-breathe"><g transform={T}><rect x="-34" y="-34" width={PW + 68} height={PH + 68} rx="30" fill={C.tB} fill-opacity=".55" stroke="#fff" stroke-width="2"></rect></g></g></g>
-  <g class="wsi-in" style={inStyle(120, 800, 0, 0.9)}><g class="wsi-map-shadow"><g transform={`matrix(1 -.5 1 .5 ${OX} ${OY + 22})`}><rect width={PW} height={PH} rx="20" fill={C.ink} fill-opacity=".14" filter="url(#wsi-map-blur)"></rect></g></g></g>
   <g class="wsi-in" style={inStyle(150, 700, 20, 0.94)}><g class="wsi-pt" style="--d:0.3"><g class="wsi-map-base wsi-breathe"><g transform={`matrix(1 -.5 1 .5 ${OX} ${OY + 11})`}><rect width={PW} height={PH} rx="20" fill="#cfcdcb"></rect></g></g></g></g>
 
   <!-- tile face with route, pins, ground shadows and pulse rings: one shared wrapper so everything on it moves together -->
-  <g class="wsi-in" style={inStyle(150, 700, 20, 0.94)}><g class="wsi-pt" style="--d:0.3"><g class="wsi-map-base wsi-breathe">
+  <g class="wsi-in" style={inStyle(150, 700, 20, 0.94)}><g class="wsi-pt" style="--d:0.3">
+    <g class="wsi-in" style={inStyle(120, 800, 0, 0.9)}><g class="wsi-map-shadow"><g transform={`matrix(1 -.5 1 .5 ${OX} ${OY + 22})`}><rect width={PW} height={PH} rx="20" fill={C.ink} fill-opacity=".14" filter="url(#wsi-map-blur)"></rect></g></g></g>
+    <g class="wsi-map-base wsi-breathe">
     <g transform={T}>
       <rect width={PW} height={PH} rx="20" fill="#fff" stroke={C.ink} stroke-opacity=".2"></rect>
       {cells.map((c) => <rect x={c.x} y={c.y} width="24" height="24" rx="6" fill={c.fill}></rect>)}

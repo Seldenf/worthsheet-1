@@ -80,7 +80,7 @@ const inStyle = (d: number, dur: number, y: number, s: number) => `--in-d:${d}ms
 
   <!-- ground shadows (inverse to tile lift) -->
   <g fill={C.ink} fill-opacity=".09" filter="url(#wsi-cta-blur)">
-    {tiles.map((t, i) => <g class={i === MAIN_TILE ? undefined : 'wsi-extra'}><g class="wsi-in" style={inStyle(IN[i][0], IN[i][1], 0, 0.92)}><g class="wsi-cta-sh-mid" style={lag(0.4 + jit(i, 0.2))}><g transform={iso(t.x + 8, t.y + t.h + 8, t.s)}><rect width={t.s} height={t.s} rx={t.s * 0.17}></rect></g></g></g></g>)}
+    {tiles.map((t, i) => t.pt ? null : <g class={i === MAIN_TILE ? undefined : 'wsi-extra'}><g class="wsi-in" style={inStyle(IN[i][0], IN[i][1], 0, 0.92)}><g class="wsi-cta-sh-mid" style={lag(0.4 + jit(i, 0.2))}><g transform={iso(t.x + 8, t.y + t.h + 8, t.s)}><rect width={t.s} height={t.s} rx={t.s * 0.17}></rect></g></g></g></g>)}
   </g>
 
   {tiles.map((t, i) => {
@@ -104,7 +104,7 @@ const inStyle = (d: number, dur: number, y: number, s: number) => `--in-d:${d}ms
       </g>
     );
     const wrapped = <g class="wsi-in" style={inStyle(...IN[i])}>{body}</g>;
-    return <g class={i === MAIN_TILE ? undefined : 'wsi-extra'}>{t.pt ? <g class="wsi-pt" style={`--d:${t.pt}`}>{wrapped}</g> : wrapped}</g>;
+    return <g class={i === MAIN_TILE ? undefined : 'wsi-extra'}>{t.pt ? <g class="wsi-pt" style={`--d:${t.pt}`}><g fill={C.ink} fill-opacity=".09" filter="url(#wsi-cta-blur)"><g class="wsi-in" style={inStyle(IN[i][0], IN[i][1], 0, 0.92)}><g class="wsi-cta-sh-mid" style={lag(0.4 + jit(i, 0.2))}><g transform={iso(t.x + 8, t.y + t.h + 8, t.s)}><rect width={t.s} height={t.s} rx={t.s * 0.17}></rect></g></g></g></g>{wrapped}</g> : wrapped}</g>;
   })}
 
   <!-- =SUM() chip -->

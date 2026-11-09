@@ -37,10 +37,11 @@ const pills = [
 
   <!-- base layer: plain wrappers carry the animation; matrix groups keep their attribute transform -->
   <g class="wsi-in" style={inStyle(0, 1000, 10, 0.96)}><g class="wsi-book-base wsi-breathe"><g transform={at(0)}><rect x="-46" y="-46" width={W + 92} height={H + 92} rx="30" fill={C.tG} fill-opacity=".6" stroke="#fff" stroke-width="2"></rect></g></g></g>
-  <g class="wsi-in" style={inStyle(120, 900, 0, 0.9)}><g class="wsi-book-shadow"><g transform={at(30)}><rect width={W} height={H} rx="16" fill={C.ink} fill-opacity=".14" filter="url(#wsi-book-blur)"></rect></g></g></g>
 
   <!-- mid layer: book -->
-  <g class="wsi-in" style={inStyle(200, 800, 22, 0.94)}><g class="wsi-pt" style="--d:0.35"><g class="wsi-book-f1 wsi-breathe">
+  <g class="wsi-in" style={inStyle(200, 800, 22, 0.94)}><g class="wsi-pt" style="--d:0.35">
+  <g class="wsi-in" style={inStyle(120, 900, 0, 0.9)}><g class="wsi-book-shadow"><g transform={at(30)}><rect width={W} height={H} rx="16" fill={C.ink} fill-opacity=".14" filter="url(#wsi-book-blur)"></rect></g></g></g>
+  <g class="wsi-book-f1 wsi-breathe">
     <g transform={at(16)}><rect width={W} height={H} rx="16" fill="#4a9fc8"></rect></g>
     <g transform={at(0)}><rect width={W} height={H} rx="16" fill={C.blue} stroke="#fff" stroke-width="2"></rect></g>
     <g transform={at(-2)}><rect x="8" y="8" width={W - 16} height={H - 16} rx="10" fill={C.beige}></rect></g>

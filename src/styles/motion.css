@@ -222,10 +222,29 @@ details[open]::details-content {
     transition: filter 200ms var(--ease-out);
   }
 
-  /* Held piece: lifted (scale comes from motion.ts via --rs) with a stronger shadow. */
+  /* Held piece: lifted (scale comes from motion.ts via --rs) with a subtle shadow (pieces carry their own ground shadow). */
   svg.wsi .wsi-pt.is-grabbed {
     cursor: grabbing;
-    filter: drop-shadow(0 8px 10px rgba(12, 38, 53, 0.28));
+    filter: drop-shadow(0 4px 6px rgba(12, 38, 53, 0.14));
+  }
+
+  /* A displaced piece may sit anywhere in its card: the svg and its ancestors (up to the card) are raised above the
+     text and the svg lets its content overflow; only the pieces catch pointer events, so text stays clickable. */
+  :where(.has-dragged) {
+    position: relative;
+  }
+
+  .has-dragged {
+    z-index: 5;
+  }
+
+  svg.wsi.has-dragged {
+    overflow: visible;
+    pointer-events: none;
+  }
+
+  svg.wsi.has-dragged .wsi-pt {
+    pointer-events: auto;
   }
 
   /* Opt-in only: elements marked data-cursor-sheet (a Sheet card, which clips and layers it) get the
@@ -289,6 +308,8 @@ details[open]::details-content {
     isolation: isolate;
   }
 
+  /* Only a band along the border is lit, fading out ~26px inward (four feathered edge gradients), so it reads as
+     light spilling inward from the lit rim; the middle of the card stays untouched. */
   .card::before,
   .mega-item::before,
   .mega-feature::before,
@@ -299,23 +320,31 @@ details[open]::details-content {
     z-index: -1;
     border-radius: inherit;
     background: radial-gradient(
-      140px circle at var(--ex, 50%) var(--ey, 50%),
-      color-mix(in srgb, var(--edge, rgba(46, 41, 38, 0.28)) 22%, transparent),
+      160px circle at var(--ex, 50%) var(--ey, 50%),
+      color-mix(in srgb, var(--edge, rgba(46, 41, 38, 0.28)) 32%, transparent),
       transparent 70%
     );
+    -webkit-mask: var(--edge-band);
+    mask: var(--edge-band);
+    --edge-band: linear-gradient(to right, #000, transparent 26px), linear-gradient(to left, #000, transparent 26px),
+      linear-gradient(to bottom, #000, transparent 26px), linear-gradient(to top, #000, transparent 26px);
     opacity: 0;
     transition: opacity 300ms var(--ease-out);
     pointer-events: none;
   }
 
-  /* Primary button: soft white light inside the button, only around the cursor. */
+  /* Primary button: soft white light hugging the border only (a thin band along the edge near the cursor), never the face. */
   .btn-primary::before {
     content: '';
     position: absolute;
     inset: 0;
     z-index: -1;
     border-radius: inherit;
-    background: radial-gradient(70px circle at var(--ex, 50%) var(--ey, 50%), rgba(255, 255, 255, 0.18), transparent 100%);
+    background: radial-gradient(80px circle at var(--ex, 50%) var(--ey, 50%), rgba(255, 255, 255, 0.34), transparent 100%);
+    --edge-band: linear-gradient(to right, #000, transparent 8px), linear-gradient(to left, #000, transparent 8px),
+      linear-gradient(to bottom, #000, transparent 8px), linear-gradient(to top, #000, transparent 8px);
+    -webkit-mask: var(--edge-band);
+    mask: var(--edge-band);
     opacity: 0;
     transition: opacity 300ms var(--ease-out);
     pointer-events: none;

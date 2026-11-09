@@ -71,6 +71,11 @@ const ticks = ['Free forever', 'Google Sheets & Excel', '9,000+ downloads'];
       linear-gradient(160deg, #123447 0%, #0a1f2b 100%);
   }
 
+  /* No plate inset: the navy card itself is the sheet, so its edges sit on the page grid lines. */
+  .cta-band-wrap .sheet {
+    padding: 0;
+  }
+
   .cta-band-wrap .sheet-body {
     padding: 0;
   }

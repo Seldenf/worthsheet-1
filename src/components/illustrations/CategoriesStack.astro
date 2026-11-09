@@ -257,7 +257,7 @@ const menus: Record<View, string[]> = {
   const runs = new WeakMap<SVGSVGElement, Run>();
 
   const keyFor = (wrap: Element, view: string) =>
-    wrap.dataset.summary === 'true' ? (view === 'formulas' ? 'formulas' : 'mixed') : view;
+    (wrap as SVGElement).dataset.summary === 'true' ? (view === 'formulas' ? 'formulas' : 'mixed') : view;
 
   const showOnly = (wrap: Element, key: string) => {
     wrap.querySelectorAll<SVGGElement>(':scope > .sw').forEach((g) => g.classList.toggle('on', g.dataset.v === key));

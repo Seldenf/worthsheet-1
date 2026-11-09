@@ -396,6 +396,13 @@ function pusher(svg: SVGElement, area: HTMLElement) {
 
   // ---- Drag & drop ----
   const noSelect = (e: Event) => e.preventDefault();
+  // Where pieces may go: the nearest card / section, not the svg box.
+  const bound = svg.closest<HTMLElement>('.sheet-card, .post-card, .card, section') ?? area;
+  // While any piece is displaced the svg and its ancestors up to the bound get `.has-dragged` (motion.css raises them
+  // above the text; the svg itself stops catching pointer events except on the pieces).
+  const raised: Element[] = [];
+  for (let n: Element | null = svg; n && n !== bound; n = n.parentElement) raised.push(n);
+  const raise = (on: boolean) => raised.forEach((n) => n.classList.toggle('has-dragged', on));
   for (const p of pts) {
     const el = p.el;
     let id = -1;
@@ -415,14 +422,11 @@ function pusher(svg: SVGElement, area: HTMLElement) {
       startOx = p.ox; startOy = p.oy;
       moved = false;
       lx = e.clientX; ly = e.clientY; lt = e.timeStamp; vx = vy = 0;
-      // Keep the piece inside the svg's visible box unless the svg lets its content overflow.
-      minX = minY = -Infinity; maxX = maxY = Infinity;
-      if (getComputedStyle(svg).overflow !== 'visible') {
-        const box = svg.getBoundingClientRect();
-        const r = el.getBoundingClientRect();
-        minX = Math.min(box.left - r.left, 0); maxX = Math.max(box.right - r.right, 0);
-        minY = Math.min(box.top - r.top, 0); maxY = Math.max(box.bottom - r.bottom, 0);
-      }
+      // Clamp to the whole parent card/section (not the svg box): the svg lets its pieces overflow while any is displaced.
+      const box = bound.getBoundingClientRect();
+      const r = el.getBoundingClientRect();
+      minX = Math.min(box.left - r.left, 0); maxX = Math.max(box.right - r.right, 0);
+      minY = Math.min(box.top - r.top, 0); maxY = Math.max(box.bottom - r.bottom, 0);
       p.grabbed = true;
       el.classList.add('is-grabbed');
       document.addEventListener('selectstart', noSelect);
@@ -433,7 +437,10 @@ function pusher(svg: SVGElement, area: HTMLElement) {
       if (!p.grabbed || e.pointerId !== id) return;
       const dx = Math.min(Math.max(e.clientX - sx, minX), maxX);
       const dy = Math.min(Math.max(e.clientY - sy, minY), maxY);
-      if (!moved && Math.hypot(e.clientX - sx, e.clientY - sy) > DRAG_SLOP) moved = true;
+      if (!moved && Math.hypot(e.clientX - sx, e.clientY - sy) > DRAG_SLOP) {
+        moved = true;
+        raise(true);
+      }
       p.ox = startOx + dx / scale;
       p.oy = startOy + dy / scale;
       const dt = (e.timeStamp - lt) / 1000;
@@ -479,6 +486,7 @@ function pusher(svg: SVGElement, area: HTMLElement) {
       e.preventDefault();
       p.ox = 0;
       p.oy = 0;
+      if (pts.every((q) => !q.ox && !q.oy)) raise(false);
       kick();
     });
   }
@@ -656,8 +664,9 @@ function breathe(root: HTMLElement) {
 // another one starts. At most DRIFT_LIT slides run per sheet; a sheet only starts new ones while on screen.
 const DRIFT_LIT = 3;
 
-function drift(sheet: HTMLElement) {
-  const cells = Array.from(sheet.querySelectorAll<HTMLElement>('.sheet-glow > i'));
+// One pool per .sheet-glow (page grid behind a sheet, or a grid inside a card): each runs its own DRIFT_LIT budget.
+function drift(glow: HTMLElement) {
+  const cells = Array.from(glow.querySelectorAll<HTMLElement>(':scope > i'));
   if (cells.length <= DRIFT_LIT) return;
   const between = (lo: number, hi: number) => lo + Math.random() * (hi - lo);
   const pick = <T,>(xs: T[]): T => xs[Math.floor(Math.random() * xs.length)];
@@ -690,7 +699,7 @@ function drift(sheet: HTMLElement) {
       clearTimeout(timer);
       timer = 0;
     }
-  }).observe(sheet);
+  }).observe(glow);
 }
 
 if (main) {
@@ -705,7 +714,7 @@ if (main) {
     revealIllustrations(main);
     revealChecklists(main, true);
     breathe(main);
-    main.querySelectorAll<HTMLElement>('.sheet-section.has-grid').forEach(drift);
+    main.querySelectorAll<HTMLElement>('.sheet-section.has-grid .sheet-glow').forEach(drift);
     if (matchMedia('(hover: hover) and (pointer: fine)').matches) {
       main.querySelectorAll<SVGElement>('svg.wsi').forEach((svg) => {
         const area = svg.closest<HTMLElement>('section') ?? svg.parentElement;
