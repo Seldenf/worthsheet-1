@@ -20,13 +20,13 @@ type Item = {
 
 // Order is back-to-front-neutral; x/y are the tile's top-left as % of the layer.
 const items: Item[] = [
-  { icon: 'house', tone: 'green', size: 56, x: 4, y: 14, dur: 10, delay: -2, keep: 'start' },
-  { icon: 'scale', tone: 'white', size: 40, x: 14, y: 58, dur: 8.5, delay: -5.3 },
-  { icon: 'percent', tone: 'yellow', size: 36, x: 3, y: 79, dur: 11.5, delay: -7.8 },
-  { icon: 'key', tone: 'blue', size: 44, x: 17, y: 9, dur: 9, delay: -1.1 },
-  { icon: 'bank', tone: 'pink', size: 52, x: 86, y: 18, dur: 12, delay: -4.4 },
-  { icon: 'gauge', tone: 'yellow', size: 40, x: 79, y: 70, dur: 9.5, delay: -6.6, keep: 'end' },
-  { icon: 'sheet', tone: 'white', size: 36, x: 92, y: 50, dur: 10.5, delay: -3.2 },
+  { icon: 'house', tone: 'green', size: 100, x: 3, y: 12, dur: 10, delay: -2, keep: 'start' },
+  { icon: 'scale', tone: 'white', size: 72, x: 8, y: 56, dur: 8.5, delay: -5.3 },
+  { icon: 'percent', tone: 'yellow', size: 64, x: 2, y: 80, dur: 11.5, delay: -7.8 },
+  { icon: 'key', tone: 'blue', size: 80, x: 13, y: 4, dur: 9, delay: -1.1 },
+  { icon: 'bank', tone: 'pink', size: 92, x: 84, y: 16, dur: 12, delay: -4.4 },
+  { icon: 'gauge', tone: 'yellow', size: 72, x: 80, y: 70, dur: 9.5, delay: -6.6, keep: 'end' },
+  { icon: 'sheet', tone: 'white', size: 64, x: 91, y: 46, dur: 10.5, delay: -3.2 },
 ];
 ---
 
@@ -70,7 +70,7 @@ const items: Item[] = [
   /* Small screens: two corner tiles only, pinned to the card corners so they clear the copy. */
   @media (max-width: 639px) {
     .cti :global(.iso-ico) {
-      width: 40px;
+      width: 56px;
       height: auto;
     }
 

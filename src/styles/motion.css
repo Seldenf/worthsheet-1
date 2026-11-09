@@ -392,6 +392,39 @@ ul.list-check > li:nth-child(8) { --i: 7; }
   }
 }
 
+/* ---------- Grid drift: highlighted cells of .has-grid sheets take turns (motion.ts sets .drift, .is-lit, --on-x, --off-x, --fade-out) ----------
+   The gradient is drawn twice as wide as its cell and slid across it: lit = the strong half in view, unlit = the faint
+   half in view, so a cell lights by sliding in from one side. Only opacity and background-position transition. The
+   .sheet-section prefix beats the hero's twinkle animation, which the drift replaces. */
+@media (prefers-reduced-motion: no-preference) {
+  .sheet-section.has-grid .sheet-glow i.drift {
+    animation: none;
+    opacity: 0;
+    background-image:
+      var(--grain),
+      linear-gradient(
+        var(--dir),
+        color-mix(in srgb, var(--tone) var(--a), transparent) 0%,
+        color-mix(in srgb, var(--tone) calc(var(--a) * 0.12), transparent) 50%,
+        transparent 100%
+      );
+    background-size: auto, 200% 100%;
+    background-repeat: repeat, no-repeat;
+    background-position: 0 0, var(--off-x, 100%) 0;
+    transition:
+      opacity var(--fade-out, 7500ms) var(--ease-soft),
+      background-position var(--fade-out, 7500ms) var(--ease-soft);
+  }
+
+  .sheet-section.has-grid .sheet-glow i.drift.is-lit {
+    opacity: 1;
+    background-position: 0 0, var(--on-x, 0%) 0;
+    transition:
+      opacity 2400ms var(--ease-out),
+      background-position 2400ms var(--ease-out);
+  }
+}
+
 /* ---------- Reduced motion: no movement, reveals instant (global.css also zeroes durations) ---------- */
 @media (prefers-reduced-motion: reduce) {
   html.js [data-reveal],

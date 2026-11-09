@@ -3,7 +3,6 @@
 // opt in with a bare data-reveal attribute.
 const SELECTOR = [
   'main section .eyebrow',
-  'main section h2',
   'main section .lead',
   'main .card',
   'main .tile',
@@ -13,6 +12,11 @@ const SELECTOR = [
   'main details',
   'main [data-reveal]',
 ].join(',');
+
+// Headings that rise line by line (see splitLines). Card titles, FAQ questions, navigation and anything
+// inside an illustration stay out; the hero headline has its own entrance in its page.
+const HEADINGS = 'main h1, main h2, main h3';
+const HEADING_OUT = '.card, summary, nav, svg, footer';
 
 const main = document.querySelector<HTMLElement>('main');
 const header = document.querySelector<HTMLElement>('[data-header]');
@@ -35,7 +39,12 @@ function splitLines(el: HTMLElement): boolean {
   for (const node of Array.from(el.childNodes)) {
     if (node.nodeType === Node.TEXT_NODE) {
       for (const w of (node.textContent ?? '').split(/\s+/)) if (w) parts.push({ word: w });
-    } else if (node instanceof HTMLElement && node.children.length === 0) {
+    } else if (
+      node instanceof HTMLElement &&
+      node.children.length === 0 &&
+      node.tagName !== 'BR' &&
+      [...node.attributes].every((a) => a.name === 'class')
+    ) {
       for (const w of node.textContent!.split(/\s+/))
         if (w) parts.push({ word: w, tag: node.tagName.toLowerCase(), cls: node.className });
     } else {
@@ -74,6 +83,8 @@ function restoreLines(el: HTMLElement) {
   };
   if (!last) return done();
   last.addEventListener('transitionend', (e) => e.target === last && done());
+  // Fallback if the transition never runs (e.g. the element was hidden meanwhile).
+  setTimeout(done, 2000);
 }
 
 function show(el: HTMLElement, attr: string) {
@@ -96,20 +107,37 @@ function reveal(root: HTMLElement) {
   const sections = Array.from(root.children).filter(
     (el): el is HTMLElement => el.tagName === 'SECTION' && el !== hero && !inView(el),
   );
-  const candidates = Array.from(root.querySelectorAll<HTMLElement>(SELECTOR)).filter(
-    (el) =>
-      !hero?.contains(el) &&
-      !inView(el) &&
-      // Illustrations with .wsi-in parts own their intro; hiding the svg too would hide it twice.
-      !(el instanceof SVGElement && el.querySelector('.wsi-in')),
+  // Headings: a pending heading joins the chunks below; one already in view is split and risen at once.
+  const headings = Array.from(root.querySelectorAll<HTMLElement>(HEADINGS)).filter(
+    (el) => !hero?.contains(el) && !el.closest(HEADING_OUT),
   );
+  const liveHeadings = headings.filter((el) => inView(el));
+  const candidates = [
+    ...new Set([
+      ...Array.from(root.querySelectorAll<HTMLElement>(SELECTOR)).filter(
+        (el) =>
+          !hero?.contains(el) &&
+          !inView(el) &&
+          // Illustrations with .wsi-in parts own their intro; hiding the svg too would hide it twice.
+          !(el instanceof SVGElement && el.querySelector('.wsi-in')),
+      ),
+      ...headings.filter((el) => !inView(el)),
+    ]),
+  ];
   // A chunk inside another chunk rides along with its parent instead of being hidden twice.
   const children = candidates.filter((el) => !candidates.some((other) => other !== el && other.contains(el)));
+  const playNow = liveHeadings.filter((h) => !children.some((c) => c.contains(h)));
 
   // Chunks tagged in markup that are already visible (or ride along with a parent) must not stay hidden.
   root.querySelectorAll<HTMLElement>('[data-reveal]').forEach((el) => {
     if (!children.includes(el)) el.classList.add('is-in');
   });
+  for (const h of playNow) {
+    if (!splitLines(h)) continue;
+    h.setAttribute('data-reveal', 'lines');
+    void h.offsetWidth; // commit the masked start state so the lines transition from it
+    show(h, 'data-reveal');
+  }
 
   const groups = new Map<HTMLElement, HTMLElement[]>();
   const loose: HTMLElement[] = [];
@@ -141,7 +169,7 @@ function reveal(root: HTMLElement) {
   );
 
   for (const el of children) {
-    el.setAttribute('data-reveal', el.tagName === 'H2' && splitLines(el) ? 'lines' : '');
+    el.setAttribute('data-reveal', /^H[123]$/.test(el.tagName) && splitLines(el) ? 'lines' : '');
   }
   for (const section of groups.keys()) sectionIO.observe(section);
   for (const el of loose) childIO.observe(el);
@@ -438,6 +466,53 @@ function breathe(root: HTMLElement) {
   });
 }
 
+// Grid drift: the highlighted cells of each .has-grid sheet (hero, closing CTA) wander. A lit cell's gradient
+// fades out over 6-9s while another cell lights and its gradient slides in from one side (motion.css).
+// At most DRIFT_LIT cells are lit per sheet; a sheet only ticks while it is on screen.
+const DRIFT_LIT = 3;
+
+function drift(sheet: HTMLElement) {
+  const cells = Array.from(sheet.querySelectorAll<HTMLElement>('.sheet-glow > i'));
+  if (cells.length <= DRIFT_LIT) return;
+  const between = (lo: number, hi: number) => lo + Math.random() * (hi - lo);
+  const pick = <T,>(xs: T[]): T => xs[Math.floor(Math.random() * xs.length)];
+  const lit = (c: HTMLElement) => c.classList.contains('is-lit');
+
+  for (const c of cells) {
+    // The gradient's strong end is left for 90deg and right for 270deg; the slide starts with the faint end in view.
+    const fromLeft = c.style.getPropertyValue('--dir').trim() === '90deg';
+    c.style.setProperty('--on-x', fromLeft ? '0%' : '100%');
+    c.style.setProperty('--off-x', fromLeft ? '100%' : '0%');
+    c.classList.add('drift');
+  }
+  void sheet.offsetWidth; // commit the unlit start state so the first highlights fade in
+  for (const c of [...cells].sort(() => Math.random() - 0.5).slice(0, DRIFT_LIT)) c.classList.add('is-lit');
+
+  let timer = 0;
+  const step = () => {
+    const on = cells.filter(lit);
+    let out: HTMLElement | undefined;
+    if (on.length >= DRIFT_LIT) {
+      out = pick(on);
+      out.style.setProperty('--fade-out', `${between(6000, 9000).toFixed(0)}ms`);
+      out.classList.remove('is-lit');
+    }
+    pick(cells.filter((c) => !lit(c) && c !== out)).classList.add('is-lit');
+    schedule();
+  };
+  const schedule = () => {
+    timer = window.setTimeout(step, between(3000, 3600));
+  };
+  new IntersectionObserver(([entry]) => {
+    if (entry.isIntersecting) {
+      if (!timer) schedule();
+    } else {
+      clearTimeout(timer);
+      timer = 0;
+    }
+  }).observe(sheet);
+}
+
 if (main) {
   // Header scrolled state is a visual state, not motion: it runs under reduced motion too.
   if (header) headerScroll(header);
@@ -450,6 +525,7 @@ if (main) {
     revealIllustrations(main);
     revealChecklists(main, true);
     breathe(main);
+    main.querySelectorAll<HTMLElement>('.sheet-section.has-grid').forEach(drift);
     if (matchMedia('(hover: hover) and (pointer: fine)').matches) {
       main.querySelectorAll<SVGElement>('svg.wsi').forEach((svg) => {
         const area = svg.closest<HTMLElement>('section') ?? svg.parentElement;

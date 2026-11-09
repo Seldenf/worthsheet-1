@@ -1,8 +1,10 @@
 ---
 /**
- * One isometric tile per "How to use" step, drawn in the same language as the other illustrations
- * (2:1 isometric square, darker side, white edge, flat outline icon). Colours match the step's
- * number chip: 1 blue, 2 green, 3 yellow, 4 navy. Static; the page lifts `.lift` and, inside a
+ * One isometric tile per "How to use" step, drawn in the same language as StepsFlow on main: a 2:1 iso
+ * slab (darker side) under a top face, the flat outline glyph at 70% of the usual size on the face,
+ * an opaque pad and ground shadow (no alpha), and a layered breathing where the slab separates from
+ * the top by 1–3px. Colours match the step's number chip: 1 blue, 2 green, 3 yellow, 4 navy.
+ * Static apart from the breathing (off under reduced motion); the page lifts `.lift` and, inside a
  * `.step.is-active` parent, the tile glows in its own colour (`--glow`).
  */
 interface Props {
@@ -11,6 +13,7 @@ interface Props {
 }
 const { step, class: className } = Astro.props;
 
+// Every pad, shadow and tint is an opaque hex (no alpha), so nothing underneath shows through.
 const P = {
   1: { fill: '#6cbee4', side: '#4a9fc8', pad: '#e2f2f9', glow: 'rgba(108, 190, 228, 0.55)', icon: '<path d="M12 4v11M7 10.5l5 5 5-5M5 19.5h14"/>' },
   2: { fill: '#0f9d58', side: '#0a7a43', pad: '#e2f9e9', glow: 'rgba(15, 157, 88, 0.45)', icon: '<path d="M6 3h8l4 4v14H6zM14 3v4h4M9 12.5h6M9 16h6M12 10v8"/>' },
@@ -25,12 +28,19 @@ const P = {
 } as const;
 const t = P[step];
 
-// 2:1 isometric square of side s centred on (cx, cy).
+const C = { paper: '#f5f3f2', shade: '#e1dfde' };
+// 2:1 isometric square of side s whose top-left corner sits at (cx - s, cy).
 const iso = (cx: number, cy: number, s: number) => `matrix(1 -.5 1 .5 ${cx - s} ${cy})`;
 const S = 52; // tile side
 const CX = 80;
 const CY = 52; // tile top-face centre
-const k = (S * 0.58) / 24; // icon scale (24px icon grid)
+const PAD = 70; // ground pad side
+// Glyph: 1.5× the previous size; the 24-unit grid spans about 0.61 of the tile side, so it stays inside the top face.
+const k = ((S * 0.58) / 24) * 1.05;
+// Layered breathing: per-step period, phase and separation (1–3px), so the four tiles never move in unison.
+const SEP = [2, 2.6, 1.5, 2.2][step - 1];
+const DUR = 7 + step * 0.6;
+const DELAY = -step * 0.8;
 ---
 
 <svg
@@ -38,38 +48,42 @@ const k = (S * 0.58) / 24; // icon scale (24px icon grid)
   viewBox="0 0 160 120"
   width="160"
   height="120"
-  style={`--glow:${t.glow}`}
+  style={`--glow:${t.glow};--sep:${SEP}px;--dur:${DUR}s;--delay:${DELAY}s`}
   aria-hidden="true"
   focusable="false"
 >
-  <defs>
-    <filter id={`step-tile-blur-${step}`} x="-30%" y="-30%" width="160%" height="160%">
-      <feGaussianBlur stdDeviation="4"></feGaussianBlur>
-    </filter>
-  </defs>
-
-  <!-- ground pad and a soft contact shadow under the floating tile stay put. The animated class
-       sits on a wrapper so its CSS transform-origin never shifts the isometric transform. -->
-  <g transform={iso(CX, CY + 28, 70)}><rect width="70" height="70" rx="12" fill={t.pad} stroke="#fff" stroke-width="2"></rect></g>
+  <!-- ground: opaque paper underlay, pad and contact shadow stay put. The animated classes sit on plain
+       wrappers so their CSS translate never collides with the iso transform attribute. -->
+  <g transform={iso(CX, CY + 28, PAD)}>
+    <rect width={PAD} height={PAD} rx="12" fill={C.paper}></rect>
+    <rect width={PAD} height={PAD} rx="12" fill={t.pad} stroke="#fff" stroke-width="2"></rect>
+  </g>
   <g class="shadow">
-    <g transform={iso(CX + 2, CY + 30, S - 6)} filter={`url(#step-tile-blur-${step})`}>
-      <rect width={S - 6} height={S - 6} rx="9" fill="#0c2635" fill-opacity=".18"></rect>
+    <g transform={iso(CX + 4, CY + 34, S - 6)}>
+      <rect width={S - 6} height={S - 6} rx="9" fill={C.paper}></rect>
+      <rect width={S - 6} height={S - 6} rx="9" fill={C.shade}></rect>
     </g>
   </g>
 
-  <!-- the tile itself lifts on hover -->
+  <!-- the tile itself lifts on hover / when active. Inside, the top face breathes over the slab. -->
   <g class="lift">
-    <g transform={iso(CX, CY + 8, S)}><rect width={S} height={S} rx="9" fill={t.side}></rect></g>
-    <g transform={iso(CX, CY, S)}><rect width={S} height={S} rx="9" fill={t.fill} stroke="#fff" stroke-width="2"></rect></g>
-    <g
-      transform={`translate(${CX - 12 * k} ${CY - 12 * k - 1}) scale(${k})`}
-      stroke="#fff"
-      stroke-width="2"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      fill="none"
-      set:html={t.icon}
-    ></g>
+    <g class="tile-slab">
+      <g transform={iso(CX, CY + 8, S)}><rect width={S} height={S} rx="9" fill={t.side}></rect></g>
+    </g>
+    <g class="tile-top">
+      <g transform={iso(CX, CY, S)}>
+        <rect width={S} height={S} rx="9" fill={t.fill} stroke="#fff" stroke-width="2"></rect>
+        <g
+          transform={`translate(${S / 2} ${S / 2}) scale(${k}) translate(-12 -12)`}
+          stroke="#fff"
+          stroke-width="2.6"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          fill="none"
+          set:html={t.icon}
+        ></g>
+      </g>
+    </g>
   </g>
 </svg>
 
@@ -87,15 +101,36 @@ const k = (S * 0.58) / 24; // icon scale (24px icon grid)
     filter: drop-shadow(0 12px 12px var(--glow));
   }
 
-  @media (prefers-reduced-motion: no-preference) {
-    .step-tile {
-      transition: filter 450ms cubic-bezier(0.23, 1, 0.32, 1);
-    }
-  }
-
   .lift,
   .shadow {
     transform-box: fill-box;
     transform-origin: center;
+  }
+
+  @keyframes step-tile-top {
+    0%, 100% { translate: 0 0; }
+    50% { translate: 0 -7px; }
+  }
+
+  @keyframes step-tile-slab {
+    0%, 100% { translate: 0 0; }
+    50% { translate: 0 calc(-7px + var(--sep, 2px)); }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .step-tile {
+      transition: filter 450ms cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    .tile-top,
+    .tile-slab {
+      animation-duration: var(--dur, 8s);
+      animation-delay: var(--delay, 0s);
+      animation-iteration-count: infinite;
+      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+    }
+
+    .tile-top { animation-name: step-tile-top; }
+    .tile-slab { animation-name: step-tile-slab; }
   }
 </style>

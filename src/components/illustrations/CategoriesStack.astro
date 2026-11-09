@@ -201,7 +201,7 @@ const menus: Record<View, string[]> = {
   @keyframes wsi-cats-drop { from { opacity: 0; translate: 0 -28px; } to { opacity: 1; translate: 0 0; } }
   @keyframes wsi-cats-fade { from { opacity: 0; } to { opacity: 1; } }
 
-  /* view state: the script toggles `.sw.on` per morphing group; faces cross-fade via --fa. */
+  /* view state: the script toggles `.sw.on` per group; faces cross-fade via --fa. */
   svg.wsi-cats .wsi-cats-card { --fa: var(--fm, 1); }
   svg.wsi-cats[data-view="assets"] .wsi-cats-card { --fa: 1; }
   svg.wsi-cats[data-view="liabilities"] .wsi-cats-card { --fa: 0; }
@@ -234,38 +234,60 @@ const menus: Record<View, string[]> = {
 </style>
 
 <script>
-  // Morph: each swappable group (`.sw`) inside a `.sw-wrap` exits upward, then the target enters from below.
-  // Lower cards stagger top → bottom by 50ms; each morph lasts ~380ms (150ms out + 230ms in).
-  const STAGGER = 50;
-  const OUT_MS = 150;
-  const IN_MS = 230;
+  // View change → the illustration re-draws itself: lower cards collapse bottom → top and the extras fade out,
+  // content swaps while hidden, then cards drop back in top → bottom and the extras fade in.
+  // The summary card stays visible; only its own value morphs (formulas view).
+  const UNDRAW_MS = 200;
+  const UNDRAW_STAGGER = 40;
+  const COLLAPSE_Y = 10;
+  const REDRAW_MS = 450;
+  const REDRAW_STAGGER = 90;
+  const REDRAW_FROM_Y = -24;
+  const EXTRAS_AT = 600;
+  const EXTRAS_MS = 400;
+  const MORPH_OUT_MS = 150;
+  const MORPH_IN_MS = 230;
   const EXIT = 'cubic-bezier(0.5, 0, 0.75, 0)';
   const EASE = 'cubic-bezier(0.23, 1, 0.32, 1)';
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 
   type Track = { timers: number[]; anims: Animation[] };
   const tracks = new WeakMap<Element, Track>();
+  type Run = { anims: Animation[]; timer: number };
+  const runs = new WeakMap<SVGSVGElement, Run>();
 
-  function swap(wrap: Element, key: string, delay: number, instant: boolean) {
-    const track = tracks.get(wrap) ?? { timers: [], anims: [] };
-    tracks.set(wrap, track);
+  const keyFor = (wrap: Element, view: string) =>
+    wrap.dataset.summary === 'true' ? (view === 'formulas' ? 'formulas' : 'mixed') : view;
+
+  const showOnly = (wrap: Element, key: string) => {
+    wrap.querySelectorAll<SVGGElement>(':scope > .sw').forEach((g) => g.classList.toggle('on', g.dataset.v === key));
+  };
+
+  function clearTrack(wrap: Element) {
+    const track = tracks.get(wrap);
+    if (!track) return;
     track.timers.forEach((t) => clearTimeout(t));
     track.anims.forEach((a) => a.cancel());
     track.timers = [];
     track.anims = [];
+  }
+
+  // Summary only: exit upward, then the target enters from below.
+  function morph(wrap: Element, key: string) {
+    clearTrack(wrap);
+    const track = tracks.get(wrap) ?? { timers: [], anims: [] };
+    tracks.set(wrap, track);
 
     const next = wrap.querySelector<SVGGElement>(`:scope > [data-v="${key}"]`);
     const cur = wrap.querySelector<SVGGElement>(':scope > .sw.on');
     if (!next || next === cur) return;
-    if (instant || !cur) {
-      cur?.classList.remove('on');
+    if (!cur) {
       next.classList.add('on');
       return;
     }
-
     const out = cur.animate(
       [{ opacity: 1, translate: '0px 0px' }, { opacity: 0, translate: '0px -10px' }],
-      { duration: OUT_MS, delay, easing: EXIT, fill: 'forwards' },
+      { duration: MORPH_OUT_MS, easing: EXIT, fill: 'forwards' },
     );
     track.anims.push(out);
     track.timers.push(
@@ -277,28 +299,94 @@ const menus: Record<View, string[]> = {
         track.anims = [
           next.animate(
             [{ opacity: 0, translate: '0px 10px' }, { opacity: 1, translate: '0px 0px' }],
-            { duration: IN_MS, easing: EASE },
+            { duration: MORPH_IN_MS, easing: EASE },
           ),
         ];
-      }, delay + OUT_MS),
+      }, MORPH_OUT_MS),
     );
   }
 
-  function setView(svg: SVGSVGElement, view: string, instant: boolean) {
-    svg.querySelectorAll<SVGGElement>('.sw-wrap').forEach((wrap) => {
-      const card = wrap.closest<SVGGElement>('.wsi-cats-card');
-      const delay = card ? Number(card.dataset.i) * STAGGER : 0;
-      const summary = wrap.dataset.summary === 'true';
-      // The summary card only changes its value in the formulas view.
-      const key = summary ? (view === 'formulas' ? 'formulas' : 'mixed') : view;
-      swap(wrap, key, delay, instant);
+  const readY = (translate: string) => parseFloat(translate.split(' ')[1]) || 0;
+
+  function stop(svg: SVGSVGElement) {
+    const run = runs.get(svg);
+    if (!run) return;
+    clearTimeout(run.timer);
+    run.anims.forEach((a) => a.cancel());
+    runs.delete(svg);
+  }
+
+  function redraw(svg: SVGSVGElement) {
+    const cards = [...svg.querySelectorAll<SVGGElement>('.wsi-cats-card')].filter((el) => el.dataset.i !== '0');
+    const extras = [...svg.querySelectorAll<SVGGElement>('.wsi-extra')];
+    // Snapshot what is on screen now (may be mid-animation) so rapid hovers restart from there.
+    const from = new Map<Element, { opacity: string; y: number }>();
+    [...cards, ...extras].forEach((el) => {
+      const cs = getComputedStyle(el);
+      from.set(el, { opacity: cs.opacity, y: readY(cs.getPropertyValue('translate')) });
     });
+    stop(svg);
+
+    const run: Run = { anims: [], timer: 0 };
+    runs.set(svg, run);
+    const n = cards.length;
+
+    // Un-draw: cards collapse bottom → top; pills, dropdown and leaders fade out.
+    cards.forEach((el) => {
+      const f = from.get(el)!;
+      run.anims.push(el.animate(
+        [{ opacity: f.opacity, translate: `0px ${f.y}px` }, { opacity: 0, translate: `0px ${COLLAPSE_Y}px` }],
+        { duration: UNDRAW_MS, delay: (n - Number(el.dataset.i)) * UNDRAW_STAGGER, easing: EXIT, fill: 'forwards' },
+      ));
+    });
+    extras.forEach((el) => {
+      run.anims.push(el.animate(
+        [{ opacity: from.get(el)!.opacity }, { opacity: 0 }],
+        { duration: UNDRAW_MS, easing: EXIT, fill: 'forwards' },
+      ));
+    });
+
+    run.timer = window.setTimeout(() => {
+      run.anims.forEach((a) => a.cancel());
+      run.anims = [];
+      // Hidden: swap lower content, then re-draw.
+      const view = svg.dataset.view ?? 'mixed';
+      svg.querySelectorAll<SVGGElement>('.sw-wrap:not([data-summary="true"])').forEach((w) => showOnly(w, view));
+      cards.forEach((el) => {
+        run.anims.push(el.animate(
+          [{ opacity: 0, translate: `0px ${REDRAW_FROM_Y}px` }, { opacity: 1, translate: '0px 0px' }],
+          { duration: REDRAW_MS, delay: (Number(el.dataset.i) - 1) * REDRAW_STAGGER, easing: EASE, fill: 'backwards' },
+        ));
+      });
+      extras.forEach((el) => {
+        run.anims.push(el.animate(
+          [{ opacity: 0 }, { opacity: 1 }],
+          { duration: EXTRAS_MS, delay: EXTRAS_AT, easing: EASE, fill: 'backwards' },
+        ));
+      });
+    }, (n - 1) * UNDRAW_STAGGER + UNDRAW_MS);
+  }
+
+  const canAnimate = (svg: SVGSVGElement) =>
+    !reduced.matches && typeof Element.prototype.animate === 'function' && svg.classList.contains('is-in');
+
+  function setView(svg: SVGSVGElement, view: string) {
+    if (!canAnimate(svg)) {
+      stop(svg);
+      svg.querySelectorAll<SVGGElement>('.sw-wrap').forEach((w) => {
+        clearTrack(w);
+        showOnly(w, keyFor(w, view));
+      });
+      return;
+    }
+    svg.querySelectorAll<SVGGElement>('.sw-wrap[data-summary="true"]').forEach((w) => morph(w, keyFor(w, view)));
+    redraw(svg);
   }
 
   document.querySelectorAll<SVGSVGElement>('svg.wsi-cats').forEach((svg) => {
-    const instant = reduced.matches || typeof Element.prototype.animate !== 'function';
-    setView(svg, svg.dataset.view ?? 'mixed', true);
-    new MutationObserver(() => setView(svg, svg.dataset.view ?? 'mixed', instant)).observe(svg, {
+    const view = () => svg.dataset.view ?? 'mixed';
+    svg.querySelectorAll<SVGGElement>('.sw-wrap').forEach((w) => showOnly(w, keyFor(w, view())));
+    new MutationObserver(() => setView(svg, view())).observe(svg, {
       attributes: true,
       attributeFilter: ['data-view'],
     });

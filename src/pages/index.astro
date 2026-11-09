@@ -247,7 +247,7 @@ const jsonLd = [
         {
           glow.map(([c, r, tone, a, end], i) => (
             <i
-              class:list={[`tone-${tone}`, { below: r >= 26, twinkle: i % 3 === 1 }]}
+              class:list={[`tone-${tone}`, { below: r >= 26 }]}
               style={`--c:${c};--r:${r >= 26 ? r - 26 : r};--a:${a}%;--dir:${end === 'l' ? '90deg' : '270deg'};--i:${i}`}
             />
           ))
@@ -267,12 +267,19 @@ const jsonLd = [
                   <span class="title-row">
                     statement
                     <span class="title-pill">
-                      <svg class="title-icon" viewBox="0 0 48 48" aria-hidden="true">
-                        <rect x="15" y="6" width="29" height="36" rx="5" fill="#21a366"></rect>
-                        <path d="M30 6v36M15 18h29M15 30h29" stroke="#fff" stroke-opacity=".35" stroke-width="1.5"></path>
-                        <rect x="4" y="12" width="24" height="24" rx="5" fill="#107c41"></rect>
-                        <path d="M9.6 17.5h4.1l2.3 4 2.3-4h4.1l-4.3 6.5 4.4 6.5h-4.1l-2.4-4.1-2.4 4.1H9.5l4.4-6.5z" fill="#fff"></path>
-                      </svg>
+                      <span class="title-icons" aria-hidden="true">
+                        <svg class="title-icon title-icon-excel" viewBox="0 0 48 48">
+                          <rect x="15" y="6" width="29" height="36" rx="5" fill="#21a366"></rect>
+                          <path d="M30 6v36M15 18h29M15 30h29" stroke="#fff" stroke-opacity=".35" stroke-width="1.5"></path>
+                          <rect x="4" y="12" width="24" height="24" rx="5" fill="#107c41"></rect>
+                          <path d="M9.6 17.5h4.1l2.3 4 2.3-4h4.1l-4.3 6.5 4.4 6.5h-4.1l-2.4-4.1-2.4 4.1H9.5l4.4-6.5z" fill="#fff"></path>
+                        </svg>
+                        <svg class="title-icon title-icon-sheets" viewBox="0 0 48 48">
+                          <path d="M12 3h18l10 10v28a4 4 0 0 1-4 4H12a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4z" fill="#0f9d58"></path>
+                          <path d="M30 3v6a4 4 0 0 0 4 4h6z" fill="#87ceac"></path>
+                          <path d="M15 22h18v16H15zM15 27.3h18M15 32.7h18M24 22v16" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round"></path>
+                        </svg>
+                      </span>
                       template
                     </span>
                   </span>
@@ -498,10 +505,8 @@ const jsonLd = [
           <li>
             <a class="card tool" data-tone={t.tone} href={url(t.href)}>
               <IsoIcon icon={t.icon} tone={t.tone} size={56} />
-              <div class="tool-head">
-                <h3>{t.title}</h3>
-                <span class="tool-arrow" aria-hidden="true">→</span>
-              </div>
+              <h3>{t.title}</h3>
+              <span class="tool-arrow" aria-hidden="true">↗</span>
               <p class="muted">{t.text}</p>
             </a>
           </li>
@@ -665,21 +670,43 @@ const jsonLd = [
   }
 
   .title-pill {
+    position: relative;
+    isolation: isolate;
     display: inline-flex;
     align-items: center;
     gap: 0.105em;
     padding: 0 0.185em 0 0.123em;
-    border: 1px solid var(--line-strong);
+    border: 1px solid transparent;
     border-radius: 0.37em;
-    background: var(--white);
     color: var(--green);
   }
 
-  /* Excel-style mark: a green "X" tile over a sheet. */
-  .title-icon {
+  /* The frame (border + white fill) is its own layer so it can fade in after the headline. */
+  .title-pill::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    z-index: -1;
+    border: 1px solid var(--line-strong);
+    border-radius: inherit;
+    background: var(--white);
+    pointer-events: none;
+  }
+
+  /* Two marks stacked in one box: Excel (green "X" tile over a sheet) and Google Sheets. */
+  .title-icons {
+    position: relative;
     flex: none;
     width: 0.74em;
     height: 0.74em;
+    perspective: 3em;
+  }
+
+  .title-icon {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
   }
 
   .hero-points {
@@ -729,24 +756,12 @@ const jsonLd = [
     }
   }
 
-  @keyframes cell-twinkle {
-    50% {
-      opacity: 0.45;
-    }
-  }
-
   .hero-proof {
     animation: ws-fade var(--enter-ms) var(--ease-out) backwards;
   }
 
-  .hero .sheet-glow i {
-    animation: ws-fade 600ms var(--ease-out) backwards;
-    animation-delay: calc(500ms + var(--i) * 25ms);
-  }
-
-  /* Checks and the Excel mark appear like contextual icons: scale 0.25 -> 1, opacity, 4px blur. */
-  .proof-checks i::after,
-  .title-icon {
+  /* Checks appear like contextual icons: scale 0.25 -> 1, opacity, 4px blur. */
+  .proof-checks i::after {
     animation: ws-fade var(--enter-ms) var(--ease-icon) backwards;
   }
 
@@ -762,8 +777,68 @@ const jsonLd = [
     animation-delay: 350ms;
   }
 
-  .title-icon {
-    animation-delay: 450ms;
+  /* The pill's frame is invisible until the headline lines have revealed (they finish ~700ms in),
+     then fades in; the Excel / Sheets mark pops in just after. The text itself is never hidden. */
+  @keyframes pill-frame-fade {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes pill-frame-pop {
+    from {
+      opacity: 0;
+      scale: 0.96;
+    }
+  }
+
+  .title-pill::before {
+    animation: pill-frame-fade 450ms var(--ease-out) 700ms backwards;
+  }
+
+  .title-icons {
+    animation: ws-fade var(--enter-ms) var(--ease-icon) 900ms backwards;
+  }
+
+  /* Excel <-> Google Sheets: every 8s cycle each mark flips out and the other in (a swap every 4s).
+     Without motion only the Excel mark is shown. */
+  .title-icon-sheets {
+    opacity: 0;
+  }
+
+  @keyframes icon-swap-excel {
+    0%,
+    40% {
+      opacity: 1;
+      transform: rotateY(0deg) scale(1);
+    }
+    48%,
+    90% {
+      opacity: 0;
+      transform: rotateY(-80deg) scale(0.85);
+    }
+    100% {
+      opacity: 1;
+      transform: rotateY(0deg) scale(1);
+    }
+  }
+
+  @keyframes icon-swap-sheets {
+    0%,
+    42% {
+      opacity: 0;
+      transform: rotateY(80deg) scale(0.85);
+    }
+    50%,
+    90% {
+      opacity: 1;
+      transform: rotateY(0deg) scale(1);
+    }
+    98%,
+    100% {
+      opacity: 0;
+      transform: rotateY(80deg) scale(0.85);
+    }
   }
 
   @media (prefers-reduced-motion: no-preference) {
@@ -772,8 +847,20 @@ const jsonLd = [
     }
 
     .proof-checks i::after,
-    .title-icon {
+    .title-icons {
       animation-name: ws-icon-in;
+    }
+
+    .title-pill::before {
+      animation-name: pill-frame-pop;
+    }
+
+    .title-icon-excel {
+      animation: icon-swap-excel 8s cubic-bezier(0.23, 1, 0.32, 1) 1.4s infinite backwards;
+    }
+
+    .title-icon-sheets {
+      animation: icon-swap-sheets 8s cubic-bezier(0.23, 1, 0.32, 1) 1.4s infinite backwards;
     }
 
     /* Display headline: each line rises out of its own mask, 80ms apart. */
@@ -783,13 +870,6 @@ const jsonLd = [
 
     .title-line + .title-line > span {
       animation-delay: 180ms;
-    }
-
-    /* A third of the hero's cells slowly breathe, like a sheet recalculating in the background. */
-    .hero .sheet-glow i.twinkle {
-      animation:
-        ws-fade 600ms var(--ease-out) calc(500ms + var(--i) * 25ms) backwards,
-        cell-twinkle calc(7s + var(--i) * 97ms) var(--ease-soft) calc(1.2s + var(--i) * 0.31s) infinite;
     }
   }
 
@@ -866,8 +946,8 @@ const jsonLd = [
   }
 
   /* ---------- Steps: a tile above each step, joined by a dotted line in the 4-up layout ----------
-     The script highlights steps 1 to 4 in turn (.is-sequencing on .steps-wrap, .is-active on the
-     step) and sets --p (0 to 3, eased) on .steps-wrap; each dotted link fills by clamp(--p - --i). */
+     The script marks the hovered step (.is-active on the step, .is-picking on .steps-wrap) and sets
+     --p (0 to 3, eased) on .steps-wrap; each dotted link fills by clamp(--p - --i). */
   .steps-wrap {
     position: relative;
   }
@@ -939,7 +1019,6 @@ const jsonLd = [
       inset: 0;
       overflow: hidden;
       transform: translateX(calc((var(--f) - 1) * 100%));
-      transition: opacity 250ms var(--ease-out);
     }
 
     .link-dots {
@@ -959,10 +1038,6 @@ const jsonLd = [
 
     .link:nth-child(3) {
       --link-color: #0c2635;
-    }
-
-    .steps-wrap.is-resetting .link-fill {
-      opacity: 0;
     }
   }
 
@@ -1013,15 +1088,16 @@ const jsonLd = [
     margin-top: clamp(28px, 4vw, 44px);
   }
 
-  /* Sequencing: the inactive steps (tile and text) are greyed. Applied to the step's children,
-     never to the step itself, which the scroll reveal owns. */
+  /* Picking: while a step is hovered or focused, the others (tile and text) are greyed. Applied to
+     the step's children, never to the step itself, which the scroll reveal owns. With nothing
+     picked (or without the script) every step is fully visible. */
   .step > :global(*) {
     transition:
       opacity 450ms var(--ease-out),
       filter 450ms var(--ease-out);
   }
 
-  .steps-wrap.is-sequencing .step:not(.is-active) > :global(*) {
+  .steps-wrap.is-picking .step:not(.is-active) > :global(*) {
     opacity: 0.45;
     filter: grayscale(1);
   }
@@ -1039,22 +1115,22 @@ const jsonLd = [
     }
   }
 
-  .steps-wrap.is-sequencing .step.is-active :global(.lift) {
+  .steps-wrap.is-picking .step.is-active :global(.lift) {
     translate: 0 -6px;
   }
 
-  .steps-wrap.is-sequencing .step.is-active :global(.shadow) {
+  .steps-wrap.is-picking .step.is-active :global(.shadow) {
     scale: 0.9;
     opacity: 0.7;
   }
 
-  /* Without the script (or with reduced motion) every step stays normal; hover still lifts a tile. */
+  /* Without the script every step stays normal; hover still lifts a tile. */
   @media (hover: hover) {
-    .steps-wrap:not(.is-sequencing) .step:hover :global(.lift) {
+    .steps-wrap:not(.is-picking) .step:hover :global(.lift) {
       translate: 0 -6px;
     }
 
-    .steps-wrap:not(.is-sequencing) .step:hover :global(.shadow) {
+    .steps-wrap:not(.is-picking) .step:hover :global(.shadow) {
       scale: 0.9;
       opacity: 0.7;
     }
@@ -1310,48 +1386,76 @@ const jsonLd = [
     }
   }
 
-  /* ---------- Dynamic categories: hover or focus on a row drives the illustration ---------- */
+  /* ---------- Dynamic categories: hover or focus on a row drives the illustration ----------
+     The row's text takes the bullet's tone, a 1px underline grows from the left and the bullet
+     scales up. */
   #categories ul.list-check li[data-view] {
+    --tone: #0a7a43;
     width: fit-content;
     max-width: 100%;
     cursor: default;
-    text-decoration: underline;
-    text-decoration-thickness: 2px;
-    text-underline-offset: 5px;
-    text-decoration-color: transparent;
+  }
+
+  #categories ul.list-check li[data-view]:nth-child(3n + 2) {
+    --tone: #1b78a8;
+  }
+
+  #categories ul.list-check li[data-view]:nth-child(3n + 3) {
+    --tone: #9a6700;
+  }
+
+  #categories ul.list-check li[data-view]::after {
+    content: '';
+    position: absolute;
+    left: 32px;
+    right: 0;
+    bottom: -3px;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: left center;
   }
 
   #categories ul.list-check li[data-view]:focus-visible {
     outline: 2px solid var(--ink);
     outline-offset: 4px;
     border-radius: 4px;
+    color: var(--tone);
+  }
+
+  #categories ul.list-check li[data-view]:focus-visible::before {
+    scale: 1.08;
+  }
+
+  #categories ul.list-check li[data-view]:focus-visible::after {
+    transform: scaleX(1);
   }
 
   @media (hover: hover) and (pointer: fine) {
     #categories ul.list-check li[data-view]:hover {
-      color: #0a7a43;
-      text-decoration-color: currentColor;
+      color: var(--tone);
     }
 
     #categories ul.list-check li[data-view]:hover::before {
-      filter: brightness(1.1) saturate(1.15);
+      scale: 1.08;
     }
-  }
 
-  #categories ul.list-check li[data-view]:focus-visible {
-    color: #0a7a43;
-    text-decoration-color: currentColor;
+    #categories ul.list-check li[data-view]:hover::after {
+      transform: scaleX(1);
+    }
   }
 
   @media (prefers-reduced-motion: no-preference) {
     #categories ul.list-check li[data-view] {
-      transition:
-        color 160ms var(--ease-out),
-        text-decoration-color 160ms var(--ease-out);
+      transition: color 200ms var(--ease-out);
     }
 
-    #categories ul.list-check li::before {
-      transition: filter 160ms var(--ease-out);
+    #categories ul.list-check li[data-view]::before {
+      transition: scale 200ms var(--ease-out);
+    }
+
+    #categories ul.list-check li[data-view]::after {
+      transition: transform 200ms var(--ease-out);
     }
   }
 
@@ -1362,25 +1466,22 @@ const jsonLd = [
   }
 
   .tool {
+    position: relative;
     height: 100%;
     display: flex;
     flex-direction: column;
-    gap: 8px;
-  }
-
-  .tool-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
     gap: 12px;
+    padding: clamp(22px, 2.6vw, 30px);
   }
 
   .tool h3 {
     font-size: 1.1875rem;
+    line-height: 1.25;
   }
 
   .tool p {
     font-size: 0.9688rem;
+    line-height: 1.55;
   }
 
   .tool[data-tone='blue'] {
@@ -1399,9 +1500,45 @@ const jsonLd = [
     --edge: rgba(224, 127, 184, 0.85);
   }
 
+  /* Diagonal arrow in the card's top-right corner: only on hover or keyboard focus. */
   .tool-arrow {
-    flex: none;
+    position: absolute;
+    top: 14px;
+    right: 16px;
     font-size: 1.25rem;
+    line-height: 1;
+    color: var(--ink);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .tool:focus-visible .tool-arrow {
+    opacity: 1;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .tool:hover .tool-arrow {
+      opacity: 1;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .tool-arrow {
+      translate: -2px 2px;
+      transition:
+        opacity 200ms var(--ease-out),
+        translate 200ms var(--ease-out);
+    }
+
+    .tool:focus-visible .tool-arrow {
+      translate: 0 0;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .tool:hover .tool-arrow {
+        translate: 0 0;
+      }
+    }
   }
 
   .tools-note {
@@ -1458,25 +1595,22 @@ const jsonLd = [
 </style>
 
 <script>
-  // How to use: steps 1 to 4 take turns (inactive ones are greyed) while the dotted links fill toward
-  // the active step. Hovering or focusing a step (or its tile) selects it. Reduced motion: no loop.
+  // How to use: with nothing hovered every step is fully visible. Hovering (or keyboard-focusing) a
+  // step, card or tile, highlights it, greys the others and fills the dotted links up to it;
+  // leaving the section restores everything. Reduced motion: same states, but --p jumps.
   const wrap = document.querySelector<HTMLElement>('#how-to-use .steps-wrap');
   const items = wrap ? Array.from(wrap.querySelectorAll<HTMLElement>('.steps > .step')) : [];
 
-  if (wrap && items.length === 4 && !matchMedia('(prefers-reduced-motion: reduce)').matches && 'IntersectionObserver' in window) {
-    const STEP_MS = 2400;
-    const RESET_MS = 320;
+  if (wrap && items.length === 4) {
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)');
     const EASE_MS = 150;
 
-    let active = -1;
+    let hovered = -1;
+    let focused = -1;
     let p = 0;
     let target = 0;
     let raf = 0;
     let last = 0;
-    let timer = 0;
-    let resetTimer = 0;
-    let visible = false;
-    let pinned = false;
 
     const render = () => wrap.style.setProperty('--p', p.toFixed(4));
 
@@ -1496,82 +1630,44 @@ const jsonLd = [
 
     const move = (to: number) => {
       target = to;
-      if (!raf) {
+      if (reduce.matches) {
+        cancelAnimationFrame(raf);
+        raf = 0;
+        p = to;
+        render();
+      } else if (!raf) {
         last = 0;
         raf = requestAnimationFrame(frame);
       }
     };
 
-    const setActive = (i: number) => {
-      active = i;
+    const apply = () => {
+      const i = hovered >= 0 ? hovered : focused;
+      wrap.classList.toggle('is-picking', i >= 0);
       items.forEach((item, j) => item.classList.toggle('is-active', j === i));
+      move(i >= 0 ? i : 0);
     };
-
-    const schedule = () => {
-      window.clearTimeout(timer);
-      if (visible && !pinned) timer = window.setTimeout(advance, STEP_MS);
-    };
-
-    const advance = () => {
-      const next = (active + 1) % items.length;
-      if (next === 0) {
-        // Wrap: fade the fills out, activate step 1, then reset the progress while it is invisible.
-        wrap.classList.add('is-resetting');
-        setActive(0);
-        resetTimer = window.setTimeout(() => {
-          p = target = 0;
-          render();
-          wrap.classList.remove('is-resetting');
-        }, RESET_MS);
-      } else {
-        setActive(next);
-        move(next);
-      }
-      schedule();
-    };
-
-    const pin = (i: number) => {
-      pinned = true;
-      window.clearTimeout(timer);
-      window.clearTimeout(resetTimer);
-      wrap.classList.remove('is-resetting');
-      setActive(i);
-      move(i);
-    };
-
-    const unpin = () => {
-      if (!pinned) return;
-      pinned = false;
-      schedule();
-    };
-
-    wrap.classList.add('is-sequencing');
-    setActive(0);
-    render();
-
-    new IntersectionObserver(
-      (entries) => {
-        visible = entries[0]?.isIntersecting ?? false;
-        if (visible) schedule();
-        else window.clearTimeout(timer);
-      },
-      { threshold: 0.25 },
-    ).observe(wrap);
 
     items.forEach((item, i) => {
-      item.addEventListener('pointerenter', () => pin(i));
+      item.addEventListener('pointerenter', (e) => {
+        if (e.pointerType === 'touch') return;
+        hovered = i;
+        apply();
+      });
     });
     wrap.addEventListener('pointerleave', () => {
-      if (!wrap.contains(document.activeElement)) unpin();
+      hovered = -1;
+      apply();
     });
     wrap.addEventListener('focusin', (e) => {
-      const i = items.findIndex((item) => item.contains(e.target as Node));
-      if (i >= 0) pin(i);
+      const el = e.target as Element;
+      if (!el.matches(':focus-visible')) return;
+      focused = items.findIndex((item) => item.contains(el));
+      apply();
     });
-    wrap.addEventListener('focusout', (e) => {
-      const next = e.relatedTarget as Node | null;
-      if (next && wrap.contains(next)) return;
-      unpin();
+    wrap.addEventListener('focusout', () => {
+      focused = -1;
+      apply();
     });
   }
 </script>
