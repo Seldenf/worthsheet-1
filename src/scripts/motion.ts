@@ -662,7 +662,7 @@ function breathe(root: HTMLElement) {
 // starts a slide: a gradient of its colour fades in at one side, intensifies and travels across the cell until
 // it has left on the other side (5-7s, motion.css keyframes). When the animation ends the cell goes quiet and
 // another one starts. At most DRIFT_LIT slides run per sheet; a sheet only starts new ones while on screen.
-const DRIFT_LIT = 3;
+const DRIFT_LIT = 7;
 
 // One pool per .sheet-glow (page grid behind a sheet, or a grid inside a card): each runs its own DRIFT_LIT budget.
 function drift(glow: HTMLElement) {
@@ -690,7 +690,7 @@ function drift(glow: HTMLElement) {
   let timer = 0;
   const tick = () => {
     start();
-    timer = window.setTimeout(tick, between(1800, 3200));
+    timer = window.setTimeout(tick, between(600, 1300));
   };
   new IntersectionObserver(([entry]) => {
     if (entry.isIntersecting) {

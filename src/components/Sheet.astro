@@ -56,28 +56,30 @@ function generate(seedValue: number): GlowCell[] {
   const pick = <T,>(xs: T[]): T => xs[Math.floor(r() * xs.length)];
   const cells: GlowCell[] = [];
 
-  // Two stacks per side, each fading row by row away from its strongest cell.
+  // Four stacks per side (alternating the near and far columns), each fading row by row away from its strongest cell.
   for (const side of ['l', 'r'] as const) {
     let row = Math.floor(r() * 3);
-    for (let k = 0; k < 2; k++) {
-      const col = side === 'l' ? pick([-1, -1, -2, -3]) : pick([12, 12, 13, 14]);
+    for (let k = 0; k < 4; k++) {
+      const col = side === 'l' ? pick(k % 2 ? [-2, -3] : [-1, -1, -2]) : pick(k % 2 ? [13, 14] : [12, 12, 13]);
       const tone = pick(tones);
       const len = 2 + Math.floor(r() * 3);
       const start = 34 + Math.floor(r() * 14);
       for (let i = 0; i < len; i++) cells.push([col, row + i, tone, Math.max(8, start - i * 11), side]);
-      row += len + 3 + Math.floor(r() * 6);
+      row += len + 1 + Math.floor(r() * 4);
     }
   }
 
-  // A highlighted pair in the rows above the sheet.
-  if (rowsAbove > 0) {
+  // Highlighted pairs in the rows above and below the sheet.
+  const pair = (row: number) => {
     const col = Math.floor(r() * 11);
-    const row = -1 - Math.floor(r() * rowsAbove);
     const tone = pick(tones);
     const start = 22 + Math.floor(r() * 12);
     const end = r() < 0.5 ? 'l' : 'r';
     cells.push([col, row, tone, start, end], [col + 1, row, tone, Math.round(start * 0.5), end]);
-  }
+  };
+  for (let k = 0; k < Math.min(rowsAbove, 2); k++) pair(-1 - Math.floor(r() * rowsAbove));
+  // Rows <= -100 encode cells in the rows below the sheet (rendered with .below, counted up from the bottom edge).
+  if (rowsBelow > 0) pair(-101 - Math.floor(r() * rowsBelow));
   return cells;
 }
 
@@ -96,8 +98,8 @@ const cells = grid ? (glow ?? generate(seed)) : [];
         <div class="sheet-glow" aria-hidden="true">
           {cells.map(([c, row, t, a, end]) => (
             <i
-              class={`tone-${t}`}
-              style={`--c:${c};--r:${row};--a:${a}%;--dir:${end === 'l' ? '90deg' : '270deg'}`}
+              class:list={[`tone-${t}`, { below: row <= -100 }]}
+              style={`--c:${c};--r:${row <= -100 ? -(row + 101) : row};--a:${a}%;--dir:${end === 'l' ? '90deg' : '270deg'}`}
             />
           ))}
         </div>

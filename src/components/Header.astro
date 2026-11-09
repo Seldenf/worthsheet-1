@@ -83,6 +83,7 @@ const calculatorsActive = [...calculators, featured].some((c) => current.startsW
             </svg>
           </button>
           <div id="nav-calculators" class="dropdown" hidden>
+            <div class="dropdown-inner">
             <ul class="mega-grid">
               {
                 calculators.map((c, i) => (
@@ -134,6 +135,7 @@ const calculatorsActive = [...calculators, featured].some((c) => current.startsW
                 }
               </ul>
               <a class="mega-cta" href={url('/download/')}>Get the free template</a>
+            </div>
             </div>
           </div>
         </li>
@@ -296,6 +298,10 @@ const calculatorsActive = [...calculators, featured].some((c) => current.startsW
 
   .dropdown[hidden] {
     display: none;
+  }
+
+  .dropdown-inner {
+    display: contents;
   }
 
   .dropdown .mega-grid {
@@ -603,7 +609,8 @@ const calculatorsActive = [...calculators, featured].some((c) => current.startsW
 
     .site-nav {
       flex-wrap: wrap;
-      justify-content: flex-end;
+      justify-content: flex-start;
+      align-content: flex-start;
       gap: 8px 16px;
     }
 
@@ -634,12 +641,51 @@ const calculatorsActive = [...calculators, featured].some((c) => current.startsW
       display: grid;
       grid-template-columns: minmax(0, 1fr);
       gap: 12px;
-      margin: 4px 0;
+      margin: 0;
+      grid-template-rows: 1fr;
+      transition:
+        grid-template-rows 300ms cubic-bezier(0.23, 1, 0.32, 1),
+        visibility 300ms cubic-bezier(0.23, 1, 0.32, 1);
       padding: 0;
       border: 0;
       border-radius: 0;
       box-shadow: none;
       background: transparent;
+    }
+
+    .dropdown[hidden] {
+      display: grid;
+      grid-template-rows: 0fr;
+      visibility: hidden;
+    }
+
+    .dropdown-inner {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .dropdown:not([hidden]) {
+      animation: none;
+    }
+
+    .dropdown-toggle svg {
+      transition: transform 300ms cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    .dropdown-toggle[aria-expanded='true'],
+    .dropdown-toggle.active {
+      background: rgba(12, 38, 53, 0.04);
+      box-shadow: none;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .dropdown,
+      .dropdown-toggle svg {
+        transition: none;
+      }
     }
 
     .dropdown .mega-grid {
