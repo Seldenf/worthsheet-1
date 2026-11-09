@@ -47,18 +47,40 @@ function doPost(e) {
   }
 
   // The lead is already saved; a mail quota/delivery failure must not fail the visitor's download.
+  // Failures are written to the "Errors" tab so they are visible without opening the execution log.
   try {
     notify_({ email: email, name: name, zip: zip, purpose: purpose, page: page });
   } catch (err) {
     console.error('notify failed: ' + err);
+    logError_('notify', err);
   }
   return json_({ ok: true });
 }
 
+/**
+ * Run this once from the editor (select testNotify → Run). It triggers the Gmail send permission
+ * prompt for the account that owns the Web app deployment and sends a test notification.
+ * After that, redeploy: Deploy → Manage deployments → Edit → Version: New version → Deploy.
+ */
+function testNotify() {
+  notify_({ email: 'test@example.com', name: 'Test lead', zip: '', purpose: 'Other', page: '/download/' });
+  console.log('Sent to: ' + recipients_() + ' | remaining daily quota: ' + MailApp.getRemainingDailyQuota());
+}
+
+function recipients_() {
+  return (
+    PropertiesService.getScriptProperties().getProperty('NOTIFY_EMAILS') || Session.getEffectiveUser().getEmail()
+  );
+}
+
+function logError_(where, err) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sh = ss.getSheetByName('Errors') || ss.insertSheet('Errors');
+  sh.appendRow([new Date(), where, String(err)]);
+}
+
 function notify_(lead) {
-  const to =
-    PropertiesService.getScriptProperties().getProperty('NOTIFY_EMAILS') ||
-    Session.getEffectiveUser().getEmail();
+  const to = recipients_();
   MailApp.sendEmail({
     to: to,
     subject: 'New WorthSheet signup: ' + lead.name,

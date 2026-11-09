@@ -11,6 +11,11 @@ export default defineConfig({
   site,
   base,
   trailingSlash: 'always',
+  // Old WordPress archive URLs (from the previous worthsheet.com sitemaps) that have no direct counterpart.
+  redirects: {
+    '/author/worthsheet/': `${base.replace(/\/$/, '')}/blog/`,
+    '/category/uncategorized/': `${base.replace(/\/$/, '')}/blog/`,
+  },
   markdown: {
     rehypePlugins: [[rehypeBaseLinks, { base }]],
   },
