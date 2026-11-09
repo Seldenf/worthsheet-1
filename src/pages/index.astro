@@ -740,8 +740,10 @@ const jsonLd = [
     }
   }
 
+  /* Everything in the hero card starts after the card itself has faded in: motion.css sets --intro-inner
+     (400ms) on the hero section under html.js, and each delay below adds it. */
   .hero-proof {
-    animation: ws-fade var(--enter-ms) var(--ease-out) backwards;
+    animation: ws-fade var(--enter-ms) var(--ease-out) var(--intro-inner, 0ms) backwards;
   }
 
   /* Checks appear like contextual icons: scale 0.25 -> 1, opacity, 4px blur. */
@@ -750,15 +752,15 @@ const jsonLd = [
   }
 
   .proof-checks i:nth-child(1)::after {
-    animation-delay: 150ms;
+    animation-delay: calc(150ms + var(--intro-inner, 0ms));
   }
 
   .proof-checks i:nth-child(2)::after {
-    animation-delay: 250ms;
+    animation-delay: calc(250ms + var(--intro-inner, 0ms));
   }
 
   .proof-checks i:nth-child(3)::after {
-    animation-delay: 350ms;
+    animation-delay: calc(350ms + var(--intro-inner, 0ms));
   }
 
   /* The pill's frame is invisible until the headline lines have revealed (they finish ~700ms in),
@@ -777,11 +779,11 @@ const jsonLd = [
   }
 
   .title-pill::before {
-    animation: pill-frame-fade 450ms var(--ease-out) 700ms backwards;
+    animation: pill-frame-fade 450ms var(--ease-out) calc(700ms + var(--intro-inner, 0ms)) backwards;
   }
 
   .title-icons {
-    animation: ws-fade var(--enter-ms) var(--ease-icon) 900ms backwards;
+    animation: ws-fade var(--enter-ms) var(--ease-icon) calc(900ms + var(--intro-inner, 0ms)) backwards;
   }
 
   /* Excel <-> Google Sheets: every 8s cycle each mark flips out and the other in (a swap every 4s).
@@ -840,20 +842,20 @@ const jsonLd = [
     }
 
     .title-icon-excel {
-      animation: icon-swap-excel 8s cubic-bezier(0.23, 1, 0.32, 1) 1.4s infinite backwards;
+      animation: icon-swap-excel 8s cubic-bezier(0.23, 1, 0.32, 1) calc(1400ms + var(--intro-inner, 0ms)) infinite backwards;
     }
 
     .title-icon-sheets {
-      animation: icon-swap-sheets 8s cubic-bezier(0.23, 1, 0.32, 1) 1.4s infinite backwards;
+      animation: icon-swap-sheets 8s cubic-bezier(0.23, 1, 0.32, 1) calc(1400ms + var(--intro-inner, 0ms)) infinite backwards;
     }
 
     /* Display headline: each line rises out of its own mask, 80ms apart. */
     .title-line > span {
-      animation: title-rise 500ms var(--ease-out) 100ms backwards;
+      animation: title-rise 500ms var(--ease-out) calc(100ms + var(--intro-inner, 0ms)) backwards;
     }
 
     .title-line + .title-line > span {
-      animation-delay: 180ms;
+      animation-delay: calc(180ms + var(--intro-inner, 0ms));
     }
   }
 

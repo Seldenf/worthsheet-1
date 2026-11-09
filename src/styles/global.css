@@ -916,8 +916,17 @@ th.num,
   padding-bottom: calc(var(--rows-below, 0) * var(--cell-h));
 }
 
+/* The cells live on ::before (not on the section) so the load sequence can fade the plain grid in on its own,
+   before the card (see "Load sequence" in motion.css). */
 .sheet-section.has-grid {
   overflow: hidden;
+}
+
+.sheet-section.has-grid::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
   background-color: var(--white);
   background-image:
     linear-gradient(to right, var(--beige) 1px, transparent 1px),
@@ -927,7 +936,7 @@ th.num,
 }
 
 @media (min-width: 1232px) {
-  .sheet-section.has-grid {
+  .sheet-section.has-grid::before {
     background-position: calc(50% + var(--cell-w) / 2) -1px;
   }
 }

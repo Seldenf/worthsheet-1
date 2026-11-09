@@ -28,6 +28,21 @@ const inView = (el: Element) => {
   return r.top < innerHeight * 0.9 && r.bottom > 0;
 };
 
+// ---- Load sequence (see "Load sequence" in motion.css) ----
+// The grid, the card and the content inside it enter from CSS animations that begin at first style. introAt() runs a
+// callback at a time on that sequence's clock, anchored to the start of the hero card's animation so the timers stay
+// in step with it however late the script runs; without a gridded hero the clock counts from navigation start.
+const INTRO_INNER = 400; // content inside the card starts (matches --intro-inner in motion.css)
+const INTRO_DONE = 1400; // the cells may start to light up (html.intro-done)
+const gridHero = hero?.matches('.sheet-section.has-grid') ? hero : null;
+const introAnimation = gridHero
+  ?.querySelector('.sheet')
+  ?.getAnimations()
+  .find((a) => (a as CSSAnimation).animationName === 'ws-card-in');
+const introStart = introAnimation ? performance.now() - Number(introAnimation.currentTime ?? 0) : 0;
+const introAt = (ms: number, run: () => void) =>
+  setTimeout(run, Math.max(0, introStart + ms - performance.now()));
+
 // ---- Masked line reveal for section headings ----
 // A heading is split into one masked block per rendered line while it waits to be revealed;
 // the original markup is restored once the last line has landed, so later resizes reflow normally.
@@ -204,7 +219,10 @@ function revealIllustrations(root: HTMLElement) {
     { threshold: 0.15 },
   );
 
-  for (const svg of immediate) svg.classList.add('is-in');
+  for (const svg of immediate) {
+    if (gridHero?.contains(svg)) introAt(INTRO_INNER, () => svg.classList.add('is-in'));
+    else svg.classList.add('is-in');
+  }
   for (const svg of later) io.observe(svg);
 }
 
@@ -662,10 +680,12 @@ function breathe(root: HTMLElement) {
 // starts a slide: a gradient of its colour fades in at one side, intensifies and travels across the cell until
 // it has left on the other side (5-7s, motion.css keyframes). When the animation ends the cell goes quiet and
 // another one starts. At most DRIFT_LIT slides run per sheet; a sheet only starts new ones while on screen.
+// Cells are held invisible (CSS) until the load sequence is over (html.intro-done); the first one lights right
+// after it, then one every 0.6-1.3s, so each sheet fills up gradually towards DRIFT_LIT.
 const DRIFT_LIT = 7;
 
 // One pool per .sheet-glow (page grid behind a sheet, or a grid inside a card): each runs its own DRIFT_LIT budget.
-function drift(glow: HTMLElement) {
+function drift(glow: HTMLElement, ready: Promise<void>) {
   const cells = Array.from(glow.querySelectorAll<HTMLElement>(':scope > i'));
   if (cells.length <= DRIFT_LIT) return;
   const between = (lo: number, hi: number) => lo + Math.random() * (hi - lo);
@@ -692,14 +712,17 @@ function drift(glow: HTMLElement) {
     start();
     timer = window.setTimeout(tick, between(600, 1300));
   };
-  new IntersectionObserver(([entry]) => {
-    if (entry.isIntersecting) {
-      if (!timer) tick();
-    } else {
-      clearTimeout(timer);
-      timer = 0;
-    }
-  }).observe(glow);
+  // .drift (set above, right away) already keeps every cell invisible; slides only begin once the intro is over.
+  ready.then(() =>
+    new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        if (!timer) tick();
+      } else {
+        clearTimeout(timer);
+        timer = 0;
+      }
+    }).observe(glow),
+  );
 }
 
 if (main) {
@@ -714,7 +737,13 @@ if (main) {
     revealIllustrations(main);
     revealChecklists(main, true);
     breathe(main);
-    main.querySelectorAll<HTMLElement>('.sheet-section.has-grid .sheet-glow').forEach(drift);
+    const introDone = new Promise<void>((resolve) =>
+      introAt(INTRO_DONE, () => {
+        document.documentElement.classList.add('intro-done');
+        resolve();
+      }),
+    );
+    main.querySelectorAll<HTMLElement>('.sheet-section.has-grid .sheet-glow').forEach((glow) => drift(glow, introDone));
     if (matchMedia('(hover: hover) and (pointer: fine)').matches) {
       main.querySelectorAll<SVGElement>('svg.wsi:not([data-no-push])').forEach((svg) => {
         const area = svg.closest<HTMLElement>('section') ?? svg.parentElement;

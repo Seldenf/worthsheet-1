@@ -48,7 +48,7 @@ const grid =
 
 // ---- floating tiles (mid layer) ----
 const tiles = [
-  { x: 262, y: 232, s: 92, fill: C.sheets, side: '#0a7a43', z: 150, cls: 'f1', kind: 'sheets', d: 1.5, enter: intro(200, 700, 20, 0.92), lift: -3.5 },
+  { x: 262, y: 232, s: 92, fill: C.sheets, side: '#0b7a43', z: 150, cls: 'f1', kind: 'sheets', d: 1.5, enter: intro(200, 700, 20, 0.92), lift: -3.5 },
   { x: 872, y: 392, s: 44, fill: C.yellow, side: '#d9a02a', z: 44, cls: 'f3', kind: 'dollar', d: 0.35, enter: intro(320, 500, 14, 0.9), lift: -3.5 },
   { x: 104, y: 330, s: 40, fill: C.tB, side: '#b9dcee', z: 40, cls: 'f2', kind: 'bars', d: 0.9, enter: intro(400, 480, 12, 0.92) },
 ];
@@ -125,13 +125,18 @@ const tiles = [
       <g transform={iso(t.x, t.y + 8, t.s)}><rect width={t.s} height={t.s} rx={t.s * 0.17} fill={t.side}></rect></g>
       <g transform={iso(t.x, t.y, t.s)}>
         <rect width={t.s} height={t.s} rx={t.s * 0.17} fill={t.fill} stroke="#fff" stroke-width="2"></rect>
-        {t.kind === 'sheets' && (
-          <g>
-            <rect x="27" y="17" width="38" height="58" rx="6" fill="#fff"></rect>
-            <path d="M52 17h13v13z" fill="#a8dcc0"></path>
-            <path d="M34 42h24M34 52h24M34 62h24M44 36v32" stroke={C.sheets} stroke-width="2.2" fill="none"></path>
+      </g>
+      {t.kind === 'sheets' && (
+        <g transform={iso(t.x, t.y, t.s)}>
+          <g transform="translate(23.6 15) scale(.95)">
+            <path d="M29.375 0H4.406C1.983 0 0 1.994 0 4.431v56.138C0 63.006 1.983 65 4.406 65h38.188C45.017 65 47 63.006 47 60.569V17.625L29.375 0z" fill="#fff"></path>
+            <path d="M29.375 0v13.19c0 2.43 1.98 4.435 4.4 4.435H47L29.375 0z" fill="#b7e1cd"></path>
+            <rect x="11.75" y="33.5" width="23.5" height="19.5" rx="2" fill={C.sheets}></rect>
+            <path d="M11.75 40.2H35.25M11.75 46.8H35.25M19.6 33.5V53" stroke="#fff" stroke-width="2.3" fill="none"></path>
           </g>
-        )}
+        </g>
+      )}
+      <g transform={iso(t.x, t.y, t.s)}>
         {t.kind === 'dollar' && (
           <text x={t.s / 2} y={t.s * 0.76} font-size={t.s * 0.72} font-weight="700" fill="#fff" text-anchor="middle">$</text>
         )}

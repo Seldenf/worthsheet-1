@@ -104,28 +104,66 @@ html.js [data-reveal='lines'] {
   translate: 0 0;
 }
 
+/* ---------- Load sequence (home hero and every <Sheet grid> hero; no-JS and reduced motion skip it) ----------
+   t=0      the plain page grid fades in (250ms); the coloured cells are held back (see Grid drift below).
+   t=150ms  the card (.sheet) fades and settles in (450ms).
+   t=400ms  --intro-inner: the content inside the card starts (eyebrow, h1, pill, lead, list, buttons,
+            illustration); every entrance delay below and in index.astro adds var(--intro-inner, 0ms).
+   t=1400ms motion.ts adds html.intro-done: the cells may light up, one at a time (drift()).
+   Everything is pure CSS animation with `backwards` fill from the first style recalc, so nothing paints early. */
+@keyframes ws-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.985);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html.js main > .sheet-section.has-grid:first-child {
+    --intro-inner: 400ms;
+  }
+
+  html.js main > .sheet-section.has-grid:first-child::before {
+    animation: ws-fade 250ms var(--ease-out) backwards;
+  }
+
+  html.js main > .sheet-section.has-grid:first-child > .sheet-frame > .sheet {
+    animation: ws-card-in 450ms var(--ease-out) 150ms backwards;
+  }
+
+  /* Highlighted cells stay invisible until the intro is over. Cells that never drift (small pools) fade in then. */
+  html.js:not(.intro-done) .sheet-glow i {
+    opacity: 0;
+  }
+
+  html.js .sheet-glow i:not(.drift) {
+    transition: opacity 600ms var(--ease-out);
+  }
+}
+
 /* ---------- Page entrance (CSS-only, runs once on load) ----------
    Chunks of the first section enter 100ms apart. Everyone gets the fade; movement and blur
    are added only without the reduced-motion preference. :where() keeps the shorthand at low
-   specificity so the per-chunk delays below always win. */
+   specificity so the per-chunk delays below always win. Behind a gridded hero they start after
+   the card (--intro-inner, set above). */
 main > :first-child :where(.eyebrow, .lead, ul, .btn, svg[class*='wsi-']) {
   animation: ws-fade var(--enter-ms) var(--ease-out) backwards;
 }
 
 main > :first-child .eyebrow {
-  animation-delay: 0ms;
+  animation-delay: calc(0ms + var(--intro-inner, 0ms));
 }
 
 main > :first-child .lead {
-  animation-delay: 200ms;
+  animation-delay: calc(200ms + var(--intro-inner, 0ms));
 }
 
 main > :first-child ul {
-  animation-delay: 300ms;
+  animation-delay: calc(300ms + var(--intro-inner, 0ms));
 }
 
 main > :first-child :is(.btn, svg[class*='wsi-']) {
-  animation-delay: 400ms;
+  animation-delay: calc(400ms + var(--intro-inner, 0ms));
 }
 
 main > :first-child svg[class*='wsi-'] {
@@ -138,7 +176,7 @@ main > :first-child svg[class*='wsi-'] {
   }
 
   main > :first-child h1 {
-    animation: ws-rise-h1 var(--enter-ms) var(--ease-out) 100ms backwards;
+    animation: ws-rise-h1 var(--enter-ms) var(--ease-out) calc(100ms + var(--intro-inner, 0ms)) backwards;
   }
 }
 
@@ -418,7 +456,7 @@ ul.list-check > li:nth-child(8) { --i: 7; }
 
 @media (prefers-reduced-motion: no-preference) {
   main > :first-child ul.list-check {
-    --base: 350ms;
+    --base: calc(350ms + var(--intro-inner, 0ms));
   }
 
   html.js ul.list-check[data-check-reveal]:not(.is-in) > li {
@@ -489,8 +527,9 @@ ul.list-check > li:nth-child(8) { --i: 7; }
    Each cell draws one soft gradient of its colour, a third of the image wide and centred in an image 300% as wide as the
    cell. Sliding background-position from one end to the other carries the gradient in at one side, through the cell and
    out at the other (left to right, or right to left with .is-rtl) in --slide-ms (5-7s). Opacity only softens the two ends.
-   Cells rest invisible; motion.ts removes .is-lit on animationend. The .sheet-section prefix beats the hero's twinkle
-   animation, which the drift replaces. */
+   Cells rest invisible; motion.ts removes .is-lit on animationend. Before html.intro-done (the load sequence, see above)
+   every cell is held invisible, so none paints in its static gradient while the page loads; the .sheet-section prefix
+   beats the static cell styles. */
 @media (prefers-reduced-motion: no-preference) {
   .sheet-section.has-grid .sheet-glow i.drift {
     animation: none;
