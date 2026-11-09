@@ -359,8 +359,8 @@ const jsonLd = [
         <h2 id="categories-title">Tailored to create a personal financial statement <span class="accent">super-fast</span></h2>
         <p class="lead">A comprehensive list of categories modeled on common personal financial statement forms, with the flexibility to add your own.</p>
         <ul class="list-check">
-          <li data-view="assets" tabindex="0">{STATS.assetCategories} <span class="sel">asset<span class="sel-tint" aria-hidden="true"></span></span> categories</li>
-          <li data-view="liabilities" tabindex="0">{STATS.liabilityCategories} <span class="sel">liability<span class="sel-tint" aria-hidden="true"></span></span> categories</li>
+          <li data-view="assets" tabindex="0"><span class="sel">{STATS.assetCategories} asset categories<span class="sel-tint" aria-hidden="true"></span></span></li>
+          <li data-view="liabilities" tabindex="0"><span class="sel">{STATS.liabilityCategories} liability categories<span class="sel-tint" aria-hidden="true"></span></span></li>
           <li data-view="formulas" tabindex="0">Dynamic calculation formulas</li>
         </ul>
         <div>
@@ -1057,32 +1057,16 @@ const jsonLd = [
     .step :global(.lift) {
       transition: translate 300ms var(--ease-out);
     }
-
-    .step :global(.shadow) {
-      transition-property: scale, opacity;
-      transition-duration: 300ms;
-      transition-timing-function: var(--ease-out);
-    }
   }
 
   .steps-wrap.is-picking .step.is-active :global(.lift) {
     translate: 0 -6px;
   }
 
-  .steps-wrap.is-picking .step.is-active :global(.shadow) {
-    scale: 0.9;
-    opacity: 0.7;
-  }
-
   /* Without the script every step stays normal; hover still lifts a tile. */
   @media (hover: hover) {
     .steps-wrap:not(.is-picking) .step:hover :global(.lift) {
       translate: 0 -6px;
-    }
-
-    .steps-wrap:not(.is-picking) .step:hover :global(.shadow) {
-      scale: 0.9;
-      opacity: 0.7;
     }
   }
 
@@ -1337,9 +1321,9 @@ const jsonLd = [
   }
 
   /* ---------- Dynamic categories: hover or focus on a row drives the illustration ----------
-     The row's text takes the bullet's tone and the bullet scales up. The asset and liability key
-     words get a soft tint behind them. The formulas row has no hover state; it only drives the
-     illustration. */
+     The row's text takes the bullet's tone and the bullet scales up. On the asset and liability rows a
+     soft tint draws in behind the whole line from the left and, on leave, retracts towards the right.
+     The formulas row has no hover state; it only drives the illustration. */
   :global(#categories) ul.list-check li[data-view] {
     --tone: #0a7a43;
     width: fit-content;
@@ -1347,29 +1331,38 @@ const jsonLd = [
     cursor: default;
   }
 
-  :global(#categories) ul.list-check li[data-view]:nth-child(3n + 2) {
-    --tone: #1b78a8;
-  }
-
-  :global(#categories) ul.list-check li[data-view]:nth-child(3n + 3) {
+  /* Tones follow meaning, as in the illustration: assets green, liabilities yellow, formulas blue. */
+  :global(#categories) ul.list-check li[data-view='liabilities'] {
     --tone: #9a6700;
   }
 
-  /* .sel wraps the key word; the tint sits behind it without affecting layout. */
+  :global(#categories) ul.list-check li[data-view='formulas'] {
+    --tone: #1b78a8;
+  }
+
+  :global(#categories) ul.list-check li[data-view='liabilities']::before {
+    background-color: var(--yellow);
+  }
+
+  :global(#categories) ul.list-check li[data-view='formulas']::before {
+    background-color: var(--blue);
+  }
+
+  /* .sel wraps the row's text; the tint sits behind it without affecting layout. */
   :global(#categories) .sel {
     position: relative;
     display: inline-block;
-    white-space: nowrap;
     isolation: isolate;
   }
 
   :global(#categories) .sel-tint {
     position: absolute;
-    inset: -2px -5px;
+    inset: -3px -8px;
     z-index: -1;
-    border-radius: 2px;
-    background: color-mix(in srgb, var(--tone) 9%, transparent);
-    opacity: 0;
+    border-radius: 4px;
+    background: color-mix(in srgb, var(--tone) 10%, transparent);
+    transform: scaleX(0);
+    transform-origin: right center;
     pointer-events: none;
   }
 
@@ -1385,7 +1378,8 @@ const jsonLd = [
   }
 
   :global(#categories) ul.list-check li[data-view]:focus-visible .sel-tint {
-    opacity: 1;
+    transform: scaleX(1);
+    transform-origin: left center;
   }
 
   @media (hover: hover) and (pointer: fine) {
@@ -1398,7 +1392,8 @@ const jsonLd = [
     }
 
     :global(#categories) ul.list-check li[data-view]:not([data-view="formulas"]):hover .sel-tint {
-      opacity: 1;
+      transform: scaleX(1);
+      transform-origin: left center;
     }
   }
 
@@ -1411,9 +1406,9 @@ const jsonLd = [
       transition: scale 200ms var(--ease-out);
     }
 
-    /* Fades in on hover or focus and out on leave. */
+    /* Draws in from the left on hover/focus; on leave the origin flips, so it retracts to the right. */
     :global(#categories) .sel-tint {
-      transition: opacity 200ms var(--ease-out);
+      transition: transform 420ms var(--ease-out);
     }
   }
 

@@ -13,17 +13,15 @@ interface Props {
 }
 const { step, class: className } = Astro.props;
 
-// Every pad, shadow and tint is an opaque hex (no alpha), so nothing underneath shows through. Shadows are the
-// step's leading colour at ~14% mixed opaque over the paper background.
+// Every pad and tint is an opaque hex (no alpha), so nothing underneath shows through.
 const P = {
-  1: { fill: '#6cbee4', side: '#4a9fc8', pad: '#e2f2f9', shade: '#d9e3e8', glow: 'rgba(108, 190, 228, 0.55)', icon: '<path d="M12 4v11M7 10.5l5 5 5-5M5 19.5h14"/>' },
-  2: { fill: '#0f9d58', side: '#0a7a43', pad: '#e2f9e9', shade: '#d9e2d7', glow: 'rgba(15, 157, 88, 0.45)', icon: '<path d="M6 3h8l4 4v14H6zM14 3v4h4M9 12.5h6M9 16h6M12 10v8"/>' },
-  3: { fill: '#fac344', side: '#d9a02a', pad: '#f9f2e2', shade: '#ede4d4', glow: 'rgba(250, 195, 68, 0.6)', icon: '<path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19zM14 7l3 3"/>' },
+  1: { fill: '#6cbee4', side: '#4a9fc8', pad: '#e2f2f9', glow: 'rgba(108, 190, 228, 0.55)', icon: '<path d="M12 4v11M7 10.5l5 5 5-5M5 19.5h14"/>' },
+  2: { fill: '#0f9d58', side: '#0a7a43', pad: '#e2f9e9', glow: 'rgba(15, 157, 88, 0.45)', icon: '<path d="M6 3h8l4 4v14H6zM14 3v4h4M9 12.5h6M9 16h6M12 10v8"/>' },
+  3: { fill: '#fac344', side: '#d9a02a', pad: '#f9f2e2', glow: 'rgba(250, 195, 68, 0.6)', icon: '<path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19zM14 7l3 3"/>' },
   4: {
     fill: '#0c2635',
     side: '#06141c',
     pad: '#e6edf1',
-    shade: '#d4d6d8',
     glow: 'rgba(12, 38, 53, 0.4)',
     icon: '<path d="M7 9V4h10v5M7 17H5a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-2M7 14h10v6H7z"/>',
   },
@@ -54,17 +52,11 @@ const DELAY = -step * 0.8;
   aria-hidden="true"
   focusable="false"
 >
-  <!-- ground: opaque paper underlay, pad and contact shadow stay put. The animated classes sit on plain
+  <!-- ground: opaque paper underlay and pad stay put. The animated classes sit on plain
        wrappers so their CSS translate never collides with the iso transform attribute. -->
   <g transform={iso(CX, CY + 28, PAD)}>
     <rect width={PAD} height={PAD} rx="12" fill={C.paper}></rect>
     <rect width={PAD} height={PAD} rx="12" fill={t.pad} stroke="#fff" stroke-width="2"></rect>
-  </g>
-  <g class="shadow">
-    <g transform={iso(CX + 4, CY + 34, S - 6)}>
-      <rect width={S - 6} height={S - 6} rx="9" fill={C.paper}></rect>
-      <rect width={S - 6} height={S - 6} rx="9" fill={t.shade}></rect>
-    </g>
   </g>
 
   <!-- the tile itself lifts on hover / when active. Inside, the top face breathes over the slab. -->
@@ -103,8 +95,7 @@ const DELAY = -step * 0.8;
     filter: drop-shadow(0 12px 12px var(--glow));
   }
 
-  .lift,
-  .shadow {
+  .lift {
     transform-box: fill-box;
     transform-origin: center;
   }
