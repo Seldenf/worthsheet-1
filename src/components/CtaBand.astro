@@ -1,5 +1,7 @@
 ---
 import Button from './Button.astro';
+import Sheet from './Sheet.astro';
+import CtaIcons from './illustrations/CtaIcons.astro';
 import { STATS } from '../config';
 
 interface Props {
@@ -15,46 +17,51 @@ const {
 } = Astro.props;
 ---
 
-<section class:list={['cta-band-wrap', className]} aria-labelledby="cta-band-title">
-  <div class="container">
-    <div class="cta-band">
-      <div class="cta-copy">
-        <h2 id="cta-band-title">{title}</h2>
-        <p class="lead">{text}</p>
-        <div class="cta-actions">
-          <Button href="/download/" variant="primary" size="lg">Get the free template</Button>
-        </div>
+<Sheet
+  class={['cta-band-wrap', className].filter(Boolean).join(' ')}
+  tone="cta"
+  grid
+  rowsBelow={2}
+  seed={11}
+  aria-labelledby="cta-band-title"
+>
+  <div class="cta-band">
+    <div class="cta-art"><slot name="art"><CtaIcons /></slot></div>
+    <div class="cta-copy">
+      <h2 id="cta-band-title">{title}</h2>
+      <p class="lead">{text}</p>
+      <div class="cta-actions">
+        <Button href="/download/" variant="primary">Get the free template</Button>
       </div>
-      <div class="cta-art"><slot name="art" /></div>
     </div>
   </div>
-</section>
+</Sheet>
 
 <style>
-  .cta-band-wrap {
-    padding-block: clamp(48px, 8vw, 96px);
-  }
-
+  /* Centred copy. The default art is a few small floating iso tiles (CtaIcons) laid over the whole
+     card, around the copy. A custom `art` slot keeps the old behaviour: below the copy on small
+     screens, a banner behind it from 960px up. */
   .cta-band {
+    --pad: clamp(24px, 4.6vw, 64px);
+    position: relative;
     display: grid;
-    gap: 32px;
-    align-items: center;
-    padding: clamp(28px, 5vw, 64px);
-    border-radius: var(--radius-lg);
-    background: var(--tint-blue);
-    border: 1px solid var(--line);
-    overflow: hidden;
-  }
-
-  .cta-band:has(.cta-art:empty) {
-    grid-template-columns: 1fr;
+    gap: 24px;
+    justify-items: center;
+    text-align: center;
   }
 
   .cta-copy {
+    position: relative;
+    z-index: 1;
     display: flex;
     flex-direction: column;
+    align-items: center;
     gap: 16px;
-    align-items: flex-start;
+    max-width: 30rem;
+  }
+
+  .cta-copy :global(.lead) {
+    margin-inline: auto;
   }
 
   .cta-actions {
@@ -62,26 +69,47 @@ const {
   }
 
   .cta-art {
-    min-width: 0;
-  }
-
-  .cta-art :global(svg.wsi-cta) {
-    width: 100%;
-    max-width: 420px;
-    margin-inline: auto;
+    order: 2;
+    width: calc(100% + 2 * var(--pad));
+    margin-inline: calc(-1 * var(--pad));
   }
 
   .cta-art:empty {
     display: none;
   }
 
-  @media (min-width: 860px) {
-    .cta-band:has(.cta-art:not(:empty)) {
-      grid-template-columns: 1.2fr 1fr;
+  /* Default art: the icon layer covers the whole card and ignores the pointer. */
+  .cta-art:has(.cta-icons) {
+    position: absolute;
+    z-index: 0;
+    inset: 0 calc(-1 * var(--pad));
+    width: auto;
+    margin: 0;
+    order: 0;
+    pointer-events: none;
+  }
+
+  @media (min-width: 960px) {
+    .cta-band {
+      min-height: 320px;
+      align-content: center;
     }
 
-    .cta-art :global(svg.wsi-cta) {
-      max-width: 560px;
+    .cta-art:not(:has(.cta-icons)) {
+      position: absolute;
+      top: 50%;
+      left: calc(-1 * var(--pad));
+      right: calc(-1 * var(--pad));
+      width: auto;
+      margin: 0;
+      translate: 0 -50%;
+      pointer-events: none;
+    }
+  }
+
+  @media (max-width: 639px) {
+    .cta-band:has(.cta-icons) .cta-copy {
+      padding-inline: 40px;
     }
   }
 </style>

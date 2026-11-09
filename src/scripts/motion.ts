@@ -1,11 +1,17 @@
+// Chunks that enter on scroll. Illustrations (svg.wsi) and checklists (ul.list-check) own their
+// entrance (see revealIllustrations / revealChecklists) and are not listed here. Markup may also
+// opt in with a bare data-reveal attribute.
 const SELECTOR = [
+  'main section .eyebrow',
   'main section h2',
   'main section .lead',
   'main .card',
+  'main .tile',
   'main .grid > *',
   'main section svg[class*="wsi-"]',
   'main .table-wrap',
   'main details',
+  'main [data-reveal]',
 ].join(',');
 
 const main = document.querySelector<HTMLElement>('main');
@@ -18,31 +24,110 @@ const inView = (el: Element) => {
   return r.top < innerHeight * 0.9 && r.bottom > 0;
 };
 
-function show(el: HTMLElement, attr: string) {
-  el.classList.add('is-in');
-  el.addEventListener('transitionend', () => el.removeAttribute(attr), { once: true });
+// ---- Masked line reveal for section headings ----
+// A heading is split into one masked block per rendered line while it waits to be revealed;
+// the original markup is restored once the last line has landed, so later resizes reflow normally.
+const original = new WeakMap<HTMLElement, string>();
+
+function splitLines(el: HTMLElement): boolean {
+  // Only plain text with optional one-level inline wrappers (e.g. <span class="accent">).
+  const parts: { word: string; tag?: string; cls?: string }[] = [];
+  for (const node of Array.from(el.childNodes)) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      for (const w of (node.textContent ?? '').split(/\s+/)) if (w) parts.push({ word: w });
+    } else if (node instanceof HTMLElement && node.children.length === 0) {
+      for (const w of node.textContent!.split(/\s+/))
+        if (w) parts.push({ word: w, tag: node.tagName.toLowerCase(), cls: node.className });
+    } else {
+      return false;
+    }
+  }
+  if (parts.length < 2) return false;
+
+  const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  const html = (p: (typeof parts)[number]) =>
+    p.tag ? `<${p.tag} class="${esc(p.cls ?? '')}">${esc(p.word)}</${p.tag}>` : esc(p.word);
+
+  original.set(el, el.innerHTML);
+  el.innerHTML = parts.map((p) => `<span class="ws-w">${html(p)}</span>`).join(' ');
+  const lines: string[][] = [];
+  let top = NaN;
+  el.querySelectorAll<HTMLElement>('.ws-w').forEach((w, i) => {
+    if (w.offsetTop !== top) {
+      top = w.offsetTop;
+      lines.push([]);
+    }
+    lines[lines.length - 1].push(html(parts[i]));
+  });
+  el.innerHTML = lines
+    .map((l, i) => `<span class="ws-line" style="--line-i:${i}"><span>${l.join(' ')}</span></span>`)
+    .join('');
+  return true;
 }
 
+function restoreLines(el: HTMLElement) {
+  const inner = el.querySelectorAll<HTMLElement>('.ws-line > span');
+  const last = inner[inner.length - 1];
+  const done = () => {
+    el.innerHTML = original.get(el) ?? el.innerHTML;
+    el.removeAttribute('data-reveal');
+  };
+  if (!last) return done();
+  last.addEventListener('transitionend', (e) => e.target === last && done());
+}
+
+function show(el: HTMLElement, attr: string) {
+  el.classList.add('is-in');
+  if (el.dataset.reveal === 'lines') return restoreLines(el);
+  // Only this element's own transition ends the reveal, never one bubbling up from a child.
+  const done = (e: TransitionEvent) => {
+    if (e.target !== el) return;
+    el.removeEventListener('transitionend', done);
+    el.removeAttribute(attr);
+  };
+  el.addEventListener('transitionend', done);
+}
+
+// Sections never move or hide; their chunks do. Chunks of a section below the fold are revealed
+// together (staggered by --reveal-i) when the section's top edge reaches 88% of the viewport, so a
+// section of any height always triggers. Chunks outside such a section reveal one by one.
 function reveal(root: HTMLElement) {
   // Read layout first, then write, to avoid interleaved reads and writes.
   const sections = Array.from(root.children).filter(
     (el): el is HTMLElement => el.tagName === 'SECTION' && el !== hero && !inView(el),
   );
-  const children = Array.from(root.querySelectorAll<HTMLElement>(SELECTOR)).filter(
-    (el) => !hero?.contains(el) && !inView(el),
+  const candidates = Array.from(root.querySelectorAll<HTMLElement>(SELECTOR)).filter(
+    (el) =>
+      !hero?.contains(el) &&
+      !inView(el) &&
+      // Illustrations with .wsi-in parts own their intro; hiding the svg too would hide it twice.
+      !(el instanceof SVGElement && el.querySelector('.wsi-in')),
   );
+  // A chunk inside another chunk rides along with its parent instead of being hidden twice.
+  const children = candidates.filter((el) => !candidates.some((other) => other !== el && other.contains(el)));
+
+  // Chunks tagged in markup that are already visible (or ride along with a parent) must not stay hidden.
+  root.querySelectorAll<HTMLElement>('[data-reveal]').forEach((el) => {
+    if (!children.includes(el)) el.classList.add('is-in');
+  });
+
+  const groups = new Map<HTMLElement, HTMLElement[]>();
+  const loose: HTMLElement[] = [];
+  for (const el of children) {
+    const section = sections.find((s) => s.contains(el));
+    if (section) groups.set(section, [...(groups.get(section) ?? []), el]);
+    else loose.push(el);
+  }
 
   const sectionIO = new IntersectionObserver(
     (entries) => {
       for (const { target, isIntersecting } of entries) {
         if (!isIntersecting) continue;
-        const section = target as HTMLElement;
-        sectionIO.unobserve(section);
-        show(section, 'data-section-reveal');
-        section.querySelectorAll<HTMLElement>('[data-reveal]').forEach((el) => show(el, 'data-reveal'));
+        sectionIO.unobserve(target);
+        groups.get(target as HTMLElement)?.forEach((el) => show(el, 'data-reveal'));
       }
     },
-    { threshold: 0.15 },
+    { rootMargin: '0px 0px -12% 0px' },
   );
   const childIO = new IntersectionObserver(
     (entries) => {
@@ -55,19 +140,20 @@ function reveal(root: HTMLElement) {
     { rootMargin: '0px 0px -10% 0px', threshold: 0.1 },
   );
 
-  for (const section of sections) {
-    section.setAttribute('data-section-reveal', '');
-    sectionIO.observe(section);
-  }
-
   for (const el of children) {
-    el.setAttribute('data-reveal', '');
-    const parent = el.parentElement;
-    if (parent?.classList.contains('grid')) {
-      el.style.setProperty('--reveal-i', String(Math.min(Array.from(parent.children).indexOf(el), 6)));
-    }
-    // Children of a hidden section are revealed together with that section.
-    if (!el.closest('[data-section-reveal]')) childIO.observe(el);
+    el.setAttribute('data-reveal', el.tagName === 'H2' && splitLines(el) ? 'lines' : '');
+  }
+  for (const section of groups.keys()) sectionIO.observe(section);
+  for (const el of loose) childIO.observe(el);
+
+  // Stagger: each chunk enters 100ms after the previous one in document order within its
+  // section (eyebrow, heading, lead, art, cards), capped so long grids never drag.
+  const order = new Map<Element, number>();
+  for (const el of children) {
+    const group = el.closest('section') ?? root;
+    const i = order.get(group) ?? 0;
+    el.style.setProperty('--reveal-i', String(Math.min(i, 6)));
+    order.set(group, i + 1);
   }
 }
 
@@ -186,9 +272,9 @@ function parallax(svg: SVGElement, area: HTMLElement) {
   });
 }
 
-// Spreadsheet background for opted-in sections only (`main section[data-sheet]`). Each gets an
-// isometric grid generated once at init as an inline SVG data URL in --sheet (motion.css draws
-// it on ::before). Each column has one width and each row one height for the whole section, so
+// Spreadsheet background for opted-in elements only (`main [data-cursor-sheet]`, a block inside a
+// Sheet card). Each gets an isometric grid as an inline SVG data URL in --sheet (motion.css draws
+// it on ::before). Each column has one width and each row one height for the whole element, so
 // every line runs straight and continuous in the projection. Columns are mostly 1x, sometimes
 // 1.6x or 2.2x. Grid lines only, no values. Seeded per section, so the pattern is stable.
 const SHEET_COL_WIDTHS = [1, 1, 1, 1, 1, 1.6, 2.2];
@@ -269,19 +355,21 @@ function sheetSvg(width: number, height: number, seed: number) {
 
 // Sets the grid, then a mask centre that lags the pointer (lerp, rAF, stops once settled).
 // On leave only .sheet-on is removed: the CSS opacity fades slowly while the mask keeps drifting.
-function sheet(section: HTMLElement, index: number) {
-  const svg = sheetSvg(
-    Math.max(section.offsetWidth, innerWidth),
-    section.offsetHeight,
-    hashSeed(section.id || `sheet-${index}`),
-  );
-  section.style.setProperty('--sheet', `url("data:image/svg+xml,${encodeURIComponent(svg)}")`);
-  section.classList.add('has-sheet');
+// The grid is regenerated when the element's size changes (resize, font load).
+function sheet(el: HTMLElement, index: number) {
+  const seed = hashSeed(el.closest('section')?.id || `sheet-${index}`);
+  const draw = () => {
+    const svg = sheetSvg(Math.max(el.offsetWidth, innerWidth), el.offsetHeight, seed);
+    el.style.setProperty('--sheet', `url("data:image/svg+xml,${encodeURIComponent(svg)}")`);
+  };
+  draw();
+  el.classList.add('has-sheet');
+  new ResizeObserver(draw).observe(el);
 
   let tx = 0, ty = 0, cx = 0, cy = 0, raf = 0;
   const paint = () => {
-    section.style.setProperty('--mx', `${cx.toFixed(1)}px`);
-    section.style.setProperty('--my', `${cy.toFixed(1)}px`);
+    el.style.setProperty('--mx', `${cx.toFixed(1)}px`);
+    el.style.setProperty('--my', `${cy.toFixed(1)}px`);
   };
   const step = () => {
     cx += (tx - cx) * SHEET_LERP;
@@ -294,32 +382,32 @@ function sheet(section: HTMLElement, index: number) {
   const kick = () => {
     if (!raf) raf = requestAnimationFrame(step);
   };
-  section.addEventListener('pointerenter', (e) => {
+  el.addEventListener('pointerenter', (e) => {
     if (e.pointerType === 'touch') return;
-    const r = section.getBoundingClientRect();
+    const r = el.getBoundingClientRect();
     tx = e.clientX - r.left;
     ty = e.clientY - r.top;
     // Entering from rest starts the mask at the entry point rather than sweeping in from far away.
     if (!raf) (cx = tx), (cy = ty), paint();
-    section.classList.add('sheet-on');
+    el.classList.add('sheet-on');
     kick();
   });
-  section.addEventListener(
+  el.addEventListener(
     'pointermove',
     (e) => {
       if (e.pointerType === 'touch') return;
-      const r = section.getBoundingClientRect();
+      const r = el.getBoundingClientRect();
       tx = e.clientX - r.left;
       ty = e.clientY - r.top;
       kick();
     },
     { passive: true },
   );
-  section.addEventListener('pointerleave', (e) => {
+  el.addEventListener('pointerleave', (e) => {
     if (e.pointerType === 'touch') return;
-    section.classList.remove('sheet-on');
+    el.classList.remove('sheet-on');
   });
- }
+}
  
 // Edge light: the cursor position inside a button, card or menu tile drives a rim highlight
 // (::after in motion.css). Fine pointers only; the caller gates it.
@@ -367,7 +455,7 @@ if (main) {
         const area = svg.closest<HTMLElement>('section') ?? svg.parentElement;
         if (area) parallax(svg, area);
       });
-      main.querySelectorAll<HTMLElement>('section[data-sheet]').forEach((section, i) => sheet(section, i));
+      main.querySelectorAll<HTMLElement>('[data-cursor-sheet]').forEach((el, i) => sheet(el, i));
       document.querySelectorAll<HTMLElement>(EDGE_SELECTOR).forEach(edgeLight);
     }
   }

@@ -1,0 +1,99 @@
+---
+/**
+ * Small floating iso tiles for the closing CTA card. Placed asymmetrically around the centred
+ * copy (four on the left, three on the right, at varied heights and sizes). Each tile drifts up
+ * and down 4px on its own slow loop, so they never move in step. On small screens only two stay.
+ * Positions are percentages of the layer, which CtaBand stretches over the whole card.
+ */
+import IsoIcon from '../IsoIcon.astro';
+
+type Item = {
+  icon: 'house' | 'scale' | 'percent' | 'key' | 'bank' | 'sheet' | 'gauge';
+  tone: 'green' | 'blue' | 'yellow' | 'pink' | 'white';
+  size: number;
+  x: number;
+  y: number;
+  dur: number;
+  delay: number;
+  keep?: 'start' | 'end';
+};
+
+// Order is back-to-front-neutral; x/y are the tile's top-left as % of the layer.
+const items: Item[] = [
+  { icon: 'house', tone: 'green', size: 56, x: 4, y: 14, dur: 10, delay: -2, keep: 'start' },
+  { icon: 'scale', tone: 'white', size: 40, x: 14, y: 58, dur: 8.5, delay: -5.3 },
+  { icon: 'percent', tone: 'yellow', size: 36, x: 3, y: 79, dur: 11.5, delay: -7.8 },
+  { icon: 'key', tone: 'blue', size: 44, x: 17, y: 9, dur: 9, delay: -1.1 },
+  { icon: 'bank', tone: 'pink', size: 52, x: 86, y: 18, dur: 12, delay: -4.4 },
+  { icon: 'gauge', tone: 'yellow', size: 40, x: 79, y: 70, dur: 9.5, delay: -6.6, keep: 'end' },
+  { icon: 'sheet', tone: 'white', size: 36, x: 92, y: 50, dur: 10.5, delay: -3.2 },
+];
+---
+
+<div class="cta-icons" aria-hidden="true">
+  {
+    items.map((it, i) => (
+      <span
+        class:list={['cti', `cti-${i + 1}`, it.keep && `cti-keep-${it.keep}`]}
+        style={`left:${it.x}%;top:${it.y}%;--cti-dur:${it.dur}s;--cti-delay:${it.delay}s`}
+      >
+        <IsoIcon icon={it.icon} tone={it.tone} size={it.size} />
+      </span>
+    ))
+  }
+</div>
+
+<style>
+  .cta-icons {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .cti {
+    position: absolute;
+    line-height: 0;
+    animation: cti-float var(--cti-dur, 10s) ease-in-out infinite;
+    animation-delay: var(--cti-delay, 0s);
+  }
+
+  @keyframes cti-float {
+    0%,
+    100% {
+      translate: 0 0;
+    }
+    50% {
+      translate: 0 -4px;
+    }
+  }
+
+  /* Small screens: two corner tiles only, pinned to the card corners so they clear the copy. */
+  @media (max-width: 639px) {
+    .cti :global(.iso-ico) {
+      width: 40px;
+      height: auto;
+    }
+
+    .cti:not(.cti-keep-start):not(.cti-keep-end) {
+      display: none;
+    }
+
+    .cti-keep-start {
+      left: 0 !important;
+      top: 0 !important;
+    }
+
+    .cti-keep-end {
+      left: auto !important;
+      right: 0;
+      top: auto !important;
+      bottom: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cti {
+      animation: none;
+    }
+  }
+</style>

@@ -3,19 +3,20 @@ import { getCollection } from 'astro:content';
 import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import Button from '../components/Button.astro';
-import Section from '../components/Section.astro';
+import Sheet from '../components/Sheet.astro';
 import Eyebrow from '../components/Eyebrow.astro';
 import Faq from '../components/Faq.astro';
-import StatRow from '../components/StatRow.astro';
 import CtaBand from '../components/CtaBand.astro';
 import HeroSheet from '../components/illustrations/HeroSheet.astro';
 import IsoTiles from '../components/illustrations/IsoTiles.astro';
 import CategoriesStack from '../components/illustrations/CategoriesStack.astro';
-import StepsFlow from '../components/illustrations/StepsFlow.astro';
+import StepTile from '../components/illustrations/StepTile.astro';
 import ShieldSecure from '../components/illustrations/ShieldSecure.astro';
 import IsoIcon from '../components/IsoIcon.astro';
-import CtaTiles from '../components/illustrations/CtaTiles.astro';
 import PostCover from '../components/PostCover.astro';
+import chaseLogo from '../assets/banks/chase.svg';
+import bofaLogo from '../assets/banks/bank-of-america.svg';
+import wellsLogo from '../assets/banks/wells-fargo.svg';
 import { STATS } from '../config';
 import { url } from '../lib/url';
 import { faqLd, webAppLd } from '../lib/seo';
@@ -23,6 +24,37 @@ import { faqLd, webAppLd } from '../lib/seo';
 const title = 'Free Personal Financial Statement Template | WorthSheet';
 const description =
   'Free personal financial statement template for Google Sheets and Excel: 27 asset and 13 liability categories, automatic net worth, bank-ready. 9,000+ downloads.';
+
+const banks = [
+  { name: 'Chase', logo: chaseLogo, height: 22 },
+  { name: 'Bank of America', logo: bofaLogo, height: 38 },
+  { name: 'Wells Fargo', logo: wellsLogo, height: 30 },
+];
+
+// Highlighted grid cells around the hero sheet (soft fading gradients + grain, after equals.com).
+// [column, row, tone, strength %, strongest end]. Columns/rows count from the sheet's top-left cell;
+// rows >= 26 sit below the sheet. Columns -1 and 12 show at 1400px; -2, -3, 13, 14 on wider screens.
+type Tone = 'green' | 'blue' | 'yellow' | 'pink';
+const glow: [number, number, Tone, number, 'l' | 'r'][] = [
+  [1, -1, 'green', 30, 'r'], [2, -1, 'green', 16, 'r'],
+  [6, -2, 'yellow', 34, 'l'], [7, -2, 'yellow', 16, 'l'],
+  [9, -1, 'blue', 28, 'r'], [10, -2, 'pink', 22, 'l'], [10, -1, 'blue', 14, 'r'],
+  [-1, 2, 'green', 46, 'l'], [-1, 3, 'green', 34, 'l'], [-1, 4, 'green', 22, 'l'], [-1, 5, 'green', 11, 'l'],
+  [-1, 11, 'yellow', 42, 'l'], [-1, 12, 'yellow', 26, 'l'], [-1, 13, 'yellow', 12, 'l'],
+  [-1, 19, 'blue', 36, 'l'], [-1, 20, 'blue', 20, 'l'],
+  [-2, 6, 'blue', 34, 'r'], [-2, 7, 'blue', 22, 'r'], [-2, 8, 'blue', 12, 'r'],
+  [-2, 15, 'pink', 28, 'r'], [-2, 16, 'pink', 16, 'r'],
+  [-3, 3, 'yellow', 30, 'r'], [-3, 4, 'yellow', 16, 'r'],
+  [12, 1, 'blue', 44, 'r'], [12, 2, 'blue', 30, 'r'], [12, 3, 'blue', 16, 'r'],
+  [12, 9, 'pink', 30, 'r'], [12, 10, 'pink', 18, 'r'],
+  [12, 15, 'green', 40, 'r'], [12, 16, 'green', 28, 'r'], [12, 17, 'green', 14, 'r'],
+  [12, 23, 'yellow', 34, 'r'], [12, 24, 'yellow', 18, 'r'],
+  [13, 5, 'green', 30, 'l'], [13, 6, 'green', 16, 'l'],
+  [13, 12, 'yellow', 34, 'l'], [13, 13, 'yellow', 20, 'l'],
+  [14, 2, 'pink', 24, 'l'], [14, 19, 'blue', 30, 'l'],
+  [2, 26, 'yellow', 32, 'r'], [3, 27, 'yellow', 16, 'r'],
+  [7, 26, 'blue', 26, 'l'], [11, 27, 'green', 30, 'r'],
+];
 
 const steps = [
   {
@@ -209,35 +241,94 @@ const jsonLd = [
 
 <Base title={title} description={description} path="/" jsonLd={jsonLd}>
   <!-- Hero -->
-  <section class="hero tone-paper" aria-labelledby="hero-title" data-sheet>
-    <div class="container hero-grid">
-      <div class="hero-copy">
-        <Eyebrow>Free template</Eyebrow>
-        <h1 id="hero-title">Free personal financial statement template</h1>
-        <ul class="list-check hero-points">
-          <li>Works in Google Sheets and Excel</li>
-          <li>Customizable spreadsheet</li>
-          <li>Bank-ready format</li>
-          <li>Wave goodbye to manual calculations</li>
-        </ul>
-        <div class="hero-actions">
-          <Button href="/download/" variant="primary" size="lg">Get the template for free</Button>
-          <Button href="#features" variant="secondary" size="lg">Learn more</Button>
-        </div>
-        <p class="small muted">{STATS.downloads} downloads · {STATS.assetCategories} asset and {STATS.liabilityCategories} liability categories built in</p>
+  <section class="sheet-section has-grid hero" style="--rows-above:2;--rows-below:2" aria-labelledby="hero-title">
+    <div class="sheet-frame">
+      <div class="sheet-glow" aria-hidden="true">
+        {
+          glow.map(([c, r, tone, a, end], i) => (
+            <i
+              class:list={[`tone-${tone}`, { below: r >= 26, twinkle: i % 3 === 1 }]}
+              style={`--c:${c};--r:${r >= 26 ? r - 26 : r};--a:${a}%;--dir:${end === 'l' ? '90deg' : '270deg'};--i:${i}`}
+            />
+          ))
+        }
       </div>
-      <div class="hero-art">
-        <HeroSheet />
+      <div class="sheet hero-sheet" data-sheet>
+        <div class="sheet-card">
+          <div class="hero-body" data-sheet-body>
+            <div class="hero-copy">
+              <p class="hero-proof">
+                <span class="proof-checks" aria-hidden="true"><i></i><i></i><i></i></span>
+                {STATS.downloads} downloads
+              </p>
+              <h1 id="hero-title" class="hero-title">
+                <span class="title-line"><span>Free personal financial</span></span>
+                <span class="title-line">
+                  <span class="title-row">
+                    statement
+                    <span class="title-pill">
+                      <svg class="title-icon" viewBox="0 0 48 48" aria-hidden="true">
+                        <rect x="15" y="6" width="29" height="36" rx="5" fill="#21a366"></rect>
+                        <path d="M30 6v36M15 18h29M15 30h29" stroke="#fff" stroke-opacity=".35" stroke-width="1.5"></path>
+                        <rect x="4" y="12" width="24" height="24" rx="5" fill="#107c41"></rect>
+                        <path d="M9.6 17.5h4.1l2.3 4 2.3-4h4.1l-4.3 6.5 4.4 6.5h-4.1l-2.4-4.1-2.4 4.1H9.5l4.4-6.5z" fill="#fff"></path>
+                      </svg>
+                      template
+                    </span>
+                  </span>
+                </span>
+              </h1>
+              <ul class="hero-points">
+                <li>Works in Google Sheets and Excel</li>
+                <li>Customizable spreadsheet</li>
+                <li>Bank-ready format</li>
+                <li>Wave goodbye to manual calculations</li>
+              </ul>
+              <div class="hero-actions">
+                <Button href="/download/" variant="primary">Get the template for free</Button>
+                <Button href="#features" variant="secondary">Learn more</Button>
+              </div>
+            </div>
+
+            <div class="hero-art">
+              <HeroSheet />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- Saves time -->
-  <section id="features" class="section tone-surface" aria-labelledby="saves-title" data-sheet>
-    <div class="container">
+  <!-- Built based on -->
+  <Sheet id="banks" compact aria-labelledby="banks-title">
+    <div class="banks-row">
+      <p id="banks-title" class="eyebrow">Built based on</p>
+      <ul class="bank-logos">
+        {
+          banks.map((b) => (
+            <li>
+              <Image
+                src={b.logo}
+                alt={`${b.name} logo`}
+                width={70}
+                height={70}
+                style={`height: ${b.height}px`}
+                loading="lazy"
+              />
+            </li>
+          ))
+        }
+      </ul>
+      <p class="disclaimer">The template follows the structure of common bank personal financial statement forms. It is not affiliated with or endorsed by these banks.</p>
+    </div>
+  </Sheet>
+
+  <!-- Saves time. .reveal-sheet carries the cursor-revealed spreadsheet background (data-cursor-sheet) and bleeds to the card edges. -->
+  <Sheet id="features" aria-labelledby="saves-title">
+    <div class="reveal-sheet" data-cursor-sheet>
       <div class="split">
         <div class="stack split-copy" style="--stack-gap: 1.25rem">
-          <Eyebrow>WorthSheet™ saves time</Eyebrow>
+          <Eyebrow tone="green">WorthSheet™ saves time</Eyebrow>
           <h2 id="saves-title">Avoid manual calculations and messy bank personal financial statement forms</h2>
           <p class="lead">The WorthSheet™ template is built to be faster than filling out a blank bank personal financial statement by hand.</p>
           <ul class="list-check">
@@ -252,130 +343,153 @@ const jsonLd = [
         <div class="split-art"><IsoTiles /></div>
       </div>
     </div>
-  </section>
+  </Sheet>
 
   <!-- Dynamic categories -->
-  <section id="categories" class="section tone-paper" aria-labelledby="categories-title" data-sheet>
-    <div class="container">
-      <div class="split split-reverse">
-        <div class="stack split-copy" style="--stack-gap: 1.25rem">
-          <Eyebrow>Dynamic categories</Eyebrow>
-          <h2 id="categories-title">Tailored to create a personal financial statement super-fast</h2>
-          <p class="lead">A comprehensive list of categories modeled on common personal financial statement forms, with the flexibility to add your own.</p>
-          <ul class="list-check">
-            <li data-view="assets" tabindex="0">{STATS.assetCategories} asset categories</li>
-            <li data-view="liabilities" tabindex="0">{STATS.liabilityCategories} liability categories</li>
-            <li data-view="formulas" tabindex="0">Dynamic calculation formulas</li>
-          </ul>
-          <div>
-            <Button href="/download/" variant="primary">Get the template for free</Button>
-          </div>
+  <Sheet id="categories" tone="green" aria-labelledby="categories-title">
+    <div class="split split-reverse">
+      <div class="stack split-copy" style="--stack-gap: 1.25rem">
+        <Eyebrow tone="green">Dynamic categories</Eyebrow>
+        <h2 id="categories-title">Tailored to create a personal financial statement <span class="accent">super-fast</span></h2>
+        <p class="lead">A comprehensive list of categories modeled on common personal financial statement forms, with the flexibility to add your own.</p>
+        <ul class="list-check">
+          <li data-view="assets" tabindex="0">{STATS.assetCategories} asset categories</li>
+          <li data-view="liabilities" tabindex="0">{STATS.liabilityCategories} liability categories</li>
+          <li data-view="formulas" tabindex="0">Dynamic calculation formulas</li>
+        </ul>
+        <div>
+          <Button href="/download/" variant="primary">Get the template for free</Button>
         </div>
-        <div class="split-art"><CategoriesStack /></div>
       </div>
+      <div class="split-art iso-panel art-plate"><CategoriesStack /></div>
     </div>
-  </section>
+  </Sheet>
 
   <!-- How to use -->
-  <Section id="how-to-use" tone="surface" aria-labelledby="how-title">
-    <div class="section-head stack" style="--stack-gap: 1rem">
-      <Eyebrow>Getting started</Eyebrow>
-      <h2 id="how-title">How to use the WorthSheet™ personal financial statement template</h2>
+  <Sheet id="how-to-use" aria-labelledby="how-title">
+    <div class="sec-head stack" style="--stack-gap: 1rem">
+      <Eyebrow tone="blue">Getting started</Eyebrow>
+      <h2 id="how-title">How to use the WorthSheet™ <span class="accent accent-blue">personal financial statement template</span></h2>
       <p class="lead">Preparing a statement for a bank loan takes four steps, and the template does the arithmetic for you.</p>
     </div>
-    <div class="steps-art"><StepsFlow /></div>
-    <ol class="steps">
-      {
-        steps.map((s, i) => (
-          <li class="card step" data-tone={s.tone}>
-            <span class="step-num num" aria-hidden="true">{i + 1}</span>
-            <h3><span class="sr-only">Step {i + 1}: </span>{s.title}</h3>
-            <p class="muted">{s.text}</p>
-            {s.cta && (
-              <div class="step-cta">
-                <Button href="/download/" variant="secondary" size="sm">Download PFS template</Button>
+    <div class="steps-wrap">
+      <ol class="steps">
+        {
+          steps.map((s, i) => (
+            <li class="step tile" style={`--i:${i}`}>
+              <StepTile step={(i + 1) as 1 | 2 | 3 | 4} />
+              <div class="step-head">
+                <span class="step-num num" aria-hidden="true">{i + 1}</span>
+                <h3><span class="sr-only">Step {i + 1}: </span>{s.title}</h3>
               </div>
-            )}
-          </li>
-        ))
-      }
-    </ol>
+              <p class="muted">{s.text}</p>
+              {s.cta && (
+                <div class="step-cta">
+                  <Button href="/download/" variant="secondary">Download PFS template</Button>
+                </div>
+              )}
+            </li>
+          ))
+        }
+      </ol>
+      <div class="links" aria-hidden="true">
+        {
+          [0, 1, 2].map((i) => (
+            <span class="link" style={`--i:${i}`}>
+              <span class="link-fill"><span class="link-dots"></span></span>
+            </span>
+          ))
+        }
+      </div>
+    </div>
     <p class="steps-more muted">
       Want to see a finished statement first? Browse the <a href={url('/personal-financial-statement-example/')}>personal financial statement example</a>.
     </p>
-  </Section>
+  </Sheet>
 
   <!-- Safe and secure -->
-  <Section id="safe-and-secure" tone="paper" aria-labelledby="safe-title">
-    <div class="split split-safe">
-      <div class="stack split-copy" style="--stack-gap: 1.25rem">
-        <Eyebrow>Why WorthSheet</Eyebrow>
-        <h2 id="safe-title">Safe and secure template</h2>
-        <p class="lead">Your copy lives in your own Google account or on your own computer, so you decide where your financial data is stored.</p>
+  <Sheet id="safe-and-secure" aria-labelledby="safe-title">
+    <div class="reveal-sheet" data-cursor-sheet>
+      <div class="split split-safe">
+        <div class="stack split-copy" style="--stack-gap: 1.25rem">
+          <Eyebrow tone="yellow">Why WorthSheet</Eyebrow>
+          <h2 id="safe-title">Safe and secure <span class="accent">template</span></h2>
+          <p class="lead">Your copy lives in your own Google account or on your own computer, so you decide where your financial data is stored.</p>
+        </div>
+        <div class="split-art split-art-small"><ShieldSecure /></div>
       </div>
-      <div class="split-art split-art-small"><ShieldSecure /></div>
+      <ul class="feature-list">
+        {
+          securityCards.map((c, i) => (
+            <li class="feature-item tile">
+              <span class="feature-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" set:html={c.icon} />
+              </span>
+              <h3>{c.title}</h3>
+              <p class="muted">{c.text}</p>
+            </li>
+          ))
+        }
+        <li class="feature-item feature-cta tile">
+          <a class="feature-link" href={url('/download/')}>Get the free template <span aria-hidden="true">→</span></a>
+        </li>
+      </ul>
     </div>
-    <ul class="feature-list">
-      {
-        securityCards.map((c, i) => (
-          <li class="feature-item" data-reveal style={`--reveal-i: ${i}`}>
-            <span class="feature-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" set:html={c.icon} />
-            </span>
-            <h3>{c.title}</h3>
-            <p class="muted">{c.text}</p>
-          </li>
-        ))
-      }
-      <li class="feature-item feature-cta" data-reveal style="--reveal-i: 5">
-        <a class="feature-link" href={url('/download/')}>Get the free template <span aria-hidden="true">→</span></a>
-      </li>
-    </ul>
-  </Section>
+  </Sheet>
 
   <!-- Community / social proof -->
-  <Section id="community" tone="cream" aria-labelledby="community-title">
-    <div class="section-head stack" style="--stack-gap: 1rem">
-      <Eyebrow>Join our community</Eyebrow>
-      <h2 id="community-title">Over {STATS.downloads.replace('+', '')} downloads of WorthSheet personal financial statements</h2>
-      <p class="lead">Prepare, tailor and submit your personal financial statement for a bank loan, a mortgage or your advisor with one reusable template.</p>
-      <div>
+  <Sheet id="community" tone="blue" aria-labelledby="community-title">
+    <div class="community-top">
+      <div class="sec-head stack" style="--stack-gap: 1rem">
+        <Eyebrow tone="green">Join our community</Eyebrow>
+        <h2 id="community-title">Over {STATS.downloads.replace('+', '')} downloads <span class="accent">of WorthSheet personal financial statements</span></h2>
+        <p class="lead">Prepare, tailor and submit your personal financial statement for a bank loan, a mortgage or your advisor with one reusable template.</p>
+      </div>
+      <div class="community-cta">
         <Button href="/download/" variant="primary">Get the template for free</Button>
       </div>
     </div>
-    <div class="community-stats">
-      <StatRow
-        items={[
-          { value: STATS.downloads, label: 'Downloads of the PFS template' },
-          { value: STATS.assetCategories, label: 'Defined asset categories' },
-          { value: STATS.liabilityCategories, label: 'Defined liability categories' },
-        ]}
-      />
-    </div>
+    <dl class="stats">
+      <div class="tile">
+        <dt>Downloads of the PFS template</dt>
+        <dd class="num">{STATS.downloads}</dd>
+      </div>
+      <div class="tile">
+        <dt>Defined asset categories</dt>
+        <dd class="num">{STATS.assetCategories}</dd>
+      </div>
+      <div class="tile">
+        <dt>Defined liability categories</dt>
+        <dd class="num">{STATS.liabilityCategories}</dd>
+      </div>
+    </dl>
     <ul class="testimonials">
       {
         testimonials.map((t) => (
-          <li>
-            <figure class="card testimonial">
+          <li class="tile">
+            <figure class="testimonial">
               <blockquote>
                 <p>“{t.quote}”</p>
               </blockquote>
               <figcaption>
-                <strong>{t.name}</strong>
-                <span class="muted">{t.place}</span>
+                <span class="avatar" aria-hidden="true">{t.name.charAt(0)}</span>
+                <span class="who">
+                  <strong>{t.name}</strong>
+                  <span class="muted">{t.place}</span>
+                </span>
               </figcaption>
             </figure>
           </li>
         ))
       }
     </ul>
-  </Section>
+  </Sheet>
 
   <!-- Free tools -->
-  <Section id="free-tools" tone="paper" aria-labelledby="tools-title">
-    <div class="section-head stack" style="--stack-gap: 1rem">
-      <Eyebrow>Free tools</Eyebrow>
-      <h2 id="tools-title">Free calculators and guides for your loan application</h2>
+  <Sheet id="free-tools" aria-labelledby="tools-title">
+    <div class="sec-head stack" style="--stack-gap: 1rem">
+      <Eyebrow tone="blue">Free tools</Eyebrow>
+      <h2 id="tools-title">Free calculators and guides <span class="accent accent-blue">for your loan application</span></h2>
       <p class="lead">Check your numbers before you apply, then put them in a bank-ready statement.</p>
     </div>
     <ul class="grid grid-4 tools">
@@ -395,27 +509,15 @@ const jsonLd = [
       }
     </ul>
     <p class="tools-note small muted">Calculators are estimates for educational purposes only and are not a loan offer or financial advice.</p>
-  </Section>
-
-  <!-- FAQ -->
-  <Section id="faq" tone="surface" aria-labelledby="faq-title">
-    <div class="faq-wrap">
-      <div class="stack faq-head" style="--stack-gap: 1rem">
-        <Eyebrow>Still have questions?</Eyebrow>
-        <h2 id="faq-title">Frequently asked questions</h2>
-        <p class="muted">Short answers about the template and the personal financial statement.</p>
-      </div>
-      <Faq items={faq} />
-    </div>
-  </Section>
+  </Sheet>
 
   <!-- Latest guides -->
   {
     posts.length > 0 && (
-      <Section id="latest" tone="paper" aria-labelledby="latest-title">
+      <Sheet id="latest" tone="cream" aria-labelledby="latest-title">
         <div class="latest-head">
           <div class="stack" style="--stack-gap: 1rem">
-            <Eyebrow>From the blog</Eyebrow>
+            <Eyebrow tone="yellow">From the blog</Eyebrow>
             <h2 id="latest-title">Read our latest guides</h2>
           </div>
           <Button href="/blog/" variant="secondary">All guides</Button>
@@ -449,51 +551,144 @@ const jsonLd = [
             </li>
           ))}
         </ul>
-      </Section>
+      </Sheet>
     )
   }
+
+  <!-- FAQ -->
+  <Sheet id="faq" aria-labelledby="faq-title">
+    <div class="faq-wrap">
+      <div class="stack faq-head" style="--stack-gap: 1rem">
+        <Eyebrow tone="navy">Still have questions?</Eyebrow>
+        <h2 id="faq-title">Frequently asked questions</h2>
+        <p class="muted">Short answers about the template and the personal financial statement.</p>
+      </div>
+      <Faq items={faq} />
+    </div>
+  </Sheet>
 
   <CtaBand
     title="Download the personal financial statement template for free"
     text="Make your next loan or mortgage application easier: fill in your accounts once and let the template calculate the totals and your net worth."
-  >
-    <CtaTiles slot="art" />
-  </CtaBand>
+  />
 </Base>
 
 <style>
+  /* Grid, sheets, cards and highlighted cells come from global.css (.sheet-*) and Sheet.astro.
+     Every section below the hero is a <Sheet>; this file only lays out what sits inside them. */
+
   /* ---------- Shared bits ---------- */
-  .section-head {
+  .sec-head {
     max-width: 44rem;
-    margin-bottom: clamp(32px, 5vw, 56px);
+    margin-bottom: clamp(32px, 4.5vw, 56px);
   }
 
-  #features,
-  #how-to-use {
+  :global(#features),
+  :global(#how-to-use) {
     scroll-margin-top: 72px;
   }
 
-  /* ---------- Hero ---------- */
-  .hero {
-    padding-block: clamp(40px, 7vw, 96px) clamp(32px, 5vw, 64px);
-    overflow: hidden;
-  }
-
-  .hero-grid {
-    display: grid;
-    gap: clamp(32px, 5vw, 64px);
-    align-items: center;
-  }
-
+  /* ---------- Hero (Figma "Section" 1:1277) ----------
+     Sheet 1200 x 676 (26 rows) inside two rows of cells above and below; the card is inset 7px
+     (shared .sheet), white with the #e8e7e5 hairline and 24px radius. */
   .hero-copy {
+    position: relative;
+    z-index: 2;
     display: flex;
     flex-direction: column;
-    gap: 24px;
     align-items: flex-start;
+    gap: 24px;
+    padding: 35px clamp(20px, 2.8vw, 39px) 0;
+  }
+
+  .hero-proof {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1rem;
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+    color: var(--muted);
+  }
+
+  .proof-checks {
+    display: flex;
+    gap: 4px;
+  }
+
+  .proof-checks i {
+    position: relative;
+    display: block;
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    background: var(--sheen), var(--green);
+  }
+
+  .proof-checks i:nth-child(2) {
+    background: var(--sheen), var(--yellow);
+  }
+
+  .proof-checks i:nth-child(3) {
+    background: var(--sheen), var(--blue);
+  }
+
+  .proof-checks i::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--icon-check) center / 60% no-repeat;
+  }
+
+  /* Pill sizes are in em so they track the fluid h1 (Figma at 64.8px: 48px icon, 12px gap). */
+  .hero-title {
+    max-width: 650px;
+    animation: none;
+  }
+
+  .title-line {
+    display: block;
+    overflow: hidden;
+    padding-bottom: 0.1em;
+    margin-bottom: -0.1em;
+  }
+
+  .title-line > span {
+    display: block;
+  }
+
+  .title-line > .title-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 0.06em 0.185em;
+  }
+
+  .title-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.105em;
+    padding: 0 0.185em 0 0.123em;
+    border: 1px solid var(--line-strong);
+    border-radius: 0.37em;
+    background: var(--white);
+    color: var(--green);
+  }
+
+  /* Excel-style mark: a green "X" tile over a sheet. */
+  .title-icon {
+    flex: none;
+    width: 0.74em;
+    height: 0.74em;
   }
 
   .hero-points {
-    gap: 10px;
+    list-style: none;
+    display: grid;
+    gap: 6px;
+    font-size: 1rem;
+    line-height: 1.6;
+    letter-spacing: -0.02em;
   }
 
   .hero-actions {
@@ -502,34 +697,137 @@ const jsonLd = [
     gap: 12px;
   }
 
+  /* Small screens: the illustration flows under the copy and bleeds off the card. */
   .hero-art {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    width: 100%;
-    margin-inline: auto;
-  }
-
-  .hero-art :global(svg) {
-    width: 100%;
+    position: relative;
+    width: 124%;
+    margin: 8px -12% -10%;
   }
 
   @media (min-width: 960px) {
-    .hero-grid {
-      grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    .hero-sheet {
+      --sheet-min: calc(var(--cell-h) * 26);
     }
 
+    /* Our HeroSheet (viewBox 960 x 557) fills the lower right of the card, under the copy's
+       right edge; positioned against the card and sized so it stays inside the 26-row sheet. */
     .hero-art {
-      align-self: stretch;
+      position: absolute;
+      top: 226px;
+      left: 36%;
+      width: 64%;
+      margin: 0;
     }
   }
 
-  @media (min-width: 1100px) {
-    .hero-art {
-      max-width: 760px;
-      width: calc(100% + var(--gutter) * 0.6);
-      margin-inline: 0 calc(var(--gutter) * -0.6);
+  /* Entrance, 100ms apart (better-ui staged entrance): proof row, title, points, actions + art,
+     then the highlighted cells settle in around the sheet. Fades run for everyone; rise, blur,
+     scale and the title mask only without reduced motion. The h1 text is never transparent. */
+  @keyframes title-rise {
+    from {
+      translate: 0 105%;
     }
+  }
+
+  @keyframes cell-twinkle {
+    50% {
+      opacity: 0.45;
+    }
+  }
+
+  .hero-proof {
+    animation: ws-fade var(--enter-ms) var(--ease-out) backwards;
+  }
+
+  .hero .sheet-glow i {
+    animation: ws-fade 600ms var(--ease-out) backwards;
+    animation-delay: calc(500ms + var(--i) * 25ms);
+  }
+
+  /* Checks and the Excel mark appear like contextual icons: scale 0.25 -> 1, opacity, 4px blur. */
+  .proof-checks i::after,
+  .title-icon {
+    animation: ws-fade var(--enter-ms) var(--ease-icon) backwards;
+  }
+
+  .proof-checks i:nth-child(1)::after {
+    animation-delay: 150ms;
+  }
+
+  .proof-checks i:nth-child(2)::after {
+    animation-delay: 250ms;
+  }
+
+  .proof-checks i:nth-child(3)::after {
+    animation-delay: 350ms;
+  }
+
+  .title-icon {
+    animation-delay: 450ms;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .hero-proof {
+      animation-name: ws-rise;
+    }
+
+    .proof-checks i::after,
+    .title-icon {
+      animation-name: ws-icon-in;
+    }
+
+    /* Display headline: each line rises out of its own mask, 80ms apart. */
+    .title-line > span {
+      animation: title-rise 500ms var(--ease-out) 100ms backwards;
+    }
+
+    .title-line + .title-line > span {
+      animation-delay: 180ms;
+    }
+
+    /* A third of the hero's cells slowly breathe, like a sheet recalculating in the background. */
+    .hero .sheet-glow i.twinkle {
+      animation:
+        ws-fade 600ms var(--ease-out) calc(500ms + var(--i) * 25ms) backwards,
+        cell-twinkle calc(7s + var(--i) * 97ms) var(--ease-soft) calc(1.2s + var(--i) * 0.31s) infinite;
+    }
+  }
+
+  /* ---------- Banks strip ---------- */
+  .banks-row {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    text-align: center;
+  }
+
+  .bank-logos {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 20px 56px;
+  }
+
+  .bank-logos :global(img) {
+    display: block;
+    width: auto;
+    opacity: 0.6;
+    filter: grayscale(1);
+    transition: opacity 150ms var(--ease-out);
+  }
+
+  @media (hover: hover) {
+    .bank-logos :global(img:hover) {
+      opacity: 1;
+    }
+  }
+
+  .banks-row .disclaimer {
+    max-width: 36em;
+    margin-inline: auto;
   }
 
   /* ---------- Split sections ---------- */
@@ -546,7 +844,6 @@ const jsonLd = [
   }
 
   .split-art-small {
-    width: 100%;
     max-width: 560px;
   }
 
@@ -563,32 +860,29 @@ const jsonLd = [
       margin-inline: 0;
     }
 
-    .split-reverse .split-art {
-      margin-inline: 0 auto;
-    }
-  }
-
-  @media (min-width: 900px) {
     .split-safe {
       grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
     }
   }
 
-  /* ---------- Steps ---------- */
-  .steps-art {
-    margin-bottom: clamp(24px, 4vw, 48px);
+  /* ---------- Steps: a tile above each step, joined by a dotted line in the 4-up layout ----------
+     The script highlights steps 1 to 4 in turn (.is-sequencing on .steps-wrap, .is-active on the
+     step) and sets --p (0 to 3, eased) on .steps-wrap; each dotted link fills by clamp(--p - --i). */
+  .steps-wrap {
+    position: relative;
   }
 
   .steps {
     list-style: none;
     display: grid;
-    gap: clamp(16px, 2.4vw, 24px);
     grid-template-columns: 1fr;
+    gap: 40px;
   }
 
   @media (min-width: 640px) {
     .steps {
       grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 48px 40px;
     }
   }
 
@@ -599,46 +893,111 @@ const jsonLd = [
   }
 
   .step {
+    position: relative;
     display: flex;
     flex-direction: column;
     gap: 12px;
-    padding-inline: clamp(16px, 1.6vw, 22px);
   }
 
+  /* Pull the tile up and left so its pad lines up optically with the text below. */
+  .step :global(.step-tile) {
+    margin: -8px 0 4px -8px;
+  }
+
+  /* Links sit outside the steps so a greyed step never greys the progress line. Same 4 columns and
+     gap as .steps; each link runs from its tile's pad (centre 52px down, right edge ~104px in)
+     to the next one. */
+  .links {
+    display: none;
+  }
+
+  @media (min-width: 1100px) {
+    .links {
+      position: absolute;
+      top: 51px;
+      left: 0;
+      right: 0;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      column-gap: 40px;
+      pointer-events: none;
+    }
+
+    .link {
+      --f: clamp(0, calc(var(--p, 0) - var(--i)), 1);
+      position: relative;
+      height: 2px;
+      margin: 0 -32px 0 112px;
+      overflow: hidden;
+      background: linear-gradient(to right, rgba(12, 38, 53, 0.22) 50%, transparent 0) 0 0 / 8px 2px repeat-x;
+    }
+
+    /* Fill: the coloured dots slide in from the left, drawn with transforms only (the wrapper moves
+       left by the unfilled share, the dots move back by the same amount, so they never shift). */
+    .link-fill {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      transform: translateX(calc((var(--f) - 1) * 100%));
+      transition: opacity 250ms var(--ease-out);
+    }
+
+    .link-dots {
+      position: absolute;
+      inset: 0;
+      transform: translateX(calc((1 - var(--f)) * 100%));
+      background: linear-gradient(to right, var(--link-color) 50%, transparent 0) 0 0 / 8px 2px repeat-x;
+    }
+
+    .link:nth-child(1) {
+      --link-color: #0f9d58;
+    }
+
+    .link:nth-child(2) {
+      --link-color: #f0b52e;
+    }
+
+    .link:nth-child(3) {
+      --link-color: #0c2635;
+    }
+
+    .steps-wrap.is-resetting .link-fill {
+      opacity: 0;
+    }
+  }
+
+  .step-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  /* Step numbers: rounded squares in the same colours as their tiles. */
   .step-num {
     display: grid;
     place-items: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: var(--ink);
-    color: var(--white);
+    flex: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    background: var(--sheen), var(--blue);
+    color: var(--ink);
     font-weight: 600;
   }
 
-  .steps > li[data-tone='blue'] {
-    --tone: 108, 190, 228;
+  .step:nth-child(2) .step-num {
+    background: var(--sheen), var(--green);
+    color: var(--white);
   }
 
-  .steps > li[data-tone='green'] {
-    --tone: 64, 170, 74;
-  }
-
-  .steps > li[data-tone='yellow'] {
-    --tone: 250, 195, 68;
-  }
-
-  .steps > li.is-active {
-    --edge: rgba(var(--tone), 0.9);
-    box-shadow: 0 10px 30px -14px rgba(var(--tone), 0.45);
-  }
-
-  .steps > li.is-active .step-num {
-    background: rgb(var(--tone));
-  }
-
-  .steps > li.is-active[data-tone='yellow'] .step-num {
+  .step:nth-child(3) .step-num {
+    background: var(--sheen), var(--yellow);
     color: var(--ink);
+  }
+
+  .step:nth-child(4) .step-num {
+    background: var(--sheen), var(--navy);
+    color: var(--white);
   }
 
   .step h3 {
@@ -651,41 +1010,57 @@ const jsonLd = [
   }
 
   .steps-more {
-    margin-top: 28px;
-    text-align: center;
+    margin-top: clamp(28px, 4vw, 44px);
   }
 
-  .steps > li {
+  /* Sequencing: the inactive steps (tile and text) are greyed. Applied to the step's children,
+     never to the step itself, which the scroll reveal owns. */
+  .step > :global(*) {
     transition:
-      opacity 500ms ease-out,
-      filter 500ms ease-out,
-      transform 500ms ease-out,
-      box-shadow 500ms ease-out;
+      opacity 450ms var(--ease-out),
+      filter 450ms var(--ease-out);
   }
 
-  html.js .steps.is-sequencing > li:not(.is-active) {
-    opacity: 0.55;
-    filter: grayscale(0.6);
+  .steps-wrap.is-sequencing .step:not(.is-active) > :global(*) {
+    opacity: 0.45;
+    filter: grayscale(1);
   }
 
-  html.js .steps.is-sequencing > li.is-active {
-    opacity: 1;
-    filter: none;
-    transform: translateY(-2px);
+  /* The selected step's tile lifts off its pad (interruptible); the tile's glow lives in StepTile. */
+  @media (prefers-reduced-motion: no-preference) {
+    .step :global(.lift) {
+      transition: translate 300ms var(--ease-out);
+    }
+
+    .step :global(.shadow) {
+      transition-property: scale, opacity;
+      transition-duration: 300ms;
+      transition-timing-function: var(--ease-out);
+    }
   }
 
-  .steps-art :global(svg.wsi) {
-    transition:
-      opacity 300ms cubic-bezier(0.23, 1, 0.32, 1),
-      filter 400ms var(--ease-out);
+  .steps-wrap.is-sequencing .step.is-active :global(.lift) {
+    translate: 0 -6px;
   }
 
-  .steps-art :global(svg.wsi.is-resetting) {
-    opacity: 0;
+  .steps-wrap.is-sequencing .step.is-active :global(.shadow) {
+    scale: 0.9;
+    opacity: 0.7;
   }
 
+  /* Without the script (or with reduced motion) every step stays normal; hover still lifts a tile. */
+  @media (hover: hover) {
+    .steps-wrap:not(.is-sequencing) .step:hover :global(.lift) {
+      translate: 0 -6px;
+    }
 
-  /* ---------- Safe and secure ---------- */
+    .steps-wrap:not(.is-sequencing) .step:hover :global(.shadow) {
+      scale: 0.9;
+      opacity: 0.7;
+    }
+  }
+
+  /* ---------- Safe and secure: our feature list inside the card ---------- */
   .feature-list {
     list-style: none;
     display: grid;
@@ -711,7 +1086,7 @@ const jsonLd = [
     flex-direction: column;
     gap: 14px;
     padding-top: 20px;
-    border-top: 1px solid var(--line);
+    border-top: 1px solid rgba(12, 38, 53, 0.12);
   }
 
   .feature-item:nth-child(3n + 1) {
@@ -773,15 +1148,86 @@ const jsonLd = [
     text-decoration: underline;
   }
 
+  /* The cursor-revealed spreadsheet sits on this block; negative margins match .sheet-body's
+     padding so it covers the whole card. */
+  .reveal-sheet {
+    --pad: clamp(24px, 4.6vw, 64px);
+    margin: calc(var(--pad) * -1);
+    padding: var(--pad);
+  }
+
   /* ---------- Community ---------- */
-  .community-stats {
-    margin-bottom: clamp(40px, 5vw, 64px);
+  .community-top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px 48px;
+    margin-bottom: clamp(32px, 4.5vw, 56px);
+  }
+
+  .community-top .sec-head {
+    margin-bottom: 0;
+  }
+
+  .community-cta {
+    flex: none;
+  }
+
+  /* Stats read as one spreadsheet row: three cells between hairlines. */
+  .stats {
+    display: grid;
+    grid-template-columns: 1fr;
+    margin: 0 0 clamp(32px, 4.5vw, 56px);
+    border-block: 1px solid rgba(12, 38, 53, 0.12);
+  }
+
+  .stats > div {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 6px;
+    padding: 20px 0;
+  }
+
+  .stats > div + div {
+    border-top: 1px solid rgba(12, 38, 53, 0.12);
+  }
+
+  @media (min-width: 720px) {
+    .stats {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .stats > div {
+      padding: 24px 28px;
+    }
+
+    .stats > div:first-child {
+      padding-left: 0;
+    }
+
+    .stats > div + div {
+      border-top: 0;
+      border-left: 1px solid rgba(12, 38, 53, 0.12);
+    }
+  }
+
+  .stats dd {
+    margin: 0;
+    font-size: clamp(2.25rem, 4.6vw, 3.5rem);
+    font-weight: 560;
+    letter-spacing: -0.035em;
+    line-height: 1;
+  }
+
+  .stats dt {
+    color: var(--muted);
   }
 
   .testimonials {
     list-style: none;
     display: grid;
-    gap: clamp(16px, 2.4vw, 24px);
+    gap: 12px;
     grid-template-columns: 1fr;
   }
 
@@ -796,24 +1242,120 @@ const jsonLd = [
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    gap: 24px;
+    gap: 28px;
+    padding: 24px;
+    border: 1px solid transparent;
+    border-radius: 16px;
+    background: var(--white);
+    box-shadow: var(--shadow-border);
   }
 
   .testimonial blockquote p {
     font-size: 1.1875rem;
     line-height: 1.45;
     letter-spacing: -0.01em;
-    text-wrap: pretty;
   }
 
   .testimonial figcaption {
     display: flex;
-    flex-direction: column;
-    gap: 2px;
+    align-items: center;
+    gap: 12px;
     font-size: 0.9375rem;
   }
 
-  /* ---------- Tools ---------- */
+  /* Initials in a logo-coloured rounded square. */
+  .avatar {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: var(--sheen), var(--green);
+    color: var(--white);
+    font-weight: 600;
+  }
+
+  .testimonials li:nth-child(2) .avatar {
+    background: var(--sheen), var(--yellow);
+    color: var(--ink);
+  }
+
+  .testimonials li:nth-child(3) .avatar {
+    background: var(--sheen), var(--blue);
+    color: var(--ink);
+  }
+
+  .who {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  /* ---------- FAQ ---------- */
+  .faq-wrap {
+    display: grid;
+    gap: clamp(28px, 5vw, 64px);
+  }
+
+  @media (min-width: 900px) {
+    .faq-wrap {
+      grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.4fr);
+      align-items: start;
+    }
+
+    .faq-head {
+      position: sticky;
+      top: 96px;
+    }
+  }
+
+  /* ---------- Dynamic categories: hover or focus on a row drives the illustration ---------- */
+  #categories ul.list-check li[data-view] {
+    width: fit-content;
+    max-width: 100%;
+    cursor: default;
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 5px;
+    text-decoration-color: transparent;
+  }
+
+  #categories ul.list-check li[data-view]:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 4px;
+    border-radius: 4px;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    #categories ul.list-check li[data-view]:hover {
+      color: #0a7a43;
+      text-decoration-color: currentColor;
+    }
+
+    #categories ul.list-check li[data-view]:hover::before {
+      filter: brightness(1.1) saturate(1.15);
+    }
+  }
+
+  #categories ul.list-check li[data-view]:focus-visible {
+    color: #0a7a43;
+    text-decoration-color: currentColor;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    #categories ul.list-check li[data-view] {
+      transition:
+        color 160ms var(--ease-out),
+        text-decoration-color 160ms var(--ease-out);
+    }
+
+    #categories ul.list-check li::before {
+      transition: filter 160ms var(--ease-out);
+    }
+  }
+
+  /* ---------- Free tools ---------- */
   .tools {
     list-style: none;
     gap: 20px;
@@ -866,24 +1408,6 @@ const jsonLd = [
     margin-top: 24px;
   }
 
-  /* ---------- FAQ ---------- */
-  .faq-wrap {
-    display: grid;
-    gap: clamp(28px, 5vw, 64px);
-  }
-
-  @media (min-width: 900px) {
-    .faq-wrap {
-      grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.4fr);
-      align-items: start;
-    }
-
-    .faq-head {
-      position: sticky;
-      top: 96px;
-    }
-  }
-
   /* ---------- Latest posts ---------- */
   .latest-head {
     display: flex;
@@ -896,6 +1420,7 @@ const jsonLd = [
 
   .posts {
     list-style: none;
+    gap: 20px;
   }
 
   .post {
@@ -930,191 +1455,129 @@ const jsonLd = [
     padding-top: 8px;
     font-weight: 560;
   }
-
-  /* Category list drives the illustration on hover or focus; plain list-check bullets, no row background. */
-  #categories ul.list-check li:focus-visible {
-    outline: 2px solid #2e2926;
-    outline-offset: 4px;
-    border-radius: 4px;
-  }
-
-  @media (hover: hover) and (pointer: fine) {
-    #categories ul.list-check li:hover::before {
-      filter: brightness(1.08);
-    }
-  }
-
-  @media (prefers-reduced-motion: no-preference) {
-    #categories ul.list-check li::before {
-      transition: filter 160ms cubic-bezier(0.23, 1, 0.32, 1);
-    }
-  }
 </style>
 
 <script>
-  const section = document.getElementById('how-to-use');
-  const list = section?.querySelector<HTMLOListElement>('.steps') ?? null;
-  const art = section?.querySelector<SVGSVGElement>('.steps-art svg.wsi') ?? null;
-  const items = list
-    ? Array.from(list.children).filter((el): el is HTMLElement => el instanceof HTMLElement)
-    : [];
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // How to use: steps 1 to 4 take turns (inactive ones are greyed) while the dotted links fill toward
+  // the active step. Hovering or focusing a step (or its tile) selects it. Reduced motion: no loop.
+  const wrap = document.querySelector<HTMLElement>('#how-to-use .steps-wrap');
+  const items = wrap ? Array.from(wrap.querySelectorAll<HTMLElement>('.steps > .step')) : [];
 
-  if (section && list && art && items.length === 4 && !reduceMotion && 'IntersectionObserver' in window) {
-    const LOOP_MS = 10000;
-    const HOLD_MS = 1600;
-    const FADE_MS = 300;
-    const LERP_MS = 400;
-    const TILES = [0, 100 / 3, 200 / 3, 100];
+  if (wrap && items.length === 4 && !matchMedia('(prefers-reduced-motion: reduce)').matches && 'IntersectionObserver' in window) {
+    const STEP_MS = 2400;
+    const RESET_MS = 320;
+    const EASE_MS = 150;
 
-    type Phase = 'run' | 'hold' | 'fade' | 'lerp' | 'pinned';
-    let phase: Phase = 'run';
-    let elapsed = 0;
-    let p = 0;
     let active = -1;
-    let lerpFrom = 0;
-    let lerpTo = 0;
-    let visible = false;
-    let overridden = false;
-    let pointerOver = false;
-    let focusWithin = false;
+    let p = 0;
+    let target = 0;
     let raf = 0;
-    let lastTs = 0;
+    let last = 0;
+    let timer = 0;
+    let resetTimer = 0;
+    let visible = false;
+    let pinned = false;
 
-    const indexFor = (v: number) => (v >= 100 ? 3 : v >= 200 / 3 ? 2 : v >= 100 / 3 ? 1 : 0);
+    const render = () => wrap.style.setProperty('--p', p.toFixed(4));
+
+    // Ease --p toward the active step's index; the dotted links read it, so the fill is continuous.
+    const frame = (now: number) => {
+      const dt = last ? Math.min(now - last, 64) : 16;
+      last = now;
+      p += (target - p) * (1 - Math.exp(-dt / EASE_MS));
+      if (Math.abs(target - p) < 0.002) {
+        p = target;
+        raf = 0;
+      } else {
+        raf = requestAnimationFrame(frame);
+      }
+      render();
+    };
+
+    const move = (to: number) => {
+      target = to;
+      if (!raf) {
+        last = 0;
+        raf = requestAnimationFrame(frame);
+      }
+    };
 
     const setActive = (i: number) => {
-      if (i === active) return;
       active = i;
-      art.setAttribute('data-active', String(i + 1));
       items.forEach((item, j) => item.classList.toggle('is-active', j === i));
     };
 
-    const setP = (v: number) => {
-      p = v;
-      art.style.setProperty('--p', String(v));
+    const schedule = () => {
+      window.clearTimeout(timer);
+      if (visible && !pinned) timer = window.setTimeout(advance, STEP_MS);
     };
 
-    const tick = (now: number) => {
-      raf = 0;
-      const dt = lastTs ? Math.min(now - lastTs, 100) : 0;
-      lastTs = now;
-
-      if (phase === 'lerp') {
-        elapsed += dt;
-        const t = Math.min(1, elapsed / LERP_MS);
-        const e = 1 - (1 - t) ** 3;
-        setP(lerpFrom + (lerpTo - lerpFrom) * e);
-        if (t >= 1) {
-          phase = 'pinned';
-          return;
-        }
-      } else if (visible) {
-        if (phase === 'run') {
-          setP(Math.min(100, p + (dt * 100) / LOOP_MS));
-          setActive(indexFor(p));
-          if (p >= 100) {
-            phase = 'hold';
-            elapsed = 0;
-          }
-        } else if (phase === 'hold') {
-          elapsed += dt;
-          if (elapsed >= HOLD_MS) {
-            phase = 'fade';
-            elapsed = 0;
-            art.classList.add('is-resetting');
-          }
-        } else if (phase === 'fade') {
-          elapsed += dt;
-          if (elapsed >= FADE_MS) {
-            setP(0);
-            setActive(0);
-            art.classList.remove('is-resetting');
-            phase = 'run';
-            elapsed = 0;
-          }
-        }
+    const advance = () => {
+      const next = (active + 1) % items.length;
+      if (next === 0) {
+        // Wrap: fade the fills out, activate step 1, then reset the progress while it is invisible.
+        wrap.classList.add('is-resetting');
+        setActive(0);
+        resetTimer = window.setTimeout(() => {
+          p = target = 0;
+          render();
+          wrap.classList.remove('is-resetting');
+        }, RESET_MS);
+      } else {
+        setActive(next);
+        move(next);
       }
-
-      if (phase === 'lerp' || (visible && phase !== 'pinned')) {
-        raf = requestAnimationFrame(tick);
-      }
-    };
-
-    const kick = () => {
-      if (raf) return;
-      if (!visible && phase !== 'lerp') return;
-      lastTs = 0;
-      raf = requestAnimationFrame(tick);
+      schedule();
     };
 
     const pin = (i: number) => {
-      overridden = true;
+      pinned = true;
+      window.clearTimeout(timer);
+      window.clearTimeout(resetTimer);
+      wrap.classList.remove('is-resetting');
       setActive(i);
-      lerpFrom = p;
-      lerpTo = TILES[i] ?? 0;
-      elapsed = 0;
-      art.classList.remove('is-resetting');
-      phase = 'lerp';
-      kick();
+      move(i);
     };
 
-    const release = () => {
-      if (!overridden) return;
-      overridden = false;
-      phase = 'run';
-      elapsed = 0;
-      kick();
+    const unpin = () => {
+      if (!pinned) return;
+      pinned = false;
+      schedule();
     };
 
-    list.classList.add('is-sequencing');
-    setP(0);
+    wrap.classList.add('is-sequencing');
     setActive(0);
+    render();
 
-    new IntersectionObserver((entries) => {
-      visible = entries[0]?.isIntersecting ?? false;
-      if (visible) kick();
-    }, { threshold: 0.4 }).observe(list);
+    new IntersectionObserver(
+      (entries) => {
+        visible = entries[0]?.isIntersecting ?? false;
+        if (visible) schedule();
+        else window.clearTimeout(timer);
+      },
+      { threshold: 0.25 },
+    ).observe(wrap);
 
     items.forEach((item, i) => {
-      item.addEventListener('pointerenter', () => {
-        pointerOver = true;
-        pin(i);
-      });
+      item.addEventListener('pointerenter', () => pin(i));
     });
-
-    art.querySelectorAll<SVGElement>('[data-step]').forEach((tile) => {
-      const i = Number(tile.getAttribute('data-step')) - 1;
-      if (!Number.isInteger(i) || i < 0 || i >= items.length) return;
-      tile.addEventListener('pointerenter', () => {
-        pointerOver = true;
-        pin(i);
-      });
+    wrap.addEventListener('pointerleave', () => {
+      if (!wrap.contains(document.activeElement)) unpin();
     });
-
-    section.addEventListener('pointerleave', () => {
-      pointerOver = false;
-      if (!focusWithin) release();
-    });
-
-    list.addEventListener('focusin', (e) => {
+    wrap.addEventListener('focusin', (e) => {
       const i = items.findIndex((item) => item.contains(e.target as Node));
-      if (i < 0) return;
-      focusWithin = true;
-      pin(i);
+      if (i >= 0) pin(i);
     });
-
-    section.addEventListener('focusout', (e) => {
+    wrap.addEventListener('focusout', (e) => {
       const next = e.relatedTarget as Node | null;
-      if (next && list.contains(next)) return;
-      focusWithin = false;
-      if (!pointerOver) release();
+      if (next && wrap.contains(next)) return;
+      unpin();
     });
   }
 </script>
 
 <script>
-  // Hover or focus on a category row picks the illustration view; leaving the list returns to mixed.
+  // Hover or focus on a category row picks the illustration view; leaving the row returns to mixed.
   const section = document.getElementById('categories');
   const list = section?.querySelector<HTMLUListElement>('ul.list-check') ?? null;
   const svg = section?.querySelector<SVGSVGElement>('svg.wsi-cats') ?? null;
@@ -1130,10 +1593,10 @@ const jsonLd = [
         hovered = li.dataset.view ?? null;
         apply();
       });
-    });
-    list.addEventListener('pointerleave', () => {
-      hovered = null;
-      apply();
+      li.addEventListener('pointerleave', () => {
+        hovered = null;
+        apply();
+      });
     });
     list.addEventListener('focusin', (e) => {
       const li = (e.target as Element).closest<HTMLLIElement>('li[data-view]');

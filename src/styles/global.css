@@ -14,9 +14,16 @@
 }
 
 :root {
-  --ink: #2e2926;
-  --muted: rgba(46, 41, 38, 0.66);
-  --muted-soft: rgba(46, 41, 38, 0.48);
+  /* Navy ink from the Figma hero and logo is the one text colour across the site. */
+  --navy: #0c2635;
+  --navy-hover: #1d3c4e;
+  --navy-muted: rgba(12, 38, 53, 0.66);
+  --ink: var(--navy);
+  --ink-hover: var(--navy-hover);
+  --muted: var(--navy-muted);
+  --muted-soft: rgba(12, 38, 53, 0.48);
+  /* Warm ink kept for values that sit on the warm-grey illustration palette. */
+  --ink-warm: #2e2926;
   --paper: #fdfcfa;
   --surface: #f5f3f2;
   --beige: #e8e7e5;
@@ -38,6 +45,23 @@
   --radius: 16px;
   --radius-lg: 28px;
   --shadow: 0 1px 0 var(--line), 0 12px 32px -16px rgba(46, 41, 38, 0.18);
+  /* Elevation as layered transparent shadows instead of a depth border (better-ui). */
+  --shadow-border:
+    0 0 0 1px oklch(0 0 0 / 0.06),
+    0 1px 2px -1px oklch(0 0 0 / 0.06),
+    0 2px 4px 0 oklch(0 0 0 / 0.04);
+  --shadow-border-hover:
+    0 0 0 1px oklch(0 0 0 / 0.08),
+    0 1px 2px -1px oklch(0 0 0 / 0.08),
+    0 2px 4px 0 oklch(0 0 0 / 0.06);
+  /* Film grain for coloured surfaces (after equals.com / getsymmetry.com): a 180px tile of
+     greyscale fractal noise, layered over gradients. --grain for tints, --grain-soft for near-white. */
+  --grain: url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27180%27 height=%27180%27%3E%3Cfilter id=%27n%27%3E%3CfeTurbulence type=%27fractalNoise%27 baseFrequency=%270.85%27 numOctaves=%273%27 stitchTiles=%27stitch%27/%3E%3CfeColorMatrix type=%27saturate%27 values=%270%27/%3E%3C/filter%3E%3Crect width=%27100%25%27 height=%27100%25%27 filter=%27url%28%23n%29%27 opacity=%270.09%27/%3E%3C/svg%3E");
+  --grain-soft: url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27180%27 height=%27180%27%3E%3Cfilter id=%27n%27%3E%3CfeTurbulence type=%27fractalNoise%27 baseFrequency=%270.85%27 numOctaves=%273%27 stitchTiles=%27stitch%27/%3E%3CfeColorMatrix type=%27saturate%27 values=%270%27/%3E%3C/filter%3E%3Crect width=%27100%25%27 height=%27100%25%27 filter=%27url%28%23n%29%27 opacity=%270.055%27/%3E%3C/svg%3E");
+  /* Light top sheen for solid colour chips and buttons. */
+  --sheen: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0) 70%);
+  /* White check used in the coloured check squares (lists, hero proof row, hero title pill). */
+  --icon-check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 6.2l2.3 2.3 4.7-4.9' fill='none' stroke='%23ffffff' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 
   --font-sans:
     'Geist Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue',
@@ -185,6 +209,10 @@ small,
   font-size: 0.875rem;
 }
 
+p {
+  text-wrap: pretty;
+}
+
 .lead {
   font-size: clamp(1rem, 1.45vw, 1.25rem);
   line-height: 1.5;
@@ -205,35 +233,78 @@ small,
 }
 
 .eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  width: fit-content;
-  margin: 0 0 16px;
-  padding: 6px 12px 6px 10px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.7);
-  border: 1px solid var(--line);
-  box-shadow:
-    0 1px 2px rgba(46, 41, 38, 0.04),
-    0 6px 16px -10px rgba(46, 41, 38, 0.18);
-  backdrop-filter: blur(6px);
-  font-size: 0.75rem;
+  margin: 0;
+  font-size: 0.8125rem;
   font-weight: 560;
-  letter-spacing: 0.06em;
-  line-height: 1.2;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--ink);
+  color: var(--muted);
 }
 
-.eyebrow::before {
+/* Chip eyebrow: a small rounded square in a logo colour, then the label (echoes the hero's
+   proof row and the logo's four squares). */
+.eyebrow-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  width: fit-content;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  text-transform: none;
+  color: var(--muted);
+}
+
+.eyebrow-chip::before {
   content: '';
-  width: 8px;
-  height: 8px;
   flex: none;
-  border-radius: 2.5px;
-  background: var(--green);
-  box-shadow: 0 0 0 3px rgba(64, 170, 74, 0.15);
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  background: var(--sheen), var(--chip, var(--green));
+}
+
+.chip-blue {
+  --chip: var(--blue);
+}
+
+.chip-yellow {
+  --chip: var(--yellow);
+}
+
+.chip-navy {
+  --chip: var(--navy);
+}
+
+/* Two-tone headings: the closing phrase in a darkened accent (>= 3:1 on light tints). */
+.accent {
+  color: var(--accent-ink, #2e8f3a);
+}
+
+.accent-blue {
+  --accent-ink: #2b7fae;
+}
+
+/* White plate with a faint isometric grid that fades out towards the edges. */
+.iso-panel {
+  position: relative;
+  isolation: isolate;
+  border-radius: 20px;
+  background: var(--white);
+  padding: clamp(12px, 2vw, 28px);
+}
+
+.iso-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background-image:
+    repeating-linear-gradient(26.565deg, transparent 0 27px, var(--beige) 27px 28px),
+    repeating-linear-gradient(-26.565deg, transparent 0 27px, var(--beige) 27px 28px);
+  -webkit-mask-image: radial-gradient(closest-side, #000 30%, transparent);
+  mask-image: radial-gradient(closest-side, #000 30%, transparent);
 }
 
 .num {
@@ -263,23 +334,45 @@ small,
   padding-block: clamp(48px, 7vw, 88px);
 }
 
+.tone-white {
+  background: var(--white);
+}
 .tone-paper {
   background: var(--paper);
 }
+/* Tinted bands melt into the page colour at their top and bottom edges (no hard seams between
+   sections) and carry a soft grain. */
+.tone-surface,
+.tone-blue,
+.tone-green,
+.tone-yellow,
+.tone-cream {
+  --band-edge: clamp(64px, 9vw, 140px);
+  background-color: var(--paper);
+  background-image:
+    var(--grain-soft),
+    linear-gradient(
+      180deg,
+      var(--paper) 0,
+      var(--band) var(--band-edge),
+      var(--band) calc(100% - var(--band-edge)),
+      var(--paper) 100%
+    );
+}
 .tone-surface {
-  background: var(--surface);
+  --band: var(--surface);
 }
 .tone-blue {
-  background: var(--tint-blue);
+  --band: var(--tint-blue);
 }
 .tone-green {
-  background: var(--tint-green);
+  --band: var(--tint-green);
 }
 .tone-yellow {
-  background: var(--tint-yellow);
+  --band: var(--tint-yellow);
 }
 .tone-cream {
-  background: var(--tint-cream);
+  --band: var(--tint-cream);
 }
 
 .stack > * + * {
@@ -342,9 +435,9 @@ small,
 .card {
   --edge: rgba(46, 41, 38, 0.22);
   background: var(--white);
-  border: 1px solid var(--line);
+  border: 1px solid transparent;
   border-radius: var(--radius);
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow-border);
   padding: clamp(18px, 2.2vw, 26px);
 }
 
@@ -389,15 +482,16 @@ ul.list-check li::before {
   width: 20px;
   height: 20px;
   border-radius: 6px;
-  background: #40aa4a url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 6.2l2.3 2.3 4.7-4.9' fill='none' stroke='%23ffffff' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 12px no-repeat;
+  background: var(--icon-check) center / 12px no-repeat, var(--sheen);
+  background-color: var(--green);
 }
 
 ul.list-check li:nth-child(3n + 2)::before {
-  background-color: #6cbee4;
+  background-color: var(--blue);
 }
 
 ul.list-check li:nth-child(3n + 3)::before {
-  background-color: #fac344;
+  background-color: var(--yellow);
 }
 
 .pill {
@@ -437,23 +531,18 @@ ul.list-check li:nth-child(3n + 3)::before {
   line-height: 1;
   text-decoration: none;
   white-space: nowrap;
-  transition:
-    transform 0.15s ease,
-    background-color 0.15s ease,
-    border-color 0.15s ease;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .btn:active {
-    transform: scale(0.98);
-  }
+  -webkit-tap-highlight-color: transparent;
+  transition-property: background-color, border-color, color, box-shadow, translate, scale;
+  transition-duration: 150ms;
+  transition-timing-function: var(--ease-out);
 }
 
 .btn-primary {
-  --edge: rgba(150, 140, 133, 0.95);
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0) 65%);
 }
 
 .btn-secondary {
+  background-image: linear-gradient(rgba(0, 0, 0, 0) 70%, rgba(0, 0, 0, 0.04));
   --btn-bg: var(--white);
   --btn-fg: var(--ink);
   --btn-border: var(--line-strong);
@@ -471,7 +560,36 @@ ul.list-check li:nth-child(3n + 3)::before {
 .btn[aria-disabled='true'] {
   opacity: 0.55;
   cursor: not-allowed;
-  transform: none;
+}
+
+/* Hover colour only where hover exists, so a tap never leaves a stuck state. */
+@media (hover: hover) {
+  .btn-primary:hover {
+    --btn-bg: var(--ink-hover);
+  }
+
+  .btn-secondary:hover {
+    --btn-border: var(--ink);
+  }
+
+  .btn-ghost:hover {
+    --btn-bg: var(--beige-soft);
+  }
+}
+
+/* Press: scale to exactly 0.96 over 150ms ease-out; disabled buttons never scale. */
+@media (prefers-reduced-motion: no-preference) {
+  .btn:not(:disabled, [aria-disabled='true']):active {
+    translate: 0 0;
+    scale: 0.96;
+  }
+}
+
+/* 44px touch targets on coarse pointers (40px stays for mouse, as in the design). */
+@media (pointer: coarse) {
+  .btn {
+    min-height: 44px;
+  }
 }
 
 /* ---------- Forms ---------- */
@@ -541,10 +659,12 @@ textarea::placeholder {
   color: var(--muted-soft);
 }
 
-input:hover,
-select:hover,
-textarea:hover {
-  border-color: rgba(46, 41, 38, 0.4);
+@media (hover: hover) {
+  input:hover,
+  select:hover,
+  textarea:hover {
+    border-color: rgba(46, 41, 38, 0.4);
+  }
 }
 
 input:focus-visible,
@@ -720,6 +840,158 @@ th.num,
   text-align: right;
 }
 
+/* ---------- Sheets: home page sections in the hero's style (see components/Sheet.astro) ----------
+   Every section is a rounded card as wide as the hero card. Only sections marked .has-grid (the
+   hero and the closing CTA) sit on spreadsheet cells (100 x 26, 1px #e8e7e5) with highlighted
+   cells around them; their sheets are snapped to whole rows so the grid lines stay aligned. */
+.sheet-section {
+  --cell-w: 100px;
+  --cell-h: 26px;
+  position: relative;
+  padding-top: calc(var(--rows-above, 2) * var(--cell-h));
+  padding-bottom: calc(var(--rows-below, 0) * var(--cell-h));
+}
+
+.sheet-section.has-grid {
+  overflow: hidden;
+  background-color: var(--white);
+  background-image:
+    linear-gradient(to right, var(--beige) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--beige) 1px, transparent 1px);
+  background-size: var(--cell-w) var(--cell-h);
+  background-position: 16px -1px;
+}
+
+@media (min-width: 1232px) {
+  .sheet-section.has-grid {
+    background-position: calc(50% + var(--cell-w) / 2) -1px;
+  }
+}
+
+.sheet-frame {
+  position: relative;
+  z-index: 1;
+  width: min(1200px, 100% - 32px);
+  margin-inline: auto;
+}
+
+/* The 7px inset keeps every card exactly as wide as the hero card. */
+.sheet {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 7px;
+}
+
+.has-grid .sheet {
+  min-height: max(var(--sheet-min, 0px), calc(var(--rows, 0) * var(--cell-h)));
+  background: var(--white);
+  box-shadow: 0 0 0 1px var(--beige);
+}
+
+.sheet-card {
+  position: relative;
+  isolation: isolate;
+  flex: 1;
+  overflow: hidden;
+  border: 1px solid var(--beige);
+  border-radius: 24px;
+  background: var(--white);
+}
+
+.sheet-body {
+  padding: clamp(24px, 4.6vw, 64px);
+}
+
+.sheet-body--compact {
+  padding-block: clamp(24px, 3vw, 36px);
+}
+
+/* Tinted cards: two close tints in a soft diagonal, a wash of a neighbouring brand colour, grain. */
+.sheet-card--green {
+  background-color: #e6f8ec;
+  background-image:
+    var(--grain),
+    radial-gradient(70% 90% at 100% 0%, rgba(108, 190, 228, 0.16), transparent 70%),
+    linear-gradient(150deg, #ebfbf0 0%, #dbf2e3 100%);
+}
+
+.sheet-card--blue {
+  background-color: #e4f3fa;
+  background-image:
+    var(--grain),
+    radial-gradient(60% 80% at 0% 100%, rgba(64, 170, 74, 0.08), transparent 70%),
+    linear-gradient(160deg, #edf7fc 0%, #dcf0f9 100%);
+}
+
+.sheet-card--cream {
+  background-color: #faf3e4;
+  background-image:
+    var(--grain),
+    radial-gradient(60% 80% at 100% 0%, rgba(250, 195, 68, 0.14), transparent 70%),
+    linear-gradient(160deg, #fcf8ef 0%, #f6edd8 100%);
+}
+
+.sheet-card--cta {
+  background-color: #e4f3fa;
+  background-image:
+    var(--grain),
+    radial-gradient(60% 90% at 0% 100%, rgba(64, 170, 74, 0.14), transparent 70%),
+    radial-gradient(55% 80% at 100% 0%, rgba(250, 195, 68, 0.18), transparent 70%),
+    linear-gradient(160deg, #eaf6fc 0%, #d9eef8 100%);
+}
+
+/* Highlighted cells: each fades from its strongest end, with grain (after equals.com). */
+.sheet-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.sheet-glow i {
+  --tone: var(--green);
+  position: absolute;
+  left: calc(var(--c) * var(--cell-w) + 1px);
+  top: calc(var(--r) * var(--cell-h));
+  width: calc(var(--cell-w) - 1px);
+  height: calc(var(--cell-h) - 1px);
+  background-image:
+    var(--grain),
+    linear-gradient(
+      var(--dir),
+      color-mix(in srgb, var(--tone) var(--a), transparent),
+      color-mix(in srgb, var(--tone) calc(var(--a) * 0.12), transparent)
+    );
+}
+
+/* Cells below the sheet count rows from the sheet's bottom edge. */
+.sheet-glow i.below {
+  top: calc(100% + var(--r) * var(--cell-h) + 1px);
+}
+
+.sheet-glow .tone-blue {
+  --tone: var(--blue);
+}
+
+.sheet-glow .tone-yellow {
+  --tone: var(--yellow);
+}
+
+.sheet-glow .tone-pink {
+  --tone: #e7a1d0;
+}
+
+/* On sheet pages the grid's last row line already separates the footer. */
+main:has(> .sheet-section.has-grid:last-child) + .site-footer {
+  border-top-color: transparent;
+}
+
+/* Inner white plate for illustrations inside a tinted card. */
+.art-plate {
+  border: 1px solid rgba(12, 38, 53, 0.06);
+  box-shadow: var(--shadow-border);
+}
+
 /* ---------- Motion ---------- */
 @keyframes ws-float {
   0%,
@@ -731,14 +1003,18 @@ th.num,
   }
 }
 
-.float {
-  animation: ws-float 6s ease-in-out infinite;
+@media (prefers-reduced-motion: no-preference) {
+  .float {
+    animation: ws-float 6s ease-in-out infinite;
+  }
+
+  .float-delay {
+    animation: ws-float 7s ease-in-out -2s infinite;
+  }
 }
 
-.float-delay {
-  animation: ws-float 7s ease-in-out -2s infinite;
-}
-
+/* Reduced motion: movement, scale and blur are gated behind prefers-reduced-motion: no-preference;
+   this also makes any remaining animation or transition instant. */
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
