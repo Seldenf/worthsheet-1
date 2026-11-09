@@ -254,48 +254,114 @@ function headerScroll(el: HTMLElement) {
   update();
 }
 
-// Pointer parallax for every illustration. Runs only on fine hover pointers (gated by the
-// caller); each svg gets its own lerp loop that stops once settled.
-// Writes --px (-1..1) and --py (-1..0) on the svg; motion.css offsets .wsi-pt by them.
-const PARALLAX_VARS = ['--px', '--py'];
-const PARALLAX_LERP = 0.05;
+// Cursor pusher for every illustration: spring-physics repulsion. Runs only on fine hover pointers (gated by the
+// caller). Every .wsi-pt inside the svg is pushed away from the cursor while the cursor is within PUSH_RADIUS of
+// its centre (force falls off with distance; at most PUSH_MAX px x --d, plus a tiny tilt in the push direction)
+// and springs back, with a little overshoot, once the cursor is gone. The integrator runs in rAF only while
+// something moves. Writes --rx/--ry (translate) and --rr (rotate) on each .wsi-pt; motion.css turns them into
+// `transform`. Positions are tracked in screen px and converted to svg user units on write.
+const PUSH_RADIUS = 160;
+const PUSH_MAX = 10;
+const PUSH_TILT = 2; // degrees
+const SPRING_K = 170; // stiffness
+const SPRING_C = 18; // damping (underdamped: ratio ~0.69, a slight overshoot)
+const SPRING_DT = 1 / 120;
 
-function parallax(svg: SVGElement, area: HTMLElement) {
-  let tpx = 0, tpy = 0, px = 0, py = 0, raf = 0;
-  const step = () => {
-    px += (tpx - px) * PARALLAX_LERP;
-    py += (tpy - py) * PARALLAX_LERP;
-    const settled = Math.abs(tpx - px) < 0.001 && Math.abs(tpy - py) < 0.001;
-    if (settled) (px = tpx), (py = tpy);
-    if (settled && !tpx && !tpy) {
-      for (const name of PARALLAX_VARS) svg.style.removeProperty(name);
-    } else {
-      svg.style.setProperty('--px', px.toFixed(3));
-      svg.style.setProperty('--py', py.toFixed(3));
+interface Pusher {
+  el: SVGElement;
+  d: number;
+  x: number; y: number; r: number; // current offset (px, px, deg)
+  vx: number; vy: number; vr: number;
+}
+
+function pusher(svg: SVGElement, area: HTMLElement) {
+  const pts: Pusher[] = Array.from(svg.querySelectorAll<SVGElement>('.wsi-pt')).map((el) => ({
+    el,
+    d: parseFloat(el.style.getPropertyValue('--d')) || 1,
+    x: 0, y: 0, r: 0, vx: 0, vy: 0, vr: 0,
+  }));
+  if (!pts.length) return;
+  let mx = 0, my = 0, active = false, raf = 0, last = 0;
+
+  const step = (now: number) => {
+    const frame = Math.min((now - last) / 1000 || SPRING_DT, 0.032);
+    last = now;
+    // Read layout first, then write.
+    const box = svg.getBoundingClientRect();
+    const vb = (svg as unknown as SVGSVGElement).viewBox?.baseVal;
+    const scale = vb && vb.width && box.width ? box.width / vb.width : 1;
+    const targets = pts.map((p) => {
+      let tx = 0, ty = 0, tr = 0;
+      if (active) {
+        const r = p.el.getBoundingClientRect();
+        if (r.width || r.height) {
+          // Rest centre: the measured centre minus the offset we applied ourselves.
+          const dx = r.left + r.width / 2 - p.x - mx;
+          const dy = r.top + r.height / 2 - p.y - my;
+          const dist = Math.hypot(dx, dy);
+          if (dist < PUSH_RADIUS && dist > 0.5) {
+            const f = (1 - dist / PUSH_RADIUS) ** 2;
+            tx = (dx / dist) * f * PUSH_MAX * p.d;
+            ty = (dy / dist) * f * PUSH_MAX * p.d;
+            tr = (dx / dist) * f * PUSH_TILT;
+          }
+        }
+      }
+      return [tx, ty, tr];
+    });
+
+    let moving = false;
+    for (let i = 0; i < pts.length; i++) {
+      const p = pts[i];
+      const [tx, ty, tr] = targets[i];
+      for (let t = 0; t < frame; t += SPRING_DT) {
+        p.vx += (SPRING_K * (tx - p.x) - SPRING_C * p.vx) * SPRING_DT;
+        p.vy += (SPRING_K * (ty - p.y) - SPRING_C * p.vy) * SPRING_DT;
+        p.vr += (SPRING_K * (tr - p.r) - SPRING_C * p.vr) * SPRING_DT;
+        p.x += p.vx * SPRING_DT;
+        p.y += p.vy * SPRING_DT;
+        p.r += p.vr * SPRING_DT;
+      }
+      const settled =
+        Math.abs(tx - p.x) < 0.02 && Math.abs(ty - p.y) < 0.02 && Math.abs(tr - p.r) < 0.01 &&
+        Math.abs(p.vx) < 0.05 && Math.abs(p.vy) < 0.05 && Math.abs(p.vr) < 0.05;
+      if (settled) {
+        p.x = tx; p.y = ty; p.r = tr; p.vx = p.vy = p.vr = 0;
+      } else {
+        moving = true;
+      }
+      if (settled && !tx && !ty && !tr) {
+        p.el.style.removeProperty('--rx');
+        p.el.style.removeProperty('--ry');
+        p.el.style.removeProperty('--rr');
+      } else {
+        p.el.style.setProperty('--rx', `${(p.x / scale).toFixed(3)}px`);
+        p.el.style.setProperty('--ry', `${(p.y / scale).toFixed(3)}px`);
+        p.el.style.setProperty('--rr', `${p.r.toFixed(3)}deg`);
+      }
     }
-    raf = settled ? 0 : requestAnimationFrame(step);
+    raf = moving ? requestAnimationFrame(step) : 0;
   };
   const kick = () => {
-    if (!raf) raf = requestAnimationFrame(step);
+    if (!raf) {
+      last = performance.now();
+      raf = requestAnimationFrame(step);
+    }
   };
   area.addEventListener(
     'pointermove',
     (e) => {
       if (e.pointerType === 'touch') return;
-      const r = svg.getBoundingClientRect();
-      const cx = r.left + r.width / 2;
-      const cy = r.top + r.height / 2;
-      tpx = Math.max(-1, Math.min(1, (e.clientX - cx) / (r.width / 2)));
-      // Pointer above center lifts elements (negative); below center leaves them at 0.
-      tpy = -Math.max(0, Math.min(1, (cy - e.clientY) / (r.height / 2)));
+      mx = e.clientX;
+      my = e.clientY;
+      active = true;
       kick();
     },
     { passive: true },
   );
   area.addEventListener('pointerleave', (e) => {
     if (e.pointerType === 'touch') return;
-    tpx = 0;
-    tpy = 0;
+    active = false;
     kick();
   });
 }
@@ -466,9 +532,10 @@ function breathe(root: HTMLElement) {
   });
 }
 
-// Grid drift: the highlighted cells of each .has-grid sheet (hero, closing CTA) wander. A lit cell's gradient
-// fades out over 6-9s while another cell lights and its gradient slides in from one side (motion.css).
-// At most DRIFT_LIT cells are lit per sheet; a sheet only ticks while it is on screen.
+// Grid drift: the highlighted cells of each .has-grid sheet (hero, closing CTA) take turns. One cell at a time
+// starts a slide: a gradient of its colour fades in at one side, intensifies and travels across the cell until
+// it has left on the other side (5-7s, motion.css keyframes). When the animation ends the cell goes quiet and
+// another one starts. At most DRIFT_LIT slides run per sheet; a sheet only starts new ones while on screen.
 const DRIFT_LIT = 3;
 
 function drift(sheet: HTMLElement) {
@@ -479,33 +546,28 @@ function drift(sheet: HTMLElement) {
   const lit = (c: HTMLElement) => c.classList.contains('is-lit');
 
   for (const c of cells) {
-    // The gradient's strong end is left for 90deg and right for 270deg; the slide starts with the faint end in view.
-    const fromLeft = c.style.getPropertyValue('--dir').trim() === '90deg';
-    c.style.setProperty('--on-x', fromLeft ? '0%' : '100%');
-    c.style.setProperty('--off-x', fromLeft ? '100%' : '0%');
     c.classList.add('drift');
+    c.addEventListener('animationend', (e) => {
+      if (e.target === c) c.classList.remove('is-lit');
+    });
   }
-  void sheet.offsetWidth; // commit the unlit start state so the first highlights fade in
-  for (const c of [...cells].sort(() => Math.random() - 0.5).slice(0, DRIFT_LIT)) c.classList.add('is-lit');
+
+  const start = () => {
+    if (cells.filter(lit).length >= DRIFT_LIT) return;
+    const c = pick(cells.filter((x) => !lit(x)));
+    c.style.setProperty('--slide-ms', `${between(5000, 7000).toFixed(0)}ms`);
+    c.classList.toggle('is-rtl', Math.random() < 0.5);
+    c.classList.add('is-lit');
+  };
 
   let timer = 0;
-  const step = () => {
-    const on = cells.filter(lit);
-    let out: HTMLElement | undefined;
-    if (on.length >= DRIFT_LIT) {
-      out = pick(on);
-      out.style.setProperty('--fade-out', `${between(6000, 9000).toFixed(0)}ms`);
-      out.classList.remove('is-lit');
-    }
-    pick(cells.filter((c) => !lit(c) && c !== out)).classList.add('is-lit');
-    schedule();
-  };
-  const schedule = () => {
-    timer = window.setTimeout(step, between(3000, 3600));
+  const tick = () => {
+    start();
+    timer = window.setTimeout(tick, between(1800, 3200));
   };
   new IntersectionObserver(([entry]) => {
     if (entry.isIntersecting) {
-      if (!timer) schedule();
+      if (!timer) tick();
     } else {
       clearTimeout(timer);
       timer = 0;
@@ -529,7 +591,7 @@ if (main) {
     if (matchMedia('(hover: hover) and (pointer: fine)').matches) {
       main.querySelectorAll<SVGElement>('svg.wsi').forEach((svg) => {
         const area = svg.closest<HTMLElement>('section') ?? svg.parentElement;
-        if (area) parallax(svg, area);
+        if (area) pusher(svg, area);
       });
       main.querySelectorAll<HTMLElement>('[data-cursor-sheet]').forEach((el, i) => sheet(el, i));
       document.querySelectorAll<HTMLElement>(EDGE_SELECTOR).forEach(edgeLight);

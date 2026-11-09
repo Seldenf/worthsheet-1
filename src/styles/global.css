@@ -546,7 +546,7 @@ ul.list-check li:nth-child(3n + 3)::before {
   --btn-bg: var(--white);
   --btn-fg: var(--ink);
   --btn-border: var(--line-strong);
-  --edge: rgba(46, 41, 38, 0.32);
+  --edge: rgba(12, 38, 53, 0.5);
 }
 
 .btn-ghost {
@@ -566,10 +566,6 @@ ul.list-check li:nth-child(3n + 3)::before {
 @media (hover: hover) {
   .btn-primary:hover {
     --btn-bg: var(--ink-hover);
-  }
-
-  .btn-secondary:hover {
-    --btn-border: var(--ink);
   }
 
   .btn-ghost:hover {

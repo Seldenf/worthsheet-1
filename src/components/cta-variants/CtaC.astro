@@ -1,0 +1,306 @@
+---
+/**
+ * CTA variant C, "Grid reveal": the card itself is a spreadsheet grid (100 x 26 cells). A block of
+ * cells in the centre is selected (blue outline, fill handle) and holds the copy as if typed into
+ * merged cells; a few faint values sit in the neighbouring cells and an iso tile rides the
+ * selection's top-right corner. The selection spans 5 cells (7 from 1100px, 4 on phones) and a small
+ * script rounds its height up to whole rows so its edges land on grid lines; without JS it keeps its
+ * natural height.
+ */
+import Button from '../Button.astro';
+import Sheet from '../Sheet.astro';
+import IsoIcon from '../IsoIcon.astro';
+
+// Neighbouring cells: side of the selection, row below its top edge, text, tint.
+const cells = [
+  { side: 'l', row: 1, text: '$412,500', kind: 'num', tone: 'green' },
+  { side: 'r', row: 2, text: '$186,200', kind: 'num', tone: 'yellow' },
+  { side: 'l', row: 4, text: '=SUM(B2:B9)', kind: 'fx', tone: 'blue' },
+] as const;
+---
+
+<Sheet
+  class="cta-c-sheet"
+  tone="white"
+  rowsAbove={2}
+  rowsBelow={2}
+  aria-labelledby="cta-c-title"
+>
+  <div class="cta-c">
+    <div class="cta-c-stage">
+      <div class="cta-c-sel" data-cta-c-sel>
+        <div class="cta-c-content" data-cta-c-content>
+          <h2 id="cta-c-title">Download the personal financial statement template for free</h2>
+          <p class="lead">
+            Make your next loan or mortgage application easier: fill in your accounts once and let the template
+            calculate the totals and your net worth.
+          </p>
+          <div class="cta-c-actions">
+            <Button href="/download/" variant="primary" size="lg">Get the free template</Button>
+          </div>
+        </div>
+        <span class="cta-c-handle" aria-hidden="true"></span>
+      </div>
+
+      {
+        cells.map((c) => (
+          <span
+            class={`cta-c-cell cta-c-cell--${c.side} cta-c-cell--${c.kind} tone-${c.tone}`}
+            style={`--row:${c.row}`}
+            aria-hidden="true"
+          >
+            {c.text}
+          </span>
+        ))
+      }
+
+      <span class="cta-c-tile iso-hover" aria-hidden="true">
+        <IsoIcon icon="sheet" tone="green" size={72} delay={0.6} />
+      </span>
+    </div>
+  </div>
+</Sheet>
+
+<style is:global>
+  /* The card is the grid: 1px beige lines every 100 x 26, centred so a whole number of cells fits
+     either side of the middle; a soft blue wash sits behind the selection. */
+  .cta-c-sheet .sheet-card {
+    background-color: #fff;
+    background-image:
+      radial-gradient(46% 70% at 50% 50%, rgba(108, 190, 228, 0.14), transparent 75%),
+      linear-gradient(to right, var(--beige) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--beige) 1px, transparent 1px);
+    background-size:
+      auto,
+      calc((100% - 24px) / 4) 26px,
+      calc((100% - 24px) / 4) 26px;
+    background-position:
+      0 0,
+      12px 0,
+      12px 0;
+  }
+
+  .cta-c-sheet .sheet-body {
+    padding: 0;
+  }
+
+  @media (min-width: 720px) {
+    .cta-c-sheet .sheet-card {
+      background-size:
+        auto,
+        100px 26px,
+        100px 26px;
+      background-position:
+        0 0,
+        50% 0,
+        50% 0;
+    }
+  }
+</style>
+
+<style>
+  .cta-c {
+    padding: 52px 0;
+  }
+
+  .cta-c-stage {
+    --cell: 100px;
+    --row-h: 26px;
+    position: relative;
+    width: calc(100% - 24px);
+    margin-inline: 12px;
+  }
+
+  /* The selected block: opaque, so the grid lines vanish inside like merged cells. */
+  .cta-c-sel {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--sel-h, 0px);
+    padding: var(--row-h) 20px;
+    background: #f2f9fd;
+    outline: 2px solid var(--blue);
+    outline-offset: -1px;
+  }
+
+  .cta-c-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    max-width: 34rem;
+    text-align: center;
+  }
+
+  .cta-c-content :global(.lead) {
+    max-width: 30rem;
+  }
+
+  .cta-c-actions {
+    margin-top: 8px;
+  }
+
+  /* Fill handle on the bottom-right corner. */
+  .cta-c-handle {
+    position: absolute;
+    right: -5px;
+    bottom: -5px;
+    width: 9px;
+    height: 9px;
+    box-sizing: border-box;
+    background: var(--blue);
+    border: 2px solid #fff;
+  }
+
+  /* Neighbouring cells: faint values, hidden until the card is wide enough to show them whole. */
+  .cta-c-cell {
+    position: absolute;
+    top: calc(var(--row) * var(--row-h));
+    display: none;
+    width: var(--cell);
+    height: var(--row-h);
+    padding-inline: 8px;
+    font-size: 0.8125rem;
+    line-height: var(--row-h);
+    color: rgba(12, 38, 53, 0.34);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .cta-c-cell--l {
+    right: 100%;
+  }
+
+  .cta-c-cell--r {
+    left: 100%;
+  }
+
+  .cta-c-cell--num {
+    text-align: right;
+  }
+
+  .cta-c-cell--fx {
+    font-family: ui-monospace, 'SF Mono', 'Geist Mono', Menlo, Consolas, monospace;
+    font-size: 0.75rem;
+  }
+
+  /* Highlighted cells, as on the hero: a tone fading away from the card edge, with grain. */
+  .cta-c-cell {
+    --tone: var(--green);
+    --a: 30%;
+    --dir: 90deg;
+    width: calc(var(--cell) - 1px);
+    height: calc(var(--row-h) - 1px);
+    margin-top: 1px;
+    line-height: calc(var(--row-h) - 1px);
+    color: rgba(12, 38, 53, 0.5);
+    background-image:
+      var(--grain),
+      linear-gradient(
+        var(--dir),
+        color-mix(in srgb, var(--tone) var(--a), transparent),
+        color-mix(in srgb, var(--tone) calc(var(--a) * 0.12), transparent)
+      );
+  }
+
+  .cta-c-cell--r {
+    --dir: 270deg;
+    margin-left: 1px;
+  }
+
+  .cta-c-cell.tone-yellow {
+    --tone: var(--yellow);
+    --a: 36%;
+  }
+
+  .cta-c-cell.tone-blue {
+    --tone: var(--blue);
+    --a: 28%;
+  }
+
+  /* Iso tile on the top-right corner of the selection. */
+  .cta-c-tile {
+    position: absolute;
+    z-index: 2;
+    top: -34px;
+    right: -14px;
+    line-height: 0;
+  }
+
+  .cta-c-tile :global(.iso-ico) {
+    width: 56px;
+    height: auto;
+  }
+
+  @media (min-width: 720px) {
+    .cta-c {
+      padding: 104px 0;
+    }
+
+    .cta-c-stage {
+      width: calc(5 * var(--cell));
+      margin-inline: auto;
+    }
+
+    .cta-c-sel {
+      padding-inline: 32px;
+    }
+
+    .cta-c-tile {
+      right: -30px;
+    }
+
+    .cta-c-tile :global(.iso-ico) {
+      width: 72px;
+    }
+  }
+
+  @media (min-width: 900px) {
+    .cta-c-cell {
+      display: block;
+    }
+  }
+
+  @media (min-width: 1100px) {
+    .cta-c-stage {
+      width: calc(7 * var(--cell));
+    }
+
+    .cta-c-sel {
+      padding-inline: 56px;
+    }
+  }
+
+  @media (max-width: 479px) {
+    .cta-c-sel {
+      padding-inline: 16px;
+    }
+
+    .cta-c-actions,
+    .cta-c-actions :global(.btn) {
+      width: 100%;
+    }
+  }
+</style>
+
+<script>
+  // Round each selection up to whole 26px rows so its outline sits on grid lines.
+  const ROW = 26;
+
+  const fit = (sel: HTMLElement, content: HTMLElement) => {
+    const s = getComputedStyle(sel);
+    const pad = parseFloat(s.paddingTop) + parseFloat(s.paddingBottom);
+    sel.style.setProperty('--sel-h', `${Math.ceil((content.offsetHeight + pad) / ROW) * ROW}px`);
+  };
+
+  document.querySelectorAll<HTMLElement>('[data-cta-c-sel]').forEach((sel) => {
+    const content = sel.querySelector<HTMLElement>('[data-cta-c-content]');
+    if (!content) return;
+    fit(sel, content);
+    new ResizeObserver(() => fit(sel, content)).observe(content);
+  });
+</script>

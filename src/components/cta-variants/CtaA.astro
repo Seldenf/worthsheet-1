@@ -1,0 +1,204 @@
+---
+/**
+ * CTA variant A, "Split sheet": a navy card with grain. Copy, a light button and three trust ticks
+ * on the left; the hero spreadsheet illustration on the right, cropped by the card's right and
+ * bottom edges. Stacks on small screens (copy first, illustration below, bleeding off the bottom).
+ */
+import Button from '../Button.astro';
+import Sheet from '../Sheet.astro';
+import HeroSheet from '../illustrations/HeroSheet.astro';
+
+const ticks = ['Free forever', 'Google Sheets & Excel', '9,000+ downloads'];
+---
+
+<Sheet
+  class="cta-a-sheet"
+  tone="white"
+  grid
+  rowsBelow={2}
+  seed={11}
+  aria-labelledby="cta-a-title"
+>
+  <div class="cta-a">
+    <div class="cta-a-copy">
+      <h2 id="cta-a-title">Download the personal financial statement template for free</h2>
+      <p class="cta-a-text">
+        Make your next loan or mortgage application easier: fill in your accounts once and let the template
+        calculate the totals and your net worth.
+      </p>
+      <div class="cta-a-actions">
+        <Button href="/download/" variant="secondary" size="lg" class="cta-a-btn">Get the free template</Button>
+      </div>
+      <ul class="cta-a-ticks">
+        {
+          ticks.map((t) => (
+            <li>
+              <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false">
+                <circle cx="8" cy="8" r="8" fill="#40aa4a"></circle>
+                <path
+                  d="M4.6 8.3l2.2 2.2 4.6-4.9"
+                  fill="none"
+                  stroke="#fff"
+                  stroke-width="1.7"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"></path>
+              </svg>
+              <span>{t}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+    <div class="cta-a-art" aria-hidden="true">
+      <div class="cta-a-art-inner"><HeroSheet /></div>
+    </div>
+  </div>
+</Sheet>
+
+<style is:global>
+  /* Card surface: navy, a cool glow behind the illustration, a green wash bottom-left, grain. */
+  .cta-a-sheet .sheet-card {
+    border-color: rgba(255, 255, 255, 0.08);
+    background-color: #0c2635;
+    background-image:
+      var(--grain),
+      radial-gradient(55% 80% at 84% 55%, rgba(108, 190, 228, 0.24), transparent 72%),
+      radial-gradient(45% 70% at 0% 100%, rgba(64, 170, 74, 0.16), transparent 70%),
+      radial-gradient(40% 60% at 100% 0%, rgba(250, 195, 68, 0.08), transparent 70%),
+      linear-gradient(160deg, #123447 0%, #0a1f2b 100%);
+  }
+
+  .cta-a-sheet .sheet-body {
+    padding: 0;
+  }
+</style>
+
+<style>
+  .cta-a {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .cta-a-copy {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    padding: clamp(32px, 5.4vw, 72px) clamp(24px, 4.6vw, 64px) 8px;
+  }
+
+  .cta-a-copy h2 {
+    max-width: 17ch;
+    color: #fff;
+  }
+
+  .cta-a-text {
+    max-width: 32rem;
+    font-size: clamp(1rem, 1.45vw, 1.125rem);
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.72);
+  }
+
+  .cta-a-actions {
+    margin-top: 8px;
+  }
+
+  /* Light button on navy: white fill, navy label, no hairline. */
+  .cta-a-copy :global(.cta-a-btn) {
+    --btn-bg: #fff;
+    --btn-fg: var(--navy);
+    --btn-border: #fff;
+    background-image: linear-gradient(rgba(0, 0, 0, 0) 70%, rgba(0, 0, 0, 0.05));
+  }
+
+  @media (hover: hover) {
+    .cta-a-copy :global(.cta-a-btn:hover) {
+      --btn-bg: var(--tint-blue);
+      --btn-border: var(--tint-blue);
+    }
+  }
+
+  .cta-a-ticks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 22px;
+    margin: 12px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .cta-a-ticks li {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.3;
+    color: rgba(255, 255, 255, 0.84);
+  }
+
+  .cta-a-ticks svg {
+    flex: none;
+  }
+
+  /* Art: clipped by its own box, which touches the card's right and bottom edges. The illustration
+     is larger than the box and anchored to its bottom-right corner so it bleeds off both edges. */
+  .cta-a-art {
+    position: relative;
+    height: clamp(210px, 56vw, 320px);
+    overflow: hidden;
+    pointer-events: none;
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 14%);
+    mask-image: linear-gradient(to right, transparent 0, #000 14%);
+  }
+
+  .cta-a-art-inner {
+    position: absolute;
+    right: -14%;
+    bottom: -6%;
+    width: min(130%, 680px);
+  }
+
+  @media (min-width: 760px) {
+    .cta-a {
+      grid-template-columns: minmax(0, 1.02fr) minmax(0, 1fr);
+      align-items: stretch;
+      min-height: 440px;
+    }
+
+    .cta-a-copy {
+      justify-content: center;
+      padding-block: clamp(40px, 5.4vw, 72px);
+    }
+
+    .cta-a-art {
+      height: auto;
+      min-height: 100%;
+      -webkit-mask-image: linear-gradient(to right, transparent 0, #000 22%);
+      mask-image: linear-gradient(to right, transparent 0, #000 22%);
+    }
+
+    .cta-a-art-inner {
+      right: -18%;
+      bottom: -5%;
+      width: 148%;
+    }
+  }
+
+  @media (min-width: 760px) and (max-width: 1099px) {
+    .cta-a-art-inner {
+      right: -14%;
+      bottom: -8%;
+      width: 160%;
+    }
+  }
+
+  @media (max-width: 479px) {
+    .cta-a-actions,
+    .cta-a-actions :global(.btn) {
+      width: 100%;
+    }
+  }
+</style>

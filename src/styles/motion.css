@@ -1,7 +1,7 @@
 /* WorthSheet motion system: tokens, scroll reveals, page entrance, micro-interactions.
    Rules follow three design-engineering skills: better-ui (jakubkrehel/skills),
    make-interfaces-feel-better (Jakub Krehel) and emil-design-eng (Emil Kowalski).
-   - Animate only opacity / translate / scale / filter (`transform` only on .wsi-pt parallax); name every
+   - Animate only opacity / translate / scale / filter (`transform` only on .wsi-pt pusher); name every
      transitioned property.
    - Staged entrances: semantic chunks, 300ms ease-out, 12px rise, 4px blur, 100ms stagger.
    - Interactive state uses transitions (interruptible); keyframes only for run-once entrances.
@@ -26,7 +26,7 @@
   }
 }
 
-/* `translate` is used instead of `transform` so the pointer parallax (which owns
+/* `translate` is used instead of `transform` so the cursor pusher (which owns
    `transform` on .wsi-pt) never fights the entrance. */
 @keyframes ws-rise {
   from {
@@ -204,13 +204,16 @@ details[open]::details-content {
   position: relative;
 }
 
-/* ---------- Illustration pointer parallax, spreadsheet reveal, edge light (fine hover pointers, motion allowed) ----------
-   motion.ts sets --px/--py on every svg.wsi. On each [data-cursor-sheet] element (which gets .has-sheet) it sets --sheet (the
+/* ---------- Illustration cursor pusher, spreadsheet reveal, edge light (fine hover pointers, motion allowed) ----------
+   motion.ts runs a spring on every .wsi-pt inside svg.wsi and writes --rx/--ry (translate) and --rr (rotate) on it. On each
+   [data-cursor-sheet] element (which gets .has-sheet) it sets --sheet (the
    generated grid), --mx/--my (the lagging mask centre) and .sheet-on while the pointer is over it. --ex/--ey go on
    edge-light hosts. Only small floating elements marked .wsi-pt move; the svg itself never transforms. */
 @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
   svg.wsi .wsi-pt {
-    transform: translate(calc(var(--px, 0) * var(--d, 1) * 2.5px), calc(var(--py, 0) * var(--d, 1) * 2px));
+    transform: translate(var(--rx, 0px), var(--ry, 0px)) rotate(var(--rr, 0deg));
+    transform-box: fill-box;
+    transform-origin: center;
   }
 
   /* Opt-in only: elements marked data-cursor-sheet (a Sheet card, which clips and layers it) get the
@@ -252,7 +255,7 @@ details[open]::details-content {
     border-radius: inherit;
     padding: 1px;
     background: radial-gradient(
-      160px circle at var(--ex, 50%) var(--ey, 50%),
+      var(--edge-r, 160px) circle at var(--ex, 50%) var(--ey, 50%),
       var(--edge, rgba(46, 41, 38, 0.28)),
       transparent 70%
     );
@@ -273,19 +276,19 @@ details[open]::details-content {
   }
 }
 
-/* Primary button: a delicate white edge ring on hover (fine pointers only). Colours and the
-   150ms box-shadow transition come from .btn in global.css. */
+/* Edge-light colours: the primary (navy) button gets a soft white light near the cursor; the secondary button's dark
+   light is set with the button in global.css. Buttons use a tighter light than cards (--edge-r) and the ring covers the
+   button's own 1px border. No full outline and no inset ring on hover. */
 .btn-primary {
-  --edge: rgba(255, 255, 255, 0.95);
+  --edge: rgba(255, 255, 255, 0.85);
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .btn-primary:hover {
-    box-shadow:
-      0 0 0 1px rgba(255, 255, 255, 0.55) inset,
-      0 0 0 1px rgba(255, 255, 255, 0.35),
-      0 4px 14px -8px rgba(12, 38, 53, 0.35);
-  }
+.btn {
+  --edge-r: 90px;
+}
+
+.btn::after {
+  inset: -1px;
 }
 
 /* ---------- Checklists: items appear one after another (`--i` = item index) ----------
@@ -392,10 +395,12 @@ ul.list-check > li:nth-child(8) { --i: 7; }
   }
 }
 
-/* ---------- Grid drift: highlighted cells of .has-grid sheets take turns (motion.ts sets .drift, .is-lit, --on-x, --off-x, --fade-out) ----------
-   The gradient is drawn twice as wide as its cell and slid across it: lit = the strong half in view, unlit = the faint
-   half in view, so a cell lights by sliding in from one side. Only opacity and background-position transition. The
-   .sheet-section prefix beats the hero's twinkle animation, which the drift replaces. */
+/* ---------- Grid drift: highlighted cells of .has-grid sheets take turns (motion.ts sets .drift, .is-lit, .is-rtl, --slide-ms) ----------
+   Each cell draws one soft gradient of its colour, a third of the image wide and centred in an image 300% as wide as the
+   cell. Sliding background-position from one end to the other carries the gradient in at one side, through the cell and
+   out at the other (left to right, or right to left with .is-rtl) in --slide-ms (5-7s). Opacity only softens the two ends.
+   Cells rest invisible; motion.ts removes .is-lit on animationend. The .sheet-section prefix beats the hero's twinkle
+   animation, which the drift replaces. */
 @media (prefers-reduced-motion: no-preference) {
   .sheet-section.has-grid .sheet-glow i.drift {
     animation: none;
@@ -403,25 +408,54 @@ ul.list-check > li:nth-child(8) { --i: 7; }
     background-image:
       var(--grain),
       linear-gradient(
-        var(--dir),
-        color-mix(in srgb, var(--tone) var(--a), transparent) 0%,
-        color-mix(in srgb, var(--tone) calc(var(--a) * 0.12), transparent) 50%,
-        transparent 100%
+        90deg,
+        transparent 28%,
+        color-mix(in srgb, var(--tone) calc(var(--a) * 0.5), transparent) 39%,
+        color-mix(in srgb, var(--tone) var(--a), transparent) 50%,
+        color-mix(in srgb, var(--tone) calc(var(--a) * 0.5), transparent) 61%,
+        transparent 72%
       );
-    background-size: auto, 200% 100%;
+    background-size: auto, 300% 100%;
     background-repeat: repeat, no-repeat;
-    background-position: 0 0, var(--off-x, 100%) 0;
-    transition:
-      opacity var(--fade-out, 7500ms) var(--ease-soft),
-      background-position var(--fade-out, 7500ms) var(--ease-soft);
+    background-position: 0 0, 0% 0;
   }
 
   .sheet-section.has-grid .sheet-glow i.drift.is-lit {
+    animation: ws-slide-ltr var(--slide-ms, 6000ms) linear;
+  }
+
+  .sheet-section.has-grid .sheet-glow i.drift.is-lit.is-rtl {
+    animation-name: ws-slide-rtl;
+  }
+}
+
+@keyframes ws-slide-ltr {
+  0% {
+    opacity: 0;
+    background-position: 0 0, 0% 0;
+  }
+  20%,
+  80% {
     opacity: 1;
-    background-position: 0 0, var(--on-x, 0%) 0;
-    transition:
-      opacity 2400ms var(--ease-out),
-      background-position 2400ms var(--ease-out);
+  }
+  100% {
+    opacity: 0;
+    background-position: 0 0, 100% 0;
+  }
+}
+
+@keyframes ws-slide-rtl {
+  0% {
+    opacity: 0;
+    background-position: 0 0, 100% 0;
+  }
+  20%,
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    background-position: 0 0, 0% 0;
   }
 }
 

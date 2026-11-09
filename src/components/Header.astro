@@ -113,8 +113,11 @@ const calculatorsActive = [...calculators, featured].some((c) => current.startsW
               style="--i:4"
             >
               <IsoIcon class="mega-icon" icon="gauge" tone="white" size={88} />
-              <span class="mega-feature-title">{featured.name}</span>
-              <span class="mega-feature-desc">Score your credit, income, LTV, DTI and PFS on the 5 criteria lenders check.</span>
+              <span class="mega-feature-text">
+                <span class="mega-feature-title">{featured.name}</span>
+                <span class="mega-badge">Featured</span>
+                <span class="mega-feature-desc">Score your credit, income, LTV, DTI and PFS on the 5 criteria lenders check.</span>
+              </span>
               <span class="mega-feature-cta">Start the assessment →</span>
             </a>
             <div class="mega-foot">
@@ -410,6 +413,14 @@ const calculatorsActive = [...calculators, featured].some((c) => current.startsW
     font-weight: 560;
   }
 
+  .mega-feature-text {
+    display: contents;
+  }
+
+  .mega-badge {
+    display: none;
+  }
+
   .dropdown .mega-foot {
     grid-column: 1 / -1;
     grid-row: 2;
@@ -573,14 +584,15 @@ const calculatorsActive = [...calculators, featured].some((c) => current.startsW
       top: 100%;
       left: 0;
       right: 0;
+      height: calc(100dvh - var(--header-h));
       flex-direction: column;
       align-items: stretch;
       gap: 16px;
-      padding: 16px var(--gutter) 24px;
+      padding: 16px clamp(20px, 5vw, 40px) 32px;
       background: var(--paper);
       border-bottom: 1px solid var(--line);
-      max-height: calc(100dvh - var(--header-h));
       overflow-y: auto;
+      overscroll-behavior: contain;
     }
 
     :global(html.js) .site-nav.open {
@@ -614,15 +626,15 @@ const calculatorsActive = [...calculators, featured].some((c) => current.startsW
       position: static;
       left: auto;
       translate: none;
-      width: auto;
+      width: 100%;
+      min-width: 0;
       max-width: none;
       display: grid;
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
       gap: 12px;
-      margin: 4px 0 4px 12px;
-      padding: 0 0 0 12px;
+      margin: 4px 0;
+      padding: 0;
       border: 0;
-      border-left: 1px solid var(--line-strong);
       border-radius: 0;
       box-shadow: none;
       background: transparent;
@@ -631,13 +643,26 @@ const calculatorsActive = [...calculators, featured].some((c) => current.startsW
     .dropdown .mega-grid {
       grid-column: 1;
       grid-row: auto;
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
       gap: 4px;
+      width: 100%;
+      min-width: 0;
     }
 
-    .dropdown .mega-item .mega-icon {
+    .dropdown .mega-grid > li,
+    .dropdown .mega-item,
+    .dropdown .mega-feature,
+    .dropdown .mega-foot,
+    .dropdown .mega-foot-links,
+    .dropdown .mega-foot-link,
+    .dropdown .mega-cta {
+      min-width: 0;
+      width: 100%;
+    }
+
+    .dropdown .mega-item :global(svg.iso-ico) {
       width: 40px;
-      height: auto;
+      height: 34px;
     }
 
     .dropdown .mega-item,
@@ -679,6 +704,62 @@ const calculatorsActive = [...calculators, featured].some((c) => current.startsW
     :global(.nav-cta) {
       width: 100%;
     }
+
+    .dropdown .mega-feature,
+    .dropdown .mega-feature:hover,
+    .dropdown .mega-feature[aria-current='page'] {
+      flex-direction: row;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 12px;
+      padding: 15px;
+      border: 1px solid rgba(64, 170, 74, 0.45);
+      border-radius: 12px;
+      background: rgba(64, 170, 74, 0.06);
+    }
+
+    .dropdown .mega-feature :global(svg.iso-ico) {
+      flex: none;
+      width: 40px;
+      height: 34px;
+      align-self: center;
+    }
+
+    .mega-feature-text {
+      display: block;
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .mega-badge {
+      display: inline-block;
+      margin-left: 8px;
+      padding: 1px 8px;
+      border-radius: 999px;
+      background: rgba(64, 170, 74, 0.14);
+      color: #14551d;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      line-height: 1.6;
+      letter-spacing: 0.02em;
+      vertical-align: 1px;
+    }
+
+    .mega-feature-desc {
+      display: block;
+      margin-top: 2px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .mega-feature-cta {
+      display: none;
+    }
+
+    :global(html.menu-open) {
+      overflow: hidden;
+    }
   }
 </style>
 
@@ -701,6 +782,7 @@ const calculatorsActive = [...calculators, featured].some((c) => current.startsW
     if (!menuToggle || !nav) return;
     menuToggle.setAttribute('aria-expanded', String(open));
     nav.classList.toggle('open', open);
+    document.documentElement.classList.toggle('menu-open', open);
     if (!open) setDropdown(false);
   }
 
