@@ -37,7 +37,7 @@ const calculatorsActive = [...calculators, featured].some((c) => current.startsW
 <header class="site-header" data-header>
   <div class="container header-inner">
     <a class="logo" href={url('/')} aria-label={`${SITE_NAME} home`}>
-      <svg class="logo-mark" viewBox="0 0 64 64" width="32" height="32" aria-hidden="true">
+      <svg class="logo-mark" viewBox="14 14 36 36" width="22" height="22" aria-hidden="true">
         <rect class="sq sq-tl" x="14" y="14" width="16" height="16" rx="4" fill="#40aa4a"></rect>
         <rect class="sq sq-tr" x="34" y="14" width="16" height="16" rx="4" fill="#fac344"></rect>
         <rect class="sq sq-br" x="34" y="34" width="16" height="16" rx="4" fill="#6cbee4"></rect>
@@ -148,9 +148,11 @@ const calculatorsActive = [...calculators, featured].some((c) => current.startsW
           ))
         }
       </ul>
-      <Button href="/download/" variant="primary" size="sm" class="nav-cta">
-        Get the free template
-      </Button>
+      <div class="nav-cta-wrap">
+        <Button href="/download/" variant="primary" size="sm" class="nav-cta">
+          Get the free template
+        </Button>
+      </div>
     </nav>
   </div>
 </header>
@@ -237,6 +239,10 @@ const calculatorsActive = [...calculators, featured].some((c) => current.startsW
 
   .nav-list > li {
     position: static;
+  }
+
+  .nav-cta-wrap {
+    display: contents;
   }
 
   .nav-list a,
@@ -561,7 +567,12 @@ const calculatorsActive = [...calculators, featured].some((c) => current.startsW
     stroke: var(--ink);
     stroke-width: 2;
     stroke-linecap: round;
-    transition: transform 0.2s ease;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .menu-icon path {
+      transition: transform 250ms cubic-bezier(0.23, 1, 0.32, 1);
+    }
   }
 
   .bar-a {
@@ -585,8 +596,15 @@ const calculatorsActive = [...calculators, featured].some((c) => current.startsW
       display: inline-flex;
     }
 
+    .site-header {
+      overflow-x: clip;
+    }
+
     :global(html.js) .site-nav {
-      display: none;
+      display: flex;
+      visibility: hidden;
+      opacity: 0;
+      pointer-events: none;
       position: absolute;
       top: 100%;
       left: 0;
@@ -598,12 +616,67 @@ const calculatorsActive = [...calculators, featured].some((c) => current.startsW
       padding: 16px clamp(20px, 5vw, 40px) 32px;
       background: var(--paper);
       border-bottom: 1px solid var(--line);
+      overflow-x: hidden;
       overflow-y: auto;
       overscroll-behavior: contain;
     }
 
     :global(html.js) .site-nav.open {
-      display: flex;
+      visibility: visible;
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .nav-cta-wrap {
+      display: block;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      /* Panel: closing is faster and uses ease-in; opening uses ease-out. Only opacity/transform animate.
+         Visibility flips after the close transition so the closed panel is not focusable. */
+      :global(html.js) .site-nav {
+        transform: translateY(-8px) scale(0.98);
+        transform-origin: top center;
+        transition:
+          opacity 180ms ease-in,
+          transform 180ms ease-in,
+          visibility 0s linear 180ms;
+        will-change: opacity, transform;
+      }
+
+      :global(html.js) .site-nav.open {
+        transform: none;
+        transition:
+          opacity 280ms cubic-bezier(0.23, 1, 0.32, 1),
+          transform 280ms cubic-bezier(0.23, 1, 0.32, 1),
+          visibility 0s;
+      }
+
+      /* Rows: fade out together on close (offset resets once hidden); stagger in on open. */
+      :global(html.js) .nav-list > li,
+      :global(html.js) .nav-cta-wrap {
+        opacity: 0;
+        translate: 0 6px;
+        transition:
+          opacity 120ms ease-in,
+          translate 0s linear 180ms;
+      }
+
+      :global(html.js) .site-nav.open .nav-list > li,
+      :global(html.js) .site-nav.open .nav-cta-wrap {
+        opacity: 1;
+        translate: 0 0;
+        transition:
+          opacity 200ms cubic-bezier(0.23, 1, 0.32, 1),
+          translate 200ms cubic-bezier(0.23, 1, 0.32, 1);
+        transition-delay: calc(30ms + var(--n, 0) * 30ms);
+      }
+
+      .nav-list > li:nth-child(1) { --n: 0; }
+      .nav-list > li:nth-child(2) { --n: 1; }
+      .nav-list > li:nth-child(3) { --n: 2; }
+      .nav-list > li:nth-child(4) { --n: 3; }
+      .nav-cta-wrap { --n: 4; }
     }
 
     .site-nav {
@@ -806,6 +879,7 @@ const calculatorsActive = [...calculators, featured].some((c) => current.startsW
 
     :global(html.menu-open) {
       overflow: hidden;
+      scrollbar-gutter: stable;
     }
   }
 </style>
@@ -825,16 +899,22 @@ const calculatorsActive = [...calculators, featured].some((c) => current.startsW
     dropdown.hidden = !open;
   }
 
-  function setMenu(open: boolean) {
+  let collapseTimer: number | undefined;
+
+  // Closing: let the submenu collapse after the panel has faded out so content doesn't jump mid-fade.
+  function setMenu(open: boolean, deferCollapse = false) {
     if (!menuToggle || !nav) return;
+    window.clearTimeout(collapseTimer);
     menuToggle.setAttribute('aria-expanded', String(open));
     nav.classList.toggle('open', open);
     document.documentElement.classList.toggle('menu-open', open);
-    if (!open) setDropdown(false);
+    if (open) return;
+    if (deferCollapse) collapseTimer = window.setTimeout(() => setDropdown(false), 200);
+    else setDropdown(false);
   }
 
   menuToggle?.addEventListener('click', () => {
-    setMenu(menuToggle.getAttribute('aria-expanded') !== 'true');
+    setMenu(menuToggle.getAttribute('aria-expanded') !== 'true', true);
   });
 
   dropdownToggle?.addEventListener('click', () => {
@@ -854,7 +934,7 @@ const calculatorsActive = [...calculators, featured].some((c) => current.startsW
       setDropdown(false);
       dropdownToggle?.focus();
     } else if (menuOpen) {
-      setMenu(false);
+      setMenu(false, true);
       menuToggle?.focus();
     }
   });

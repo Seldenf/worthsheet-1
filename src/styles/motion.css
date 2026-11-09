@@ -284,7 +284,7 @@ details[open]::details-content {
   }
 
   /* Opt-in only: elements marked data-cursor-sheet (a Sheet card, which clips and layers it) get the
-     spreadsheet grid behind their content. Opacity tops out at .6. */
+     spreadsheet grid behind their content (lines drawn at full strength under the cursor spotlight). */
   .has-sheet {
     --mx: 50%;
     --my: 50%;
@@ -307,7 +307,7 @@ details[open]::details-content {
   }
 
   .has-sheet.sheet-on::before {
-    opacity: 0.6;
+    opacity: 1;
   }
 
   /* Edge light: rim highlight that follows the cursor. The ring colour comes from --edge. */

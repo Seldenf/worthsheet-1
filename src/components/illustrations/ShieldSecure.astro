@@ -15,7 +15,7 @@ const intro = (d: number, dur: number, y: number, s = 0.94) =>
 
 const SH = 'M0-88 72-62V8C72 50 42 76 0 92-42 76-72 50-72 8v-70z';
 const T = 190;
-const lines = Array.from({ length: 5 }, (_, i) => `M0 ${34 + i * 31.2}H${T}`).join('') + [38, 78, 118, 154].map((x) => `M${x} 0V${T}`).join('');
+const lines = Array.from({ length: 5 }, (_, i) => `M0 ${34 + i * 31.2}H${T}`).join('') + [38, 78, 118, 158].map((x) => `M${x} 0V${T}`).join('');
 const pills = [
   { x: 112, y: 214, l: 'Your own copy', dot: C.green, cls: 'f2', d: 1.6, enter: intro(920, 470, 16, 0.95) },
   { x: 458, y: 150, l: 'Free template', dot: C.blue, cls: 'f3', d: 1.0, enter: intro(800, 460, -14, 0.95) },
@@ -40,7 +40,7 @@ const pills = [
   <!-- halo frames (base) -->
   <g class="wsi-in" style={intro(0, 1000, 10, 0.96)}>
   <g class="wsi-breathe wsi-shield-base"><g transform={iso(280, 384, 256)}><rect width="256" height="256" rx="26" fill={C.tB} fill-opacity=".55" stroke="#fff" stroke-width="2"></rect></g></g>
-  <g class="wsi-breathe wsi-shield-base"><g transform={iso(280, 384, 214)}><rect width="214" height="214" rx="22" fill={C.tG} fill-opacity=".65" stroke="#fff" stroke-width="2"></rect></g></g>
+  <g class="wsi-breathe wsi-shield-base"><g transform={iso(280, 384, 214)}><rect width="214" height="214" rx="22" fill={C.blue} fill-opacity=".2" stroke="#fff" stroke-width="2"></rect></g></g>
   </g>
 
   <!-- sheet tile (base) with its ground shadow -->
@@ -50,8 +50,8 @@ const pills = [
   <g class="wsi-breathe wsi-shield-base"><g transform={iso(280, 384, T)}>
     <rect width={T} height={T} rx="16" fill="#fff" stroke={C.ink} stroke-opacity=".2"></rect>
     <g clip-path="url(#wsi-shield-clip)">
-      <rect width={T} height="34" fill={C.sheets}></rect>
-      <rect y="65.2" width={T} height="31.2" fill={C.tG}></rect>
+      <rect width={T} height="34" fill={C.blue}></rect>
+      <rect y="65.2" width={T} height="31.2" fill={C.tB}></rect>
       <path d={lines} stroke={C.beige} stroke-width="1" fill="none"></path>
       <path d={`M38 0V${T}`} stroke="#fff" stroke-opacity=".5" stroke-width="1"></path>
       <rect x="46" y="10" width="62" height="14" rx="7" fill="#fff" fill-opacity=".85"></rect>
@@ -67,13 +67,13 @@ const pills = [
   </g>
   <g transform="translate(280 184)">
     <g class="wsi-breathe wsi-shield-mid" style={lag(0.4)}>
-      <path d={SH} fill="#2f8a39" transform="translate(8 11)"></path>
-      <path d={SH} fill={C.green} stroke="#fff" stroke-width="3" stroke-linejoin="round"></path>
-      <path d="M0-88 72-62V8C72 50 42 76 0 92z" fill="#fff" fill-opacity=".14"></path>
+      <path d={SH} fill="#4a9fc8" transform="translate(8 11)"></path>
+      <path d={SH} fill="#6cbee4" stroke="#fff" stroke-width="3" stroke-linejoin="round"></path>
+      <path d="M0-88 72-62V8C72 50 42 76 0 92z" fill="#8fcfec"></path>
       <path d="M-13-6v-12a13 13 0 0 1 26 0v12" stroke="#fff" stroke-width="7" stroke-linecap="round" fill="none"></path>
       <rect x="-26" y="-8" width="52" height="42" rx="10" fill="#fff"></rect>
-      <circle cx="0" cy="10" r="5.5" fill={C.green}></circle>
-      <rect x="-2.5" y="12" width="5" height="12" rx="2.5" fill={C.green}></rect>
+      <circle cx="0" cy="10" r="5.5" fill="#4a9fc8"></circle>
+      <rect x="-2.5" y="12" width="5" height="12" rx="2.5" fill="#4a9fc8"></rect>
       <g transform="matrix(1.08 0 0 1.08 0 -0.16)"><path class="wsi-draw" pathLength="100" d={SH} fill="none" stroke={C.blue} stroke-width="1.6" style="--draw-d:900ms"></path></g>
     </g>
   </g>

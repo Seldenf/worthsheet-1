@@ -512,13 +512,14 @@ function pusher(svg: SVGElement, area: HTMLElement) {
 
 // Spreadsheet background for opted-in elements only (`main [data-cursor-sheet]`, a block inside a
 // Sheet card). Each gets an isometric grid as an inline SVG data URL in --sheet (motion.css draws
-// it on ::before). Each column has one width and each row one height for the whole element, so
-// every line runs straight and continuous in the projection. Columns are mostly 1x, sometimes
-// 1.6x or 2.2x. Grid lines only, no values. Seeded per section, so the pattern is stable.
-const SHEET_COL_WIDTHS = [1, 1, 1, 1, 1, 1.6, 2.2];
-const SHEET_ROW_HEIGHTS = [1, 1, 1.5];
-const SHEET_HX = 44; // screen half-width of a unit cell in the isometric projection
-const SHEET_HY = 22; // screen half-height of a unit cell
+// it on ::before). The grid is the card illustration's own plate grid carried on past the plate:
+// the same lattice (pitch and phase read from the grid path's `d`), the same projection (the
+// path's transform attributes), at the scale the svg is rendered at (getScreenCTM). So the cursor
+// lines continue the illustration's lines exactly, at the same 2:1 angle. Only attribute
+// transforms are read, so CSS breathing, intro and push animations do not shift the lattice.
+// Grid lines only, no values.
+const SHEET_GRID = 'svg.wsi-tiles .wsi-tiles-base > g > path, svg.wsi-shield g[clip-path] > path';
+const SHEET_STROKE = 'rgba(46,41,38,.15)';
 const SHEET_LERP = 0.12;
 
 // FNV-1a: string to 32-bit seed.
@@ -538,71 +539,96 @@ function prng(seed: number) {
   };
 }
 
-// Sheet coordinates (s = column, t = row) to screen: x = (s - t) * HX, y = (s + t) * HY.
-const isoPoint = (s: number, t: number): [number, number] => [(s - t) * SHEET_HX, (s + t) * SHEET_HY];
+// Line positions along one local axis to { pitch, phase }: the median spacing, anchored at the first line.
+function gridAxis(values: number[]) {
+  const gaps = values.slice(1).map((v, i) => v - values[i]).sort((a, b) => a - b);
+  const pitch = gaps[Math.floor(gaps.length / 2)];
+  return { pitch, phase: values[0] % pitch };
+}
 
-function sheetSvg(width: number, height: number, seed: number) {
-  const rnd = prng(seed);
-  // Invert the projection at the section corners to find the sheet range that covers it.
-  const corners = [[0, 0], [width, 0], [0, height], [width, height]].map(([x, y]) => ({
-    s: (x / SHEET_HX + y / SHEET_HY) / 2,
-    t: (y / SHEET_HY - x / SHEET_HX) / 2,
-  }));
-  const sMin = Math.floor(Math.min(...corners.map((c) => c.s))) - 2;
-  const sMax = Math.ceil(Math.max(...corners.map((c) => c.s))) + 2;
-  const tMin = Math.floor(Math.min(...corners.map((c) => c.t))) - 1;
-  const tMax = Math.ceil(Math.max(...corners.map((c) => c.t))) + 1;
+// Grid path (in local plate coordinates `M0 y H..` rows and `M x 0 V..` columns) to its lattice.
+interface SheetLattice {
+  u: { pitch: number; phase: number };
+  v: { pitch: number; phase: number };
+}
+function gridLattice(path: SVGPathElement): SheetLattice {
+  const d = path.getAttribute('d') ?? '';
+  const v = gridAxis([...d.matchAll(/M0 ([\d.]+)H/g)].map((m) => Number(m[1])));
+  const u = gridAxis([...d.matchAll(/M([\d.]+) 0V/g)].map((m) => Number(m[1])));
+  return { u, v };
+}
 
-  // Column widths and row heights are drawn once, before any cell, so every grid line runs
-  // the full length of its column or row.
-  const cols: { s: number; w: number }[] = [];
-  for (let s = sMin; s < sMax; ) {
-    const w = SHEET_COL_WIDTHS[Math.floor(rnd() * SHEET_COL_WIDTHS.length)];
-    cols.push({ s, w });
-    s += w;
+// Local plate coordinates of `path` to screen: the svg's viewBox/CSS scale, then every transform attribute down to the path.
+function gridMatrix(path: SVGPathElement, svg: SVGSVGElement) {
+  const chain: SVGGraphicsElement[] = [];
+  for (let n: Element | null = path; n && n !== svg; n = n.parentElement) chain.unshift(n as SVGGraphicsElement);
+  let m = svg.getScreenCTM();
+  if (!m) return null;
+  for (const n of chain) {
+    const own = n.transform?.baseVal.consolidate();
+    if (own) m = m.multiply(own.matrix);
   }
-  const rows: { t: number; h: number }[] = [];
-  for (let t = tMin; t < tMax; ) {
-    const h = SHEET_ROW_HEIGHTS[Math.floor(rnd() * SHEET_ROW_HEIGHTS.length)];
-    rows.push({ t, h });
-    t += h;
-  }
-  const last = cols[cols.length - 1];
-  const sEnd = last.s + last.w;
-  const lastRow = rows[rows.length - 1];
-  const tEnd = lastRow.t + lastRow.h;
+  return m;
+}
 
-  // Every column boundary runs top to bottom and every row boundary left to right.
+// Lattice lines covering a width x height box (element px) whose origin is at screen (left, top).
+function sheetSvg(width: number, height: number, m: DOMMatrix, lattice: SheetLattice) {
+  const inv = m.inverse();
+  const local = [[0, 0], [width, 0], [0, height], [width, height]].map(([x, y]) => inv.transformPoint(new DOMPoint(x, y)));
+  const uMin = Math.min(...local.map((p) => p.x)), uMax = Math.max(...local.map((p) => p.x));
+  const vMin = Math.min(...local.map((p) => p.y)), vMax = Math.max(...local.map((p) => p.y));
+  const at = (u: number, v: number) => {
+    const p = m.transformPoint(new DOMPoint(u, v));
+    return `${p.x.toFixed(2)},${p.y.toFixed(2)}`;
+  };
+
   let edges = '';
-  for (const s of [...cols.map((c) => c.s), sEnd]) {
-    const [x1, y1] = isoPoint(s, tMin);
-    const [x2, y2] = isoPoint(s, tEnd);
-    edges += `M${x1.toFixed(1)},${y1.toFixed(1)}L${x2.toFixed(1)},${y2.toFixed(1)}`;
+  const { u, v } = lattice;
+  for (let i = Math.ceil((uMin - u.phase) / u.pitch); i <= Math.floor((uMax - u.phase) / u.pitch); i++) {
+    const x = u.phase + i * u.pitch;
+    edges += `M${at(x, vMin)}L${at(x, vMax)}`;
   }
-  for (const t of [...rows.map((r) => r.t), tEnd]) {
-    const [x1, y1] = isoPoint(sMin, t);
-    const [x2, y2] = isoPoint(sEnd, t);
-    edges += `M${x1.toFixed(1)},${y1.toFixed(1)}L${x2.toFixed(1)},${y2.toFixed(1)}`;
+  for (let j = Math.ceil((vMin - v.phase) / v.pitch); j <= Math.floor((vMax - v.phase) / v.pitch); j++) {
+    const y = v.phase + j * v.pitch;
+    edges += `M${at(uMin, y)}L${at(uMax, y)}`;
   }
 
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">` +
-    `<path fill="none" stroke="rgba(46,41,38,.07)" stroke-width="1" d="${edges}"/></svg>`
+    `<path fill="none" stroke="${SHEET_STROKE}" stroke-width="1" d="${edges}"/></svg>`
   );
 }
 
 // Sets the grid, then a mask centre that lags the pointer (lerp, rAF, stops once settled).
 // On leave only .sheet-on is removed: the CSS opacity fades slowly while the mask keeps drifting.
-// The grid is regenerated when the element's size changes (resize, font load).
-function sheet(el: HTMLElement, index: number) {
-  const seed = hashSeed(el.closest('section')?.id || `sheet-${index}`);
+// The grid is regenerated when the element or its illustration changes size (resize, font load)
+// and on pointer enter (catches layout shifts no observer reports); an unchanged lattice is skipped.
+function sheet(el: HTMLElement) {
+  const path = el.querySelector<SVGPathElement>(SHEET_GRID);
+  const svg = path?.ownerSVGElement;
+  if (!path || !svg) return;
+  const lattice = gridLattice(path);
+
+  let drawn = '';
   const draw = () => {
-    const svg = sheetSvg(Math.max(el.offsetWidth, innerWidth), el.offsetHeight, seed);
-    el.style.setProperty('--sheet', `url("data:image/svg+xml,${encodeURIComponent(svg)}")`);
+    const m = gridMatrix(path, svg);
+    if (!m) return;
+    // Screen to element px: the ::before box is the element's padding box.
+    const box = el.getBoundingClientRect();
+    const origin = new DOMMatrix().translate(-(box.left + el.clientLeft), -(box.top + el.clientTop)).multiply(m);
+    const key = [el.clientWidth, el.clientHeight, origin.a, origin.b, origin.c, origin.d, origin.e, origin.f]
+      .map((n) => n.toFixed(2))
+      .join();
+    if (key === drawn) return;
+    drawn = key;
+    const grid = sheetSvg(el.clientWidth, el.clientHeight, origin, lattice);
+    el.style.setProperty('--sheet', `url("data:image/svg+xml,${encodeURIComponent(grid)}")`);
   };
   draw();
   el.classList.add('has-sheet');
-  new ResizeObserver(draw).observe(el);
+  const observer = new ResizeObserver(draw);
+  observer.observe(el);
+  observer.observe(svg);
 
   let tx = 0, ty = 0, cx = 0, cy = 0, raf = 0;
   const paint = () => {
@@ -622,6 +648,7 @@ function sheet(el: HTMLElement, index: number) {
   };
   el.addEventListener('pointerenter', (e) => {
     if (e.pointerType === 'touch') return;
+    draw();
     const r = el.getBoundingClientRect();
     tx = e.clientX - r.left;
     ty = e.clientY - r.top;
@@ -681,9 +708,9 @@ function breathe(root: HTMLElement) {
 // it has left on the other side (5-7s, motion.css keyframes). When the animation ends the cell goes quiet and
 // another one starts. At most DRIFT_LIT slides run per sheet; a sheet only starts new ones while on screen.
 // At load a few cells (DRIFT_SEED) are already mid-slide, so the grid arrives with colour in it; after the
-// card intro (html.intro-done) the pool carries on from them, one new slide every 0.6-1.3s, up to DRIFT_LIT.
-const DRIFT_LIT = 11;
-const DRIFT_SEED = 5;
+// card intro (html.intro-done) the pool carries on from them, one new slide every 0.3-0.7s, up to DRIFT_LIT.
+const DRIFT_LIT = 16;
+const DRIFT_SEED = 8;
 
 // One pool per .sheet-glow (page grid behind a sheet, or a grid inside a card): each runs its own DRIFT_LIT budget.
 function drift(glow: HTMLElement, ready: Promise<void>) {
@@ -720,7 +747,7 @@ function drift(glow: HTMLElement, ready: Promise<void>) {
   let timer = 0;
   const tick = () => {
     start();
-    timer = window.setTimeout(tick, between(600, 1300));
+    timer = window.setTimeout(tick, between(300, 700));
   };
   // .drift (set above, right away) already keeps every cell invisible; slides only begin once the intro is over.
   ready.then(() =>
@@ -759,7 +786,7 @@ if (main) {
         const area = svg.closest<HTMLElement>('section') ?? svg.parentElement;
         if (area) pusher(svg, area);
       });
-      main.querySelectorAll<HTMLElement>('[data-cursor-sheet]').forEach((el, i) => sheet(el, i));
+      main.querySelectorAll<HTMLElement>('[data-cursor-sheet]').forEach(sheet);
       document.querySelectorAll<HTMLElement>(EDGE_SELECTOR).forEach(edgeLight);
     }
   }
