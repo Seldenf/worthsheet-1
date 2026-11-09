@@ -1,12 +1,13 @@
 ---
 import Base from '../../layouts/Base.astro';
-import Section from '../../components/Section.astro';
+import Sheet from '../../components/Sheet.astro';
 import Eyebrow from '../../components/Eyebrow.astro';
 import Button from '../../components/Button.astro';
 import Faq from '../../components/Faq.astro';
 import CtaBand from '../../components/CtaBand.astro';
 import StatRow from '../../components/StatRow.astro';
 import BankFinder from '../../components/BankFinder.astro';
+import BankMap from '../../components/illustrations/BankMap.astro';
 import CtaTiles from '../../components/illustrations/CtaTiles.astro';
 import { faqLd } from '../../lib/seo';
 import { url } from '../../lib/url';
@@ -98,11 +99,12 @@ const itemList = {
   ]}
   jsonLd={[itemList, faqLd(faq)]}
 >
-  <section class="hero">
-    <div class="container hero-copy">
-      <Eyebrow>Banks by state</Eyebrow>
-      <h1>Banks in {place}</h1>
-      <p class="intro">
+  <Sheet grid seed={27} id="hero" aria-labelledby="hero-title">
+    <div class="split">
+      <div class="split-copy stack" style="--stack-gap: 1.25rem">
+        <Eyebrow tone="green">Banks by state</Eyebrow>
+        <h1 id="hero-title">Banks in <span class="accent">{place}</span></h1>
+        <p class="intro">
         <strong>{fmt(d.banks)}</strong> active FDIC-insured banks are headquartered in {place}, and
         <strong>{fmt(d.community)}</strong> of them (<strong>{communityShare}</strong>) are FDIC-defined
         community banks. FDIC data lists <strong>{fmt(d.branches)}</strong> full-service branch offices in
@@ -115,25 +117,35 @@ const itemList = {
         the FDIC, <strong>{fmt(d.regulators.OCC)}</strong> by the OCC and <strong>{fmt(d.regulators.FED)}</strong> by
         the Federal Reserve{d.regulators.STATE > 0 && <Fragment>, and <strong>{fmt(d.regulators.STATE)}</strong> by {d.regulators.STATE === 1 ? 'a state authority' : 'state authorities'} alone</Fragment>}; <strong>{fmt(d.stateChartered)}</strong> hold state charters. For complaints or licensing questions,
         contact the <a href={state.regulator.url} rel="noopener" target="_blank">{state.regulator.name}</a>.
-      </p>
-      <p class="disclaimer">Source: FDIC BankFind Suite, data as of {dataDate}.</p>
+        </p>
+        <p class="disclaimer">Source: FDIC BankFind Suite, data as of {dataDate}.</p>
+        <div class="hero-actions">
+          <Button href="#find" variant="primary">Find a bank by ZIP code</Button>
+          <Button href="#operators" variant="secondary">Top banks in {state.short}</Button>
+        </div>
+      </div>
+      <div class="hero-art">
+        <BankMap class="float" />
+      </div>
     </div>
-  </section>
+  </Sheet>
 
-  <Section tight tone="surface" aria-labelledby="stats-title">
+  <Sheet compact tone="green" aria-labelledby="stats-title">
     <h2 id="stats-title" class="sr-only">{state.name} bank statistics</h2>
-    <StatRow
-      items={[
-        { value: fmt(d.banks), label: `Banks headquartered in ${place}` },
-        { value: `${fmt(d.community)} (${communityShare})`, label: 'FDIC-defined community banks' },
-        { value: fmt(d.branches), label: 'Full-service branch offices' },
-        { value: pct(d.outOfStatePct), label: 'Branches run by out-of-state banks' },
-      ]}
-    />
-  </Section>
+    <div class="stats">
+      <StatRow
+        items={[
+          { value: fmt(d.banks), label: `Banks headquartered in ${place}` },
+          { value: `${fmt(d.community)} (${communityShare})`, label: 'FDIC-defined community banks' },
+          { value: fmt(d.branches), label: 'Full-service branch offices' },
+          { value: pct(d.outOfStatePct), label: 'Branches run by out-of-state banks' },
+        ]}
+      />
+    </div>
+  </Sheet>
 
-  <Section aria-labelledby="operators-title">
-    <div class="head stack" style="--stack-gap: 12px">
+  <Sheet id="operators" aria-labelledby="operators-title">
+    <div class="sec-head stack" style="--stack-gap: 1rem">
       <h2 id="operators-title">Banks with the most branches in {place}</h2>
       <p class="muted">
         The {fmt(Math.min(10, d.operatorCount))} largest operators of full-service branch offices in {place},
@@ -168,10 +180,10 @@ const itemList = {
         </tbody>
       </table>
     </div>
-  </Section>
+  </Sheet>
 
-  <Section tone="surface" aria-labelledby="hq-title">
-    <div class="head stack" style="--stack-gap: 12px">
+  <Sheet aria-labelledby="hq-title">
+    <div class="sec-head stack" style="--stack-gap: 1rem">
       <h2 id="hq-title">{state.short}-based banks by total assets</h2>
       <p class="muted">
         {fmt(d.banks)} FDIC-insured banks are headquartered in {place}. The ten largest by total assets are
@@ -182,12 +194,12 @@ const itemList = {
 
     <div class="largest grid grid-2">
       <div class="card">
-        <p class="eyebrow">Most branches in {state.short}</p>
+        <Eyebrow tone="green">Most branches in {state.short}</Eyebrow>
         <p class="big">{shortName(op1.name)}</p>
         <p class="muted">{fmt(op1.branches)} full-service offices; headquartered in {hqName(op1.hq)}</p>
       </div>
       <div class="card">
-        <p class="eyebrow">Largest {based} bank by assets</p>
+        <Eyebrow tone="blue">Largest {based} bank by assets</Eyebrow>
         <p class="big">{shortName(largest.name)}</p>
         <p class="muted">{formatAssets(largest.assets)} in total assets</p>
       </div>
@@ -263,11 +275,11 @@ const itemList = {
       "Community bank" follows the FDIC's community bank definition, which is based on how a bank earns and lends,
       not only on its size. Listing is public data, not a ranking of the best banks.
     </p>
-  </Section>
+  </Sheet>
 
-  <Section id="find" aria-labelledby="find-title">
+  <Sheet id="find" tone="blue" aria-labelledby="find-title">
     <div class="split">
-      <div class="stack">
+      <div class="sec-head stack" style="--stack-gap: 1rem">
         <h2 id="find-title">Find a bank by ZIP code in {place}</h2>
         <p class="muted">
           This search is scoped to {place}: it lists full-service FDIC-insured offices in the ZIP code you enter and
@@ -279,11 +291,11 @@ const itemList = {
         <BankFinder stateCode={code} stateName={place} />
       </div>
     </div>
-  </Section>
+  </Sheet>
 
-  <Section tone="surface" aria-labelledby="reg-title">
+  <Sheet aria-labelledby="reg-title">
     <div class="split">
-      <div class="stack">
+      <div class="sec-head stack" style="--stack-gap: 1rem">
         <h2 id="reg-title">Your {state.short} state bank regulator</h2>
         <p class="muted">
           State-chartered banks answer to their state banking agency as well as a federal regulator. Complaints,
@@ -292,8 +304,8 @@ const itemList = {
         </p>
       </div>
       <div class="stack">
-        <div class="card">
-          <p class="eyebrow">State banking agency</p>
+        <div class="card reg-card">
+          <Eyebrow tone="yellow">State banking agency</Eyebrow>
           <p class="big">{state.regulator.name}</p>
           <p>
             <a href={state.regulator.url} rel="noopener" target="_blank">{state.regulator.url.replace(/^https?:\/\//, '').replace(/\/$/, '')}</a>
@@ -307,11 +319,11 @@ const itemList = {
         </p>
       </div>
     </div>
-  </Section>
+  </Sheet>
 
-  <Section aria-labelledby="pfs-title">
+  <Sheet aria-labelledby="pfs-title">
     <div class="split">
-      <div class="stack">
+      <div class="sec-head stack" style="--stack-gap: 1rem">
         <h2 id="pfs-title">Listing your {state.short} accounts on a financial statement</h2>
         <p class="muted">
           A personal financial statement names the bank behind every account and loan. Use the banks above to
@@ -341,12 +353,12 @@ const itemList = {
         </ul>
       </div>
     </div>
-  </Section>
+  </Sheet>
 
-  <Section tone="surface" aria-labelledby="faq-title">
+  <Sheet tone="cream" aria-labelledby="faq-title">
     <div class="split">
-      <div>
-        <Eyebrow>FAQ</Eyebrow>
+      <div class="sec-head stack" style="--stack-gap: 1rem">
+        <Eyebrow tone="yellow">FAQ</Eyebrow>
         <h2 id="faq-title">Banks in {place}: common questions</h2>
       </div>
       <Faq items={faq} />
@@ -356,7 +368,7 @@ const itemList = {
       headquarters state and full-service branch offices (brick-and-mortar and retail) by office state. Not an
       endorsement of any institution.
     </p>
-  </Section>
+  </Sheet>
 
   <CtaBand>
     <CtaTiles slot="art" />
@@ -364,20 +376,9 @@ const itemList = {
 </Base>
 
 <style>
-  .hero {
-    padding-block: clamp(24px, 5vw, 64px) clamp(32px, 5vw, 56px);
-  }
-
-  .hero-copy {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 20px;
-  }
-
+  /* Sheets, cards, split layouts and shared type come from global.css and Sheet.astro. */
   .intro {
-    max-width: 52em;
-    font-size: clamp(1.0625rem, 1.5vw, 1.25rem);
+    font-size: clamp(1rem, 1.3vw, 1.125rem);
     line-height: 1.6;
     text-wrap: pretty;
   }
@@ -386,9 +387,19 @@ const itemList = {
     text-decoration-color: var(--line-strong);
   }
 
-  .head {
-    margin-bottom: clamp(20px, 3vw, 32px);
-    max-width: 52em;
+  .hero-art {
+    width: 100%;
+    max-width: 440px;
+    margin-inline: auto;
+  }
+
+  .split .sec-head {
+    margin-bottom: 0;
+  }
+
+  .stats :global(dd) {
+    font-size: clamp(1.75rem, 4.2vw, 3rem);
+    overflow-wrap: anywhere;
   }
 
   .bank-name {
@@ -411,6 +422,18 @@ const itemList = {
     margin-bottom: clamp(16px, 2.4vw, 28px);
   }
 
+  .largest .card {
+    padding: clamp(20px, 2.6vw, 28px);
+  }
+
+  .largest .card:nth-child(1) {
+    --edge: rgba(64, 170, 74, 0.85);
+  }
+
+  .largest .card:nth-child(2) {
+    --edge: rgba(108, 190, 228, 0.9);
+  }
+
   .big {
     margin: 6px 0;
     font-size: clamp(1.375rem, 2.4vw, 1.875rem);
@@ -426,6 +449,7 @@ const itemList = {
   .more > summary {
     cursor: pointer;
     font-weight: 560;
+    min-height: 44px;
     padding: 12px 0;
   }
 
@@ -438,22 +462,12 @@ const itemList = {
     max-width: 56em;
   }
 
-  .split {
-    display: grid;
-    gap: clamp(24px, 4vw, 56px);
+  .reg-card {
+    padding: clamp(20px, 2.6vw, 28px);
+    --edge: rgba(250, 195, 68, 0.95);
   }
 
-  @media (min-width: 900px) {
-    .split {
-      grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
-      align-items: start;
-    }
-  }
-
-  .split h2 {
-    margin-top: 12px;
-  }
-
+  .hero-actions,
   .actions {
     display: flex;
     flex-wrap: wrap;
@@ -462,6 +476,7 @@ const itemList = {
 
   .chips {
     list-style: none;
+    padding: 0;
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
@@ -469,10 +484,12 @@ const itemList = {
 
   .chips .pill {
     text-decoration: none;
-    min-height: 40px;
+    min-height: 44px;
   }
 
-  .chips .pill:hover {
-    border-color: var(--ink);
+  @media (hover: hover) and (pointer: fine) {
+    .chips .pill:hover {
+      border-color: var(--ink);
+    }
   }
 </style>

@@ -1,6 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
-import Section from '../components/Section.astro';
+import Sheet from '../components/Sheet.astro';
 import Button from '../components/Button.astro';
 import Eyebrow from '../components/Eyebrow.astro';
 import Prose from '../components/Prose.astro';
@@ -63,11 +63,11 @@ const overview = [
   breadcrumbs={[{ name: 'SBA Form 413', path: '/sba-form-413/' }]}
   jsonLd={[faqLd(faq)]}
 >
-  <Section tone="surface">
-    <div class="hero">
-      <div class="stack" style="--stack-gap: 1.25rem">
-        <Eyebrow>SBA personal financial statement</Eyebrow>
-        <h1>SBA Form 413: personal financial statement guide and template</h1>
+  <Sheet grid seed={36} id="hero" aria-labelledby="hero-title">
+    <div class="split">
+      <div class="stack split-copy" style="--stack-gap: 1.25rem">
+        <Eyebrow tone="blue">SBA personal financial statement</Eyebrow>
+        <h1 id="hero-title">SBA Form 413: personal financial statement guide and template</h1>
         <p class="lead">
           SBA Form 413 is the Personal Financial Statement the U.S. Small Business Administration
           uses to assess the repayment ability and creditworthiness of applicants for 7(a) and 504
@@ -83,11 +83,11 @@ const overview = [
           equivalent your lender accepts), not the worksheet.
         </p>
       </div>
-      <DocumentStack class="hero-art" />
+      <div class="split-art"><DocumentStack /></div>
     </div>
-  </Section>
+  </Sheet>
 
-  <Section aria-labelledby="what-title">
+  <Sheet aria-labelledby="what-title">
     <Prose>
       <h2 id="what-title">What SBA Form 413 is</h2>
       <p>
@@ -161,17 +161,17 @@ const overview = [
         verified November 6, 2026.
       </p>
     </Prose>
-  </Section>
+  </Sheet>
 
-  <Section tone="surface" aria-labelledby="sections-title">
-    <div class="stack" style="--stack-gap: 1rem">
+  <Sheet tone="blue" aria-labelledby="sections-title">
+    <div class="sec-head stack" style="--stack-gap: 1rem">
       <h2 id="sections-title">SBA Form 413 sections at a glance</h2>
       <p class="lead">
         The front page has an assets column and a liabilities column. Sections 2 to 8 hold the
         detail behind those totals.
       </p>
     </div>
-    <div class="table-wrap overview">
+    <div class="card overview"><div class="table-wrap">
       <table>
         <caption class="sr-only">What each part of SBA Form 413 asks for and which front-page line it feeds</caption>
         <thead>
@@ -193,14 +193,14 @@ const overview = [
           }
         </tbody>
       </table>
-    </div>
+    </div></div>
     <p class="muted small overview-note">
       The form says to omit cents. Section names above follow the 05-24 edition; always work from
       the current edition your lender provides.
     </p>
-  </Section>
+  </Sheet>
 
-  <Section aria-labelledby="official-title">
+  <Sheet aria-labelledby="official-title">
     <Prose>
       <h2 id="official-title">Where to get the official SBA Form 413</h2>
       <p>
@@ -224,12 +224,12 @@ const overview = [
         account statements first and use current figures.
       </p>
     </Prose>
-  </Section>
+  </Sheet>
 
-  <Section tone="blue" id="worksheet" aria-labelledby="worksheet-title">
+  <Sheet tone="blue" id="worksheet" aria-labelledby="worksheet-title">
     <div class="worksheet">
       <div class="stack" style="--stack-gap: 1.25rem">
-        <Eyebrow>Free download</Eyebrow>
+        <Eyebrow tone="yellow">Free download</Eyebrow>
         <h2 id="worksheet-title">SBA Form 413 worksheet (Excel)</h2>
         <p class="lead">
           Worksheet to organize your numbers — submit the official SBA Form 413 to your lender.
@@ -252,10 +252,10 @@ const overview = [
         </p>
       </div>
     </div>
-  </Section>
+  </Sheet>
 
-  <Section aria-labelledby="next-title">
-    <div class="stack" style="--stack-gap: 1.25rem">
+  <Sheet aria-labelledby="next-title">
+    <div class="sec-head stack" style="--stack-gap: 1rem">
       <h2 id="next-title">Next steps</h2>
     </div>
     <div class="grid grid-3 next-grid">
@@ -276,14 +276,14 @@ const overview = [
       Also see the glossary entry <a href={url('/glossary/sba-form-413/')}>SBA Form 413</a> and the
       editable <a href={url('/download/')}>free PFS template</a> for Google Sheets and Excel.
     </p>
-  </Section>
+  </Sheet>
 
-  <Section tone="surface" aria-labelledby="faq-title">
+  <Sheet aria-labelledby="faq-title">
     <div class="faq-wrap">
       <h2 id="faq-title">SBA Form 413: FAQ</h2>
       <Faq items={faq} />
     </div>
-  </Section>
+  </Sheet>
 
   <CtaBand>
     <CtaTiles slot="art" />
@@ -291,12 +291,6 @@ const overview = [
 </Base>
 
 <style>
-  .hero {
-    display: grid;
-    gap: clamp(32px, 5vw, 64px);
-    align-items: center;
-  }
-
   .actions {
     display: flex;
     flex-wrap: wrap;
@@ -304,19 +298,10 @@ const overview = [
     padding-top: 0.5rem;
   }
 
-  .hero :global(.hero-art) {
-    max-width: 520px;
-    margin-inline: auto;
-  }
-
-  @media (min-width: 900px) {
-    .hero {
-      grid-template-columns: 1.15fr 0.85fr;
-    }
-  }
 
   .overview {
     margin-top: clamp(24px, 4vw, 40px);
+    padding: clamp(12px, 2vw, 20px);
   }
 
   .overview th[scope='row'] {

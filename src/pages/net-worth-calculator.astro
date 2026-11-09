@@ -1,6 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
-import Section from '../components/Section.astro';
+import Sheet from '../components/Sheet.astro';
 import Eyebrow from '../components/Eyebrow.astro';
 import Button from '../components/Button.astro';
 import Faq from '../components/Faq.astro';
@@ -150,16 +150,16 @@ const related = [
     faqLd(faq),
   ]}
 >
-  <section class="hero no-print">
-    <div class="container hero-grid">
-      <div class="hero-copy">
-        <Eyebrow>Free calculator</Eyebrow>
-        <h1>Net worth calculator</h1>
+  <Sheet grid seed={24} id="hero" aria-labelledby="hero-title" class="no-print">
+    <div class="split">
+      <div class="stack split-copy" style="--stack-gap: 1.25rem">
+        <Eyebrow tone="green">Free calculator</Eyebrow>
+        <h1 id="hero-title">Net worth <span class="accent">calculator</span></h1>
         <p class="lead">
           Net worth is everything you own (your assets) minus everything you owe (your liabilities). Enter your
           accounts by category below and watch your total assets, total liabilities and net worth update as you type.
         </p>
-        <ul class="hero-points">
+        <ul class="list-check">
           <li>Same asset and liability groups as the PFS tab of the free template</li>
           <li>Add as many accounts as you need to each group</li>
           <li>Runs in your browser: nothing you enter leaves your device</li>
@@ -173,9 +173,9 @@ const related = [
         <CalculatorTile class="float" />
       </div>
     </div>
-  </section>
+  </Sheet>
 
-  <Section id="calculator" tone="surface" aria-labelledby="calc-title">
+  <Sheet id="calculator" tone="white" aria-labelledby="calc-title">
     <div data-nw class="nw">
       <div class="nw-head">
         <div>
@@ -291,13 +291,13 @@ const related = [
         your browser and is not saved or sent anywhere.
       </p>
     </div>
-  </Section>
+  </Sheet>
 
-  <Section aria-labelledby="how-title" class="no-print">
+  <Sheet id="how" tone="white" aria-labelledby="how-title" class="no-print">
     <div class="split">
-      <div>
-        <Eyebrow>How it works</Eyebrow>
-        <h2 id="how-title">How this net worth calculator works</h2>
+      <div class="sec-head stack split-copy" style="--stack-gap: 1rem">
+        <Eyebrow tone="green">How it works</Eyebrow>
+        <h2 id="how-title">How this <span class="accent">net worth calculator</span> works</h2>
       </div>
       <Prose>
         <p>
@@ -328,13 +328,13 @@ const related = [
         </p>
       </Prose>
     </div>
-  </Section>
+  </Sheet>
 
-  <Section tone="surface" aria-labelledby="meaning-title" class="no-print">
+  <Sheet id="meaning" tone="blue" aria-labelledby="meaning-title" class="no-print">
     <div class="split">
-      <div>
-        <Eyebrow>Your result</Eyebrow>
-        <h2 id="meaning-title">What your net worth tells you</h2>
+      <div class="sec-head stack split-copy" style="--stack-gap: 1rem">
+        <Eyebrow tone="blue">Your result</Eyebrow>
+        <h2 id="meaning-title">What your <span class="accent accent-blue">net worth tells you</span></h2>
       </div>
       <Prose>
         <p>
@@ -356,13 +356,13 @@ const related = [
         </p>
       </Prose>
     </div>
-  </Section>
+  </Sheet>
 
-  <Section aria-labelledby="next-title" class="no-print">
-    <div class="next card">
-      <div>
-        <p class="eyebrow">Next step</p>
-        <h2 id="next-title">Turn this number into a bank-ready statement</h2>
+  <Sheet id="next" tone="green" aria-labelledby="next-title" class="no-print">
+    <div class="next">
+      <div class="stack" style="--stack-gap: 1rem">
+        <Eyebrow tone="green">Next step</Eyebrow>
+        <h2 id="next-title">Turn this number into a <span class="accent">bank-ready statement</span></h2>
         <p class="lead">
           A personal financial statement lists every asset and liability behind your net worth on a specific date. The
           free template does the totals for you, includes an account types checklist and prints cleanly for your lender
@@ -374,31 +374,37 @@ const related = [
         <Button href="/personal-financial-statement-example/" variant="secondary" size="lg">See a PFS example</Button>
       </div>
     </div>
-  </Section>
+  </Sheet>
 
-  <Section tone="surface" aria-labelledby="faq-title" class="no-print">
+  <Sheet id="faq" tone="white" aria-labelledby="faq-title" class="no-print">
     <div class="split">
-      <div>
-        <Eyebrow>FAQ</Eyebrow>
+      <div class="sec-head stack split-copy" style="--stack-gap: 1rem">
+        <Eyebrow tone="yellow">FAQ</Eyebrow>
         <h2 id="faq-title">Net worth calculator questions</h2>
       </div>
       <Faq items={faq} />
     </div>
-  </Section>
+  </Sheet>
 
-  <Section aria-labelledby="related-title" class="no-print">
-    <h2 id="related-title">Related tools and guides</h2>
-    <div class="grid grid-3 related">
+  <Sheet id="related" tone="white" aria-labelledby="related-title" class="no-print">
+    <div class="sec-head stack" style="--stack-gap: 1rem">
+      <Eyebrow tone="blue">Keep going</Eyebrow>
+      <h2 id="related-title">Related tools and guides</h2>
+    </div>
+    <ul class="grid grid-3 related">
       {
         related.map((r) => (
-          <a class="card" href={url(r.href)}>
-            <h3>{r.title}</h3>
-            <p class="muted">{r.text}</p>
-          </a>
+          <li>
+            <a class="card related-card" href={url(r.href)}>
+              <h3>{r.title}</h3>
+              <span class="related-arrow" aria-hidden="true">↗</span>
+              <p class="muted">{r.text}</p>
+            </a>
+          </li>
         ))
       }
-    </div>
-  </Section>
+    </ul>
+  </Sheet>
 
   <div class="no-print">
     <CtaBand>
@@ -408,40 +414,6 @@ const related = [
 </Base>
 
 <style>
-  .hero {
-    padding-block: clamp(40px, 7vw, 96px) clamp(40px, 6vw, 80px);
-  }
-
-  .hero-grid {
-    display: grid;
-    gap: clamp(28px, 5vw, 64px);
-    align-items: center;
-  }
-
-  @media (min-width: 900px) {
-    .hero-grid {
-      grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
-    }
-  }
-
-  .hero-copy {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 20px;
-  }
-
-  .hero-copy h1,
-  .hero-copy p {
-    margin: 0;
-  }
-
-  .hero-points {
-    margin: 0;
-    padding-left: 1.2em;
-    color: var(--muted);
-  }
-
   .hero-actions {
     display: flex;
     flex-wrap: wrap;
@@ -452,22 +424,6 @@ const related = [
     max-width: 480px;
     margin-inline: auto;
     width: 100%;
-  }
-
-  .split {
-    display: grid;
-    gap: clamp(24px, 4vw, 56px);
-  }
-
-  @media (min-width: 900px) {
-    .split {
-      grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
-      align-items: start;
-    }
-  }
-
-  .split h2 {
-    margin: 12px 0 0;
   }
 
   /* ---------- Calculator ---------- */
@@ -499,6 +455,7 @@ const related = [
     gap: 8px;
   }
 
+  /* Summary card, styled like the home hero's Summary panel: coloured squares, navy bold net worth. */
   .nw-summary {
     position: sticky;
     bottom: 16px;
@@ -511,7 +468,7 @@ const related = [
     border: 1px solid var(--line);
     border-radius: 20px;
     overflow: hidden;
-    box-shadow: 0 10px 30px -12px rgba(46, 41, 38, 0.25);
+    box-shadow: 0 10px 30px -12px rgba(12, 38, 53, 0.25);
   }
 
   @media (max-width: 519px) {
@@ -522,6 +479,7 @@ const related = [
   }
 
   .nw-sum {
+    --sq: var(--green);
     display: flex;
     flex-direction: column;
     gap: 4px;
@@ -530,14 +488,31 @@ const related = [
     min-width: 0;
   }
 
+  .nw-sum:nth-child(2) {
+    --sq: var(--yellow);
+  }
+
   .nw-sum-main {
-    background: var(--tint-green);
+    --sq: var(--blue);
+    background: var(--tint-blue);
   }
 
   .nw-sum-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
     font-size: 0.8125rem;
     color: var(--muted);
     font-weight: 540;
+  }
+
+  .nw-sum-label::before {
+    content: '';
+    flex: none;
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    background: var(--sq);
   }
 
   .nw-sum-value {
@@ -545,7 +520,12 @@ const related = [
     font-weight: 600;
     letter-spacing: -0.025em;
     line-height: 1.1;
+    color: var(--ink);
     overflow-wrap: anywhere;
+  }
+
+  .nw-sum-main .nw-sum-value {
+    font-weight: 700;
   }
 
   .nw-sum-value.is-negative {
@@ -591,7 +571,6 @@ const related = [
 
   .nw-group {
     padding: clamp(16px, 2.4vw, 24px);
-    box-shadow: none;
   }
 
   .nw-group h4 {
@@ -612,7 +591,7 @@ const related = [
 
   .nw-row {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 36px;
+    grid-template-columns: minmax(0, 1fr) 44px;
     grid-template-areas:
       'name remove'
       'amount remove';
@@ -633,8 +612,8 @@ const related = [
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 36px;
-    height: 36px;
+    width: 44px;
+    height: 44px;
     padding: 0;
     border: 1px solid var(--line-strong);
     border-radius: 999px;
@@ -647,14 +626,16 @@ const related = [
     display: none;
   }
 
-  .nw-remove:hover {
-    color: var(--ink);
-    border-color: var(--ink);
+  @media (hover: hover) and (pointer: fine) {
+    .nw-remove:hover {
+      color: var(--ink);
+      border-color: var(--ink);
+    }
   }
 
   @media (min-width: 520px) {
     .nw-row {
-      grid-template-columns: minmax(0, 1fr) minmax(120px, 0.6fr) 36px;
+      grid-template-columns: minmax(0, 1fr) minmax(120px, 0.6fr) 44px;
       grid-template-areas: 'name amount remove';
     }
   }
@@ -690,7 +671,7 @@ const related = [
   }
 
   .next h2 {
-    margin: 8px 0 12px;
+    margin: 12px 0;
   }
 
   .next .lead {
@@ -713,17 +694,70 @@ const related = [
   }
 
   .related {
-    margin-top: 28px;
-  }
-
-  .related h3 {
-    margin: 0 0 6px;
-    font-size: 1.125rem;
-  }
-
-  .related p {
+    list-style: none;
     margin: 0;
-    font-size: 0.9375rem;
+    padding: 0;
+    gap: 20px;
+  }
+
+  .related-card {
+    position: relative;
+    display: block;
+    height: 100%;
+    padding: clamp(22px, 2.6vw, 30px);
+  }
+
+  .related-card h3 {
+    margin: 0 0 8px;
+    padding-right: 24px;
+    font-size: 1.1875rem;
+    line-height: 1.25;
+  }
+
+  .related-card p {
+    margin: 0;
+    font-size: 0.9688rem;
+    line-height: 1.55;
+  }
+
+  .related-arrow {
+    position: absolute;
+    top: 14px;
+    right: 16px;
+    font-size: 1.25rem;
+    line-height: 1;
+    color: var(--green);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .related-card:focus-visible .related-arrow {
+    opacity: 1;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .related-card:hover .related-arrow {
+      opacity: 1;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .related-arrow {
+      translate: -2px 2px;
+      transition:
+        opacity 200ms var(--ease-out),
+        translate 200ms var(--ease-out);
+    }
+
+    .related-card:focus-visible .related-arrow {
+      translate: 0 0;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .related-card:hover .related-arrow {
+        translate: 0 0;
+      }
+    }
   }
 
   /* ---------- Print ---------- */
@@ -753,7 +787,8 @@ const related = [
 
     .nw-group {
       break-inside: avoid;
-      border-color: #999;
+      border: 1px solid #999;
+      box-shadow: none;
     }
 
     .nw-row.is-empty,
@@ -784,6 +819,28 @@ const related = [
 
     .nw-row .input-affix ~ input {
       padding-left: 12px;
+    }
+
+    /* Print the statement without the sheet card chrome. */
+    :global(#calculator.sheet-section) {
+      padding: 0;
+    }
+
+    :global(#calculator .sheet-frame) {
+      width: 100%;
+      margin: 0;
+    }
+
+    :global(#calculator .sheet),
+    :global(#calculator .sheet-card) {
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+      background: none;
+    }
+
+    :global(#calculator .sheet-body) {
+      padding: 0;
     }
   }
 </style>

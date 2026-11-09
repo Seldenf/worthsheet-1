@@ -1,6 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
-import Section from '../components/Section.astro';
+import Sheet from '../components/Sheet.astro';
 import Eyebrow from '../components/Eyebrow.astro';
 import Prose from '../components/Prose.astro';
 import { url } from '../lib/url';
@@ -16,15 +16,16 @@ const mailto = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('WorthSheet
   path="/privacy-policy/"
   breadcrumbs={[{ name: 'Privacy policy', path: '/privacy-policy/' }]}
 >
-  <Section>
-    <div class="container-narrow">
-      <Eyebrow>Legal</Eyebrow>
-      <h1>Privacy policy</h1>
-      <p class="muted policy-date">
-        Effective <time datetime="2026-11-06">November 6, 2026</time>
-      </p>
+  <Sheet grid seed={33} id="hero" aria-labelledby="policy-title">
+    <Eyebrow tone="navy">Legal</Eyebrow>
+    <h1 id="policy-title">Privacy policy</h1>
+    <p class="muted policy-date">
+      Effective <time datetime="2026-11-06">November 6, 2026</time>
+    </p>
+  </Sheet>
 
-      <Prose>
+  <Sheet id="policy-text">
+    <Prose>
         <p>
           WorthSheet (“we”, “us”) runs worthsheet.com, a website with a free personal financial
           statement template, calculators, guides and a bank finder. This policy explains what
@@ -253,8 +254,7 @@ const mailto = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('WorthSheet
           the template? <a href={url('/download/')}>Get the free PFS template</a>.
         </p>
       </Prose>
-    </div>
-  </Section>
+  </Sheet>
 </Base>
 
 <style>

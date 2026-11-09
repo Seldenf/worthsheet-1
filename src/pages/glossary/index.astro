@@ -1,7 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
-import Section from '../../components/Section.astro';
+import Sheet from '../../components/Sheet.astro';
 import Eyebrow from '../../components/Eyebrow.astro';
 import Button from '../../components/Button.astro';
 import CtaBand from '../../components/CtaBand.astro';
@@ -58,11 +58,11 @@ const jsonLd = [
   jsonLd={jsonLd}
   breadcrumbs={[{ name: 'Glossary', path: '/glossary/' }]}
 >
-  <Section tone="surface">
-    <div class="hero">
-      <div class="stack" style="--stack-gap: 1.25rem">
-        <Eyebrow>Glossary</Eyebrow>
-        <h1>Personal finance and mortgage glossary</h1>
+  <Sheet grid seed={28} id="hero" aria-labelledby="glossary-title">
+    <div class="split">
+      <div class="split-copy stack" style="--stack-gap: 1.25rem">
+        <Eyebrow tone="green">Glossary</Eyebrow>
+        <h1 id="glossary-title">Personal finance and <span class="accent">mortgage glossary</span></h1>
         <p class="lead">
           Plain-English definitions of {entries.length} terms you meet when you build a personal
           financial statement or apply for a loan. Each entry opens with the definition, then shows an
@@ -74,29 +74,31 @@ const jsonLd = [
           <Button href="/glossary/debt-to-income-ratio/" variant="secondary">Debt-to-income ratio</Button>
         </div>
       </div>
-      <GlossaryBook class="hero-art float" />
+      <GlossaryBook class="float" />
     </div>
-  </Section>
+  </Sheet>
 
-  <Section tone="paper" tight>
+  <Sheet compact>
     <nav class="az" aria-label="Jump to letter">
       <ul>
         {
           alphabet.map((letter) => (
             <li>
               {letters.includes(letter) ? (
-                <a href={`#letter-${letter}`} aria-label={`Terms starting with ${letter}`}>
+                <a class="az-chip" href={`#letter-${letter}`} aria-label={`Terms starting with ${letter}`}>
                   {letter}
                 </a>
               ) : (
-                <span aria-hidden="true">{letter}</span>
+                <span class="az-chip is-off" aria-hidden="true">{letter}</span>
               )}
             </li>
           ))
         }
       </ul>
     </nav>
+  </Sheet>
 
+  <Sheet>
     <div class="groups">
       {
         letters.map((letter) => (
@@ -106,7 +108,7 @@ const jsonLd = [
             </h2>
             <ul class="terms">
               {groups.get(letter)!.map((e) => (
-                <li class="term">
+                <li class="card term">
                   <p class="term-name">
                     <a href={url(`/glossary/${e.slug}/`)}>{e.term}</a>
                     {e.topic && <span class="pill">{e.topic}</span>}
@@ -119,7 +121,7 @@ const jsonLd = [
         ))
       }
     </div>
-  </Section>
+  </Sheet>
 
   <CtaBand>
     <CtaTiles slot="art" />
@@ -127,97 +129,61 @@ const jsonLd = [
 </Base>
 
 <style>
-  .hero {
-    display: grid;
-    gap: 32px;
-    align-items: center;
-  }
-
   .hero-actions {
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
-    padding-top: 0.5rem;
-  }
-
-  .hero-art {
-    width: 100%;
-    max-width: 360px;
-    height: auto;
-    justify-self: center;
-  }
-
-  @media (min-width: 900px) {
-    .hero {
-      grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
-      gap: 56px;
-    }
-
-    .hero-art {
-      max-width: 520px;
-    }
   }
 
   .az ul {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
-    list-style: none;
+    gap: 8px;
     margin: 0;
     padding: 0;
+    list-style: none;
   }
 
-  .az li > a,
-  .az li > span {
-    display: grid;
-    place-items: center;
-    width: 40px;
-    height: 40px;
-    border-radius: var(--radius-sm);
-    font-weight: 560;
-  }
-
-  .az li > a {
-    background: var(--white);
+  .az-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0 10px;
     border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    background: var(--white);
     color: var(--ink);
+    font-weight: 600;
     text-decoration: none;
   }
 
-  .az li > a:hover {
+  .az-chip:hover {
     background: var(--ink);
     color: var(--white);
   }
 
-  .az li > span {
+  .az-chip.is-off {
     color: var(--muted-soft);
-    opacity: 0.6;
+    opacity: 0.4;
+    background: transparent;
   }
 
   .groups {
-    margin-top: clamp(32px, 5vw, 56px);
-    display: grid;
-    gap: clamp(28px, 4vw, 48px);
+    display: flex;
+    flex-direction: column;
+    gap: clamp(32px, 5vw, 48px);
   }
 
   .group {
-    display: grid;
-    gap: 16px;
     scroll-margin-top: 96px;
   }
 
-  @media (min-width: 800px) {
-    .group {
-      grid-template-columns: 80px 1fr;
-      gap: 24px;
-    }
-  }
-
   .group-letter {
-    margin: 0;
-    font-size: clamp(2rem, 4vw, 3rem);
+    margin: 0 0 0.5em;
+    font-size: clamp(1.75rem, 3.4vw, 2.25rem);
     line-height: 1;
-    color: var(--muted-soft);
   }
 
   .terms {
@@ -226,22 +192,19 @@ const jsonLd = [
     padding: 0;
     display: grid;
     gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
   }
 
   .term {
-    background: var(--white);
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    padding: 20px 24px;
+    padding: clamp(16px, 2.2vw, 22px);
   }
 
   .term-name {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 8px 12px;
-    margin: 0;
-    font-size: 1.125rem;
+    gap: 6px 10px;
+    margin: 0 0 0.4em;
     font-weight: 600;
     letter-spacing: -0.01em;
   }

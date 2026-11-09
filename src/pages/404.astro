@@ -1,6 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
-import Section from '../components/Section.astro';
+import Sheet from '../components/Sheet.astro';
 import Button from '../components/Button.astro';
 import Eyebrow from '../components/Eyebrow.astro';
 ---
@@ -11,19 +11,95 @@ import Eyebrow from '../components/Eyebrow.astro';
   path="/404/"
   noindex
 >
-  <Section tone="surface">
-    <div class="stack" style="--stack-gap: 1.25rem; max-width: 36rem">
-      <Eyebrow>Error 404</Eyebrow>
-      <h1>Page not found</h1>
-      <p class="lead">
-        The page you are looking for does not exist or has moved. Start from the free template or
-        try one of our calculators.
-      </p>
-      <div style="display: flex; flex-wrap: wrap; gap: 12px; padding-top: 0.5rem">
-        <Button href="/download/" variant="primary" size="lg">Get the free template</Button>
-        <Button href="/" variant="secondary" size="lg">Back to home</Button>
-        <Button href="/mortgage-calculator/" variant="ghost" size="lg">Mortgage calculator</Button>
+  <Sheet grid seed={34} id="hero" aria-labelledby="hero-title">
+    <div class="split">
+      <div class="stack split-copy" style="--stack-gap: 1.25rem">
+        <Eyebrow tone="yellow">Error 404</Eyebrow>
+        <h1 id="hero-title">Page not found</h1>
+        <p class="lead">
+          The page you are looking for does not exist or has moved. Start from the free template or
+          try one of our calculators.
+        </p>
+        <div class="actions">
+          <Button href="/" variant="primary" size="lg">Back to home</Button>
+          <Button href="/blog/" variant="secondary" size="lg">Read the blog</Button>
+        </div>
+      </div>
+      <div class="split-art">
+        <div class="cell-sheet" aria-hidden="true">
+          <div class="cell-bar"><span class="name-box">A404</span><span class="fx">fx</span></div>
+          <div class="cell-grid"><span class="cell-404">404</span></div>
+        </div>
       </div>
     </div>
-  </Section>
+  </Sheet>
 </Base>
+
+<style>
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding-top: 0.5rem;
+  }
+
+  .cell-sheet {
+    width: 100%;
+    max-width: 420px;
+    margin-inline: auto;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    background: var(--white);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .cell-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line);
+    font-size: 0.875rem;
+    color: var(--muted);
+  }
+
+  .name-box {
+    min-width: 72px;
+    padding: 2px 10px;
+    border: 1px solid var(--line-strong);
+    border-radius: 6px;
+    color: var(--ink);
+    font-weight: 600;
+    text-align: center;
+  }
+
+  .fx {
+    font-style: italic;
+  }
+
+  .cell-grid {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 4 / 3;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 26px 26px;
+  }
+
+  .cell-404 {
+    display: inline-grid;
+    place-items: center;
+    padding: 0.08em 0.3em;
+    border: 3px solid var(--green);
+    border-radius: 4px;
+    background: var(--white);
+    color: var(--ink);
+    font-size: clamp(4.5rem, 16vw, 8rem);
+    font-weight: 700;
+    line-height: 1.05;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+</style>

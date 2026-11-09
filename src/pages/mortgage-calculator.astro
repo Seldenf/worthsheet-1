@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
-import Section from '../components/Section.astro';
+import Sheet from '../components/Sheet.astro';
+import Eyebrow from '../components/Eyebrow.astro';
 import Prose from '../components/Prose.astro';
 import Faq from '../components/Faq.astro';
 import CtaBand from '../components/CtaBand.astro';
@@ -82,10 +83,13 @@ const related = [
 >
 	<CalcLayout
 		eyebrow="Free calculator"
-		title="Mortgage calculator with amortization schedule"
+		title="Mortgage calculator"
+		accent="with amortization schedule"
 		lead="Enter the home price, your down payment, the interest rate and the loan term. You get the monthly principal and interest, the total interest, the total cost and a year-by-year amortization schedule."
+		seed={21}
 		formId="mortgage-form"
 		inputsTitle="Your loan"
+		resultsTone="cream"
 	>
 		<CalculatorTile slot="art" />
 
@@ -102,7 +106,7 @@ const related = [
 				<ResultCard label="Total cost" out="total" value={out.total} hint="Down payment plus every monthly payment" />
 				<ResultCard label="Paid off in" out="payoff" value={out.payoff} hint="At the scheduled payment" />
 			</div>
-			<div class="split">
+			<div class="pay card">
 				<p class="split-title">Where your payments go</p>
 				<div class="bar" role="img" data-bar aria-label={out.barLabel}>
 					<span class="bar-principal" data-bar-principal style={`width:${bar.principal}%`}></span>
@@ -116,7 +120,7 @@ const related = [
 		</div>
 
 		<div slot="below" class="schedule-wrap" data-results>
-			<details class="schedule">
+			<details class="schedule card">
 				<summary>
 					<span>Show the yearly amortization schedule</span>
 					<svg viewBox="0 0 12 8" width="14" height="10" aria-hidden="true"><path d="M1 1.5l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
@@ -140,10 +144,12 @@ const related = [
 		</div>
 	</CalcLayout>
 
-	<Section tone="surface" aria-labelledby="how">
-		<div class="two-col">
+	<Sheet id="how" aria-labelledby="how-title">
+		<div class="split cols">
+			<div class="col">
+			<Eyebrow tone="blue">How it works</Eyebrow>
 			<Prose>
-				<h2 id="how">How the mortgage payment is calculated</h2>
+				<h2 id="how-title">How the mortgage payment is calculated</h2>
 				<p>
 					This calculator uses the standard formula for a fixed-rate, fully amortizing loan with monthly payments. In plain words: take the loan amount (price minus down payment), multiply it by the monthly interest rate, and divide by one minus the discount factor <code>(1 + monthly rate)</code> raised to the power of minus the number of payments.
 				</p>
@@ -158,6 +164,9 @@ const related = [
 					The yearly schedule applies the same payment month by month: each month the interest is the remaining balance times the monthly rate, and whatever is left of the payment reduces the balance. The final payment absorbs rounding so the balance ends at exactly $0.
 				</p>
 			</Prose>
+			</div>
+			<div class="col">
+			<Eyebrow tone="green">In numbers</Eyebrow>
 			<Prose>
 				<h2 id="example">Worked example</h2>
 				<p>
@@ -175,13 +184,16 @@ const related = [
 					A shorter term changes the trade-off. The same {formatUSD(d.loan)} at {MORTGAGE_DEFAULTS.rate}% over 15 years costs {formatUSD(short.payment, true)} a month but only {formatUSD(short.totalInterest)} in total interest, compared with {formatUSD(d.totalInterest)} over {MORTGAGE_DEFAULTS.years} years.
 				</p>
 			</Prose>
+			</div>
 		</div>
-	</Section>
+	</Sheet>
 
-	<Section aria-labelledby="scope">
-		<div class="two-col">
+	<Sheet id="scope" tone="green" aria-labelledby="scope-title">
+		<div class="split cols">
+			<div class="col">
+			<Eyebrow tone="yellow">Good to know</Eyebrow>
 			<Prose>
-				<h2 id="scope">What this estimate leaves out</h2>
+				<h2 id="scope-title">What this estimate leaves out</h2>
 				<p>
 					The result is principal and interest only. A real monthly housing payment usually adds property taxes and homeowners insurance (often collected in an <a href={url('/glossary/escrow/')}>escrow</a> account), plus homeowners association dues where they apply. On a conventional loan with less than 20% down, <a href="https://www.consumerfinance.gov/ask-cfpb/what-is-private-mortgage-insurance-en-122/" rel="noopener">private mortgage insurance (PMI)</a> is also added to the payment, and the lender's APR includes certain fees on top of the interest rate.
 				</p>
@@ -189,6 +201,9 @@ const related = [
 					To see a price range that includes taxes, insurance and HOA dues, try the <a href={url('/how-much-house-can-i-afford/')}>how much house can I afford</a> calculator. Lenders also look at your debt-to-income ratio: check yours with the <a href={url('/debt-to-income-ratio-calculator/')}>DTI calculator</a>.
 				</p>
 			</Prose>
+			</div>
+			<div class="col">
+			<Eyebrow tone="navy">Next step</Eyebrow>
 			<Prose>
 				<h2>Get your finances lender-ready</h2>
 				<p>
@@ -198,25 +213,28 @@ const related = [
 					For program rules, see the CFPB's <a href="https://www.consumerfinance.gov/owning-a-home/" rel="noopener">Buying a House</a> guide.
 				</p>
 			</Prose>
+			</div>
 		</div>
-	</Section>
+	</Sheet>
 
-	<Section tone="surface" aria-labelledby="faq-title">
-		<div class="two-col">
-			<div class="stack">
+	<Sheet id="faq" aria-labelledby="faq-title">
+		<div class="split faq-cols">
+			<div class="stack" style="--stack-gap: 1.25rem">
+				<Eyebrow tone="blue">FAQ</Eyebrow>
 				<h2 id="faq-title">Mortgage calculator FAQ</h2>
 				<p class="lead">Answers about what this calculator does and does not include.</p>
 			</div>
 			<Faq items={faq} />
 		</div>
-	</Section>
+	</Sheet>
 
-	<Section aria-labelledby="related-title">
-		<div class="stack" style="--stack-gap: 24px">
+	<Sheet id="related" aria-labelledby="related-title">
+		<div class="sec-head stack" style="--stack-gap: 1.25rem">
+			<Eyebrow tone="green">Keep exploring</Eyebrow>
 			<h2 id="related-title">Related tools and guides</h2>
-			<RelatedLinks items={related} />
 		</div>
-	</Section>
+		<RelatedLinks items={related} />
+	</Sheet>
 
 	<CtaBand>
 		<CtaTiles slot="art" />
@@ -272,20 +290,23 @@ const related = [
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
 
-	.split {
+	@media (max-width: 479px) {
+		.out-grid {
+			grid-template-columns: minmax(0, 1fr);
+		}
+	}
+
+	.pay {
 		display: flex;
 		flex-direction: column;
 		gap: 10px;
 		padding: 16px 18px;
-		border: 1px solid var(--line);
-		border-radius: var(--radius-sm);
-		background: var(--white);
 	}
 
 	.split-title {
 		font-size: 0.875rem;
-		font-weight: 500;
-		color: var(--muted);
+		font-weight: 560;
+		color: var(--ink);
 	}
 
 	.bar {
@@ -337,10 +358,8 @@ const related = [
 	}
 
 	.schedule {
-		border: 1px solid var(--line);
-		border-radius: var(--radius);
-		background: var(--white);
-		box-shadow: var(--shadow);
+		padding: 0;
+		overflow: hidden;
 	}
 
 	.schedule > summary {
@@ -348,6 +367,7 @@ const related = [
 		align-items: center;
 		justify-content: space-between;
 		gap: 16px;
+		min-height: 44px;
 		padding: 18px 22px;
 		cursor: pointer;
 		list-style: none;
@@ -366,19 +386,24 @@ const related = [
 	.schedule .table-wrap {
 		border: 0;
 		border-top: 1px solid var(--line);
-		border-radius: 0 0 var(--radius) var(--radius);
+		border-radius: 0;
 		max-height: 520px;
 	}
 
-	.two-col {
-		display: grid;
-		gap: clamp(32px, 5vw, 64px);
+	/* Two prose columns, top aligned; the eyebrow chip sits right above the heading. */
+	.cols,
+	.faq-cols {
 		align-items: start;
 	}
 
-	@media (min-width: 900px) {
-		.two-col {
-			grid-template-columns: repeat(2, minmax(0, 1fr));
-		}
+	.col {
+		display: flex;
+		flex-direction: column;
+		gap: 1.25rem;
+		min-width: 0;
+	}
+
+	.col :global(.prose > h2:first-child) {
+		margin-top: 0;
 	}
 </style>

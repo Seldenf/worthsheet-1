@@ -73,6 +73,12 @@ const { id = 'bank-finder', stateCode, stateName, class: className } = Astro.pro
     letter-spacing: 0.04em;
   }
 
+  .bf-row .btn {
+    min-height: 48px;
+    padding-inline: 1.5em;
+    font-size: 0.9375rem;
+  }
+
   .bf-results:empty {
     display: none;
   }
@@ -98,8 +104,8 @@ const { id = 'bank-finder', stateCode, stateName, class: className } = Astro.pro
   .bf-results :global(.bf-bank) {
     padding: 16px 18px;
     background: var(--white);
-    border: 1px solid var(--line);
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-border);
   }
 
   .bf-results :global(.bf-bank strong) {

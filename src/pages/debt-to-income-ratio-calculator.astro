@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
-import Section from '../components/Section.astro';
+import Sheet from '../components/Sheet.astro';
+import Eyebrow from '../components/Eyebrow.astro';
 import Prose from '../components/Prose.astro';
 import Faq from '../components/Faq.astro';
 import CtaBand from '../components/CtaBand.astro';
@@ -85,8 +86,10 @@ const rows = [
 >
 	<CalcLayout
 		eyebrow="Free calculator"
-		title="Debt-to-income ratio (DTI) calculator"
+		title="Debt-to-income ratio"
+		accent="(DTI) calculator"
 		lead="Your debt-to-income ratio is your monthly debt payments divided by your gross monthly income. Enter your income, your monthly debts and a proposed housing payment to see front-end and back-end DTI next to the 28/36 benchmarks."
+		seed={22}
 		formId="dti-form"
 		inputsTitle="Income and monthly payments"
 		resultsTone="blue"
@@ -117,7 +120,7 @@ const rows = [
 
 		<div slot="results" data-results class="stack" style="--stack-gap: 16px">
 			<div class="ratios">
-				<div class="ratio">
+				<div class="ratio card">
 					<p class="ratio-label">Front-end DTI (housing only)</p>
 					<p class="ratio-value num" data-out="front">{t.front}</p>
 					<p class="badge" data-badge="front" data-status={out.status.front}>
@@ -126,7 +129,7 @@ const rows = [
 					</p>
 					<p class="ratio-detail" data-out="frontDetail">{t.frontDetail}</p>
 				</div>
-				<div class="ratio">
+				<div class="ratio card">
 					<p class="ratio-label">Back-end DTI (housing + all debts)</p>
 					<p class="ratio-value num" data-out="back">{t.back}</p>
 					<p class="badge" data-badge="back" data-status={out.status.back}>
@@ -174,10 +177,12 @@ const rows = [
 		</div>
 	</CalcLayout>
 
-	<Section tone="surface" aria-labelledby="how">
-		<div class="two-col">
+	<Sheet id="how" aria-labelledby="how-title">
+		<div class="split cols">
+			<div class="col">
+			<Eyebrow tone="blue">How it works</Eyebrow>
 			<Prose>
-				<h2 id="how">How DTI is calculated</h2>
+				<h2 id="how-title">How DTI is calculated</h2>
 				<p>
 					Debt-to-income compares what you owe each month with what you earn before taxes. The CFPB defines it as all monthly debt payments divided by gross monthly income. This calculator computes two versions:
 				</p>
@@ -192,6 +197,9 @@ const rows = [
 					The housing payment is normally PITI: principal, interest, property taxes and homeowners insurance (plus HOA dues, where they apply). The WorthSheet template's Homebuyer Readiness tab computes front-end DTI from the mortgage principal and interest only, so its front-end figure can be lower than the one here.
 				</p>
 			</Prose>
+			</div>
+			<div class="col">
+			<Eyebrow tone="green">In numbers</Eyebrow>
 			<Prose>
 				<h2 id="example">Worked example</h2>
 				<p>
@@ -203,13 +211,16 @@ const rows = [
 					<li>Add a {formatUSD(350)} monthly car payment and the total becomes {formatUSD(car.housing + car.debts)}, so back-end DTI is {formatUSD(car.housing + car.debts)} ÷ {formatUSD(car.monthlyIncome)} = <strong>{formatPercent(car.backEnd)}</strong>, above 36%.</li>
 				</ul>
 			</Prose>
+			</div>
 		</div>
-	</Section>
+	</Sheet>
 
-	<Section aria-labelledby="limits">
-		<div class="two-col">
+	<Sheet id="limits" tone="blue" aria-labelledby="limits-title">
+		<div class="split cols">
+			<div class="col">
+			<Eyebrow tone="yellow">Lender limits</Eyebrow>
 			<Prose>
-				<h2 id="limits">What DTI do lenders allow?</h2>
+				<h2 id="limits-title">What DTI do lenders allow?</h2>
 				<p>
 					The 28/36 rule is a rule of thumb, not a lender requirement. Actual limits depend on the loan program and the lender:
 				</p>
@@ -226,6 +237,9 @@ const rows = [
 					Source for the basics: the CFPB's <a href="https://www.consumerfinance.gov/ask-cfpb/what-is-a-debt-to-income-ratio-en-1791/" rel="noopener">What is a debt-to-income ratio?</a> Lower is better, and different loan products and lenders have different DTI limits.
 				</p>
 			</Prose>
+			</div>
+			<div class="col">
+			<Eyebrow tone="navy">Reading the result</Eyebrow>
 			<Prose>
 				<h2>What the status labels mean</h2>
 				<p>The labels compare your back-end ratio with the limits above and always appear as text, with a symbol, next to the color:</p>
@@ -238,25 +252,28 @@ const rows = [
 					These labels are educational. They do not predict an approval or denial. To see what a lower DTI could do for your price range, use the <a href={url('/how-much-house-can-i-afford/')}>home affordability calculator</a>, or check all five readiness criteria with the <a href={url('/mortgage-readiness-assessment/')}>mortgage readiness assessment</a>.
 				</p>
 			</Prose>
+			</div>
 		</div>
-	</Section>
+	</Sheet>
 
-	<Section tone="surface" aria-labelledby="faq-title">
-		<div class="two-col">
-			<div class="stack">
+	<Sheet id="faq" aria-labelledby="faq-title">
+		<div class="split faq-cols">
+			<div class="stack" style="--stack-gap: 1.25rem">
+				<Eyebrow tone="blue">FAQ</Eyebrow>
 				<h2 id="faq-title">DTI calculator FAQ</h2>
 				<p class="lead">Short answers about the ratios, the 28/36 rule and lender limits.</p>
 			</div>
 			<Faq items={faq} />
 		</div>
-	</Section>
+	</Sheet>
 
-	<Section aria-labelledby="related-title">
-		<div class="stack" style="--stack-gap: 24px">
+	<Sheet id="related" aria-labelledby="related-title">
+		<div class="sec-head stack" style="--stack-gap: 1.25rem">
+			<Eyebrow tone="green">Keep exploring</Eyebrow>
 			<h2 id="related-title">Related tools and guides</h2>
-			<RelatedLinks items={related} />
 		</div>
-	</Section>
+		<RelatedLinks items={related} />
+	</Sheet>
 
 	<CtaBand>
 		<CtaTiles slot="art" />
@@ -307,7 +324,6 @@ const rows = [
 		gap: 8px 20px;
 	}
 
-
 	.period legend {
 		margin-bottom: 8px;
 		font-size: 0.9375rem;
@@ -318,6 +334,7 @@ const rows = [
 		display: inline-flex;
 		align-items: center;
 		gap: 8px;
+		min-height: 44px;
 		font-weight: 450;
 		cursor: pointer;
 	}
@@ -348,24 +365,32 @@ const rows = [
 	.ratio {
 		display: flex;
 		flex-direction: column;
+		align-items: flex-start;
 		gap: 8px;
 		padding: 18px 20px;
-		border: 1px solid var(--line);
-		border-radius: var(--radius-sm);
-		background: var(--white);
+		min-width: 0;
 	}
 
 	.ratio-label {
-		font-size: 0.875rem;
-		font-weight: 500;
-		color: var(--muted);
+		padding: 3px 10px;
+		border-radius: 999px;
+		background: var(--tint-blue);
+		font-size: 0.8125rem;
+		font-weight: 560;
+		color: var(--ink);
+		line-height: 1.3;
+	}
+
+	.ratio:nth-child(2) .ratio-label {
+		background: var(--tint-green);
 	}
 
 	.ratio-value {
-		font-size: clamp(2rem, 5vw, 2.75rem);
-		font-weight: 580;
-		letter-spacing: -0.035em;
+		font-size: clamp(2.25rem, 5.4vw, 3rem);
+		font-weight: 600;
+		letter-spacing: -0.04em;
 		line-height: 1.05;
+		color: var(--ink);
 	}
 
 	.ratio-detail {
@@ -439,9 +464,10 @@ const rows = [
 		gap: 0;
 		margin: 0;
 		padding: 4px 18px;
-		border: 1px solid var(--line);
+		border: 1px solid transparent;
 		border-radius: var(--radius-sm);
 		background: var(--white);
+		box-shadow: var(--shadow-border);
 	}
 
 	.summary > div {
@@ -470,25 +496,30 @@ const rows = [
 		margin: 0;
 	}
 
-	.two-col {
-		display: grid;
-		gap: clamp(32px, 5vw, 64px);
+	/* Two prose columns, top aligned; the eyebrow chip sits right above the heading. */
+	.cols,
+	.faq-cols {
 		align-items: start;
 	}
 
-	@media (min-width: 520px) {
+	.col {
+		display: flex;
+		flex-direction: column;
+		gap: 1.25rem;
+		min-width: 0;
+	}
+
+	.col :global(.prose > h2:first-child) {
+		margin-top: 0;
+	}
+
+	@media (min-width: 520px) and (max-width: 899px), (min-width: 1280px) {
 		.field-grid {
 			grid-template-columns: repeat(2, minmax(0, 1fr));
 		}
 	}
 
-	@media (min-width: 900px) {
-		.two-col {
-			grid-template-columns: repeat(2, minmax(0, 1fr));
-		}
-	}
-
-	@media (min-width: 560px) and (max-width: 899px), (min-width: 1100px) {
+	@media (min-width: 560px) and (max-width: 899px), (min-width: 1200px) {
 		.ratios {
 			grid-template-columns: repeat(2, minmax(0, 1fr));
 		}

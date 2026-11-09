@@ -1,6 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
-import Section from '../components/Section.astro';
+import Sheet from '../components/Sheet.astro';
 import Eyebrow from '../components/Eyebrow.astro';
 import Faq from '../components/Faq.astro';
 import LeadForm from '../components/LeadForm.astro';
@@ -42,37 +42,35 @@ const benefits = ['Free PFS template', 'Regular template updates', 'Secure and p
   breadcrumbs={[{ name: 'Download', path: '/download/' }]}
   jsonLd={[faqLd(faq)]}
 >
-  <Section tone="surface">
-    <div class="hero">
-      <div class="stack hero-copy" style="--stack-gap: 1.25rem">
-        <Eyebrow>Free template</Eyebrow>
-        <h1>Download the free personal financial statement template</h1>
-        <p class="lead">
-          Your journey to simplified finances starts here. Tell us where to send your copy and
-          pick Google Sheets or Excel in seconds.
-        </p>
-        <ul class="list-check benefits">
-          {
-            benefits.map((benefit) => (
-              <li>{benefit}</li>
-            ))
-          }
-        </ul>
-        <p class="muted">
-          Over {STATS.downloads.replace('+', '')} downloads. Name and email are used to deliver the
-          template; read the <a href={url('/privacy-policy/')}>Privacy Policy</a>.
-        </p>
-      </div>
-      <div class="hero-form">
-        <LeadForm id="download" />
-      </div>
+  <Sheet grid seed={32} id="hero" aria-labelledby="hero-title">
+    <div class="stack hero-copy" style="--stack-gap: 1.25rem">
+      <Eyebrow tone="green">Free template</Eyebrow>
+      <h1 id="hero-title">Download the free <span class="accent">personal financial statement template</span></h1>
+      <p class="lead">
+        Your journey to simplified finances starts here. Tell us where to send your copy and
+        pick Google Sheets or Excel in seconds.
+      </p>
+      <ul class="list-check benefits">
+        {
+          benefits.map((benefit) => (
+            <li>{benefit}</li>
+          ))
+        }
+      </ul>
+      <p class="muted">
+        Over {STATS.downloads.replace('+', '')} downloads. Name and email are used to deliver the
+        template; read the <a href={url('/privacy-policy/')}>Privacy Policy</a>.
+      </p>
     </div>
-  </Section>
+    <div class="hero-form">
+      <LeadForm id="download" />
+    </div>
+  </Sheet>
 
-  <Section aria-labelledby="what-you-get">
-    <div class="what">
-      <div class="stack" style="--stack-gap: 1.25rem">
-        <Eyebrow>What you get</Eyebrow>
+  <Sheet tone="green" aria-labelledby="what-you-get">
+    <div class="split">
+      <div class="stack split-copy what-copy" style="--stack-gap: 1.25rem">
+        <Eyebrow tone="blue">What you get</Eyebrow>
         <h2 id="what-you-get">One spreadsheet, two tabs, ready for a lender</h2>
         <ul class="get-list">
           <li>
@@ -95,68 +93,50 @@ const benefits = ['Free PFS template', 'Regular template updates', 'Secure and p
           about <a href={url('/sba-form-413/')}>SBA Form 413</a>.
         </p>
       </div>
-      <DocumentStack class="what-art" />
+      <div class="split-art"><DocumentStack /></div>
     </div>
-  </Section>
+  </Sheet>
 
-  <Section tone="surface" aria-labelledby="faq-title">
-    <div class="container-narrow faq-wrap">
-      <Eyebrow>Questions</Eyebrow>
+  <Sheet aria-labelledby="faq-title">
+    <div class="sec-head stack" style="--stack-gap: 1rem">
+      <Eyebrow tone="yellow">Questions</Eyebrow>
       <h2 id="faq-title">Template download FAQ</h2>
-      <Faq items={faq} />
     </div>
-  </Section>
+    <Faq items={faq} />
+  </Sheet>
 </Base>
 
 <style>
-  .hero {
-    display: grid;
-    gap: clamp(32px, 6vw, 72px);
-    align-items: start;
+  .hero-copy {
+    max-width: 40rem;
+    margin-inline: auto;
+    text-align: center;
   }
 
   .benefits {
+    width: max-content;
+    max-width: 100%;
+    margin-inline: auto;
     font-weight: 540;
     font-size: 1.0625rem;
+    text-align: left;
+  }
+
+  .hero-form {
+    max-width: 34rem;
+    margin: clamp(32px, 5vw, 48px) auto 0;
+    text-align: left;
   }
 
   .hero-copy a,
-  .what a {
+  .what-copy a {
     text-decoration: underline;
     text-underline-offset: 2px;
-  }
-
-  .what {
-    display: grid;
-    gap: clamp(32px, 6vw, 72px);
-    align-items: center;
   }
 
   .get-list {
     display: grid;
     gap: 14px;
     padding-left: 1.2em;
-  }
-
-  .what-art {
-    width: 100%;
-    max-width: 420px;
-    height: auto;
-    justify-self: center;
-  }
-
-  .faq-wrap {
-    display: grid;
-    gap: 16px;
-  }
-
-  @media (min-width: 900px) {
-    .hero {
-      grid-template-columns: 1.1fr 1fr;
-    }
-
-    .what {
-      grid-template-columns: 1.3fr 1fr;
-    }
   }
 </style>

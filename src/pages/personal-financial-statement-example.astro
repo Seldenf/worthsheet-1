@@ -1,6 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
-import Section from '../components/Section.astro';
+import Sheet from '../components/Sheet.astro';
 import Button from '../components/Button.astro';
 import Eyebrow from '../components/Eyebrow.astro';
 import Prose from '../components/Prose.astro';
@@ -58,11 +58,11 @@ const faq = [
   breadcrumbs={[{ name: 'Personal financial statement example', path: '/personal-financial-statement-example/' }]}
   jsonLd={[faqLd(faq)]}
 >
-  <Section tone="surface">
-    <div class="hero">
-      <div class="stack" style="--stack-gap: 1.25rem">
-        <Eyebrow>Free PDF examples</Eyebrow>
-        <h1>Personal financial statement example</h1>
+  <Sheet grid seed={35} id="hero" aria-labelledby="hero-title">
+    <div class="split">
+      <div class="stack split-copy" style="--stack-gap: 1.25rem">
+        <Eyebrow tone="green">Free PDF examples</Eyebrow>
+        <h1 id="hero-title">Personal financial statement <span class="accent">example</span></h1>
         <p class="lead">
           A personal financial statement example shows how everything fits on one page: list what
           you own (assets), list what you owe (liabilities), and subtract to get your net worth as
@@ -77,12 +77,12 @@ const faq = [
           totals? <a href={url('/download/')}>Get the free Google Sheets and Excel template</a>.
         </p>
       </div>
-      <DocumentStack class="hero-art" />
+      <div class="split-art"><DocumentStack /></div>
     </div>
-  </Section>
+  </Sheet>
 
-  <Section id="example" aria-labelledby="example-title">
-    <div class="stack" style="--stack-gap: 1rem">
+  <Sheet id="example" aria-labelledby="example-title">
+    <div class="sec-head stack" style="--stack-gap: 1rem">
       <h2 id="example-title">Completed example: assets, liabilities and net worth</h2>
       <p class="lead">
         Alex and Sam are a made-up household. Every name, address and number below is fictional and
@@ -90,7 +90,7 @@ const faq = [
       </p>
     </div>
 
-    <div class="statement" role="group" aria-labelledby="statement-heading">
+    <div class="card statement" role="group" aria-labelledby="statement-heading">
       <div class="statement-top">
         <p id="statement-heading" class="statement-of">
           <span class="label">Personal financial statement of:</span>
@@ -205,9 +205,9 @@ const faq = [
       Categories with no balance are left off in this example. The blank PDF and the template keep
       every category so you can fill in whatever applies to you.
     </p>
-  </Section>
+  </Sheet>
 
-  <Section tone="surface" aria-labelledby="sections-title">
+  <Sheet tone="blue" aria-labelledby="sections-title">
     <Prose>
       <h2 id="sections-title">What each section of the example means</h2>
       <h3>Header: name and “as of” date</h3>
@@ -278,10 +278,10 @@ const faq = [
         account statements.
       </p>
     </Prose>
-  </Section>
+  </Sheet>
 
-  <Section aria-labelledby="use-title">
-    <div class="stack" style="--stack-gap: 1.25rem">
+  <Sheet aria-labelledby="use-title">
+    <div class="sec-head stack" style="--stack-gap: 1.25rem">
       <h2 id="use-title">Use this example for your own statement</h2>
       <p class="lead">
         Download the printable blank, fill it by hand, or start from the editable template with
@@ -324,14 +324,14 @@ const faq = [
         <li><a href={url('/sba-form-413/')}>SBA Form 413 guide and Excel worksheet</a></li>
       </ul>
     </div>
-  </Section>
+  </Sheet>
 
-  <Section tone="surface" aria-labelledby="faq-title">
+  <Sheet aria-labelledby="faq-title">
     <div class="faq-wrap">
       <h2 id="faq-title">Personal financial statement example: FAQ</h2>
       <Faq items={faq} />
     </div>
-  </Section>
+  </Sheet>
 
   <CtaBand>
     <CtaTiles slot="art" />
@@ -339,28 +339,11 @@ const faq = [
 </Base>
 
 <style>
-  .hero {
-    display: grid;
-    gap: clamp(32px, 5vw, 64px);
-    align-items: center;
-  }
-
-  .hero .actions {
+  .actions {
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
     padding-top: 0.5rem;
-  }
-
-  .hero :global(.hero-art) {
-    max-width: 520px;
-    margin-inline: auto;
-  }
-
-  @media (min-width: 900px) {
-    .hero {
-      grid-template-columns: 1.15fr 0.85fr;
-    }
   }
 
   .statement {
@@ -369,10 +352,6 @@ const faq = [
     flex-direction: column;
     gap: 20px;
     padding: clamp(20px, 3.5vw, 40px);
-    background: var(--white);
-    border: 1px solid var(--line-strong);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
   }
 
   .statement-top {

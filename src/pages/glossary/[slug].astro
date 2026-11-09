@@ -1,7 +1,7 @@
 ---
 import { getCollection, render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
-import Section from '../../components/Section.astro';
+import Sheet from '../../components/Sheet.astro';
 import Prose from '../../components/Prose.astro';
 import Eyebrow from '../../components/Eyebrow.astro';
 import CtaBand from '../../components/CtaBand.astro';
@@ -65,59 +65,59 @@ const jsonLd = [
     { name: term, path },
   ]}
 >
-  <Section tone="surface">
-    <div class="head">
-      <div class="stack" style="--stack-gap: 1.25rem">
-        <Eyebrow>Glossary · {meta.topic}</Eyebrow>
-        <h1>{meta.h1}</h1>
+  <Sheet grid seed={29} id="hero" aria-labelledby="term-title">
+    <div class="split">
+      <div class="split-copy stack" style="--stack-gap: 1.25rem">
+        <Eyebrow tone="green">Glossary · {meta.topic}</Eyebrow>
+        <h1 id="term-title">{meta.h1}</h1>
         <p class="lead">{definition}</p>
       </div>
-      <GlossaryBook class="head-art float" />
+      <GlossaryBook class="float" />
     </div>
-  </Section>
+  </Sheet>
 
-  <Section tone="paper">
-    <div class="body">
-      <Prose>
-        <Content />
-      </Prose>
+  <Sheet>
+    <Prose>
+      <Content />
+    </Prose>
+  </Sheet>
 
-      {
-        relatedTerms.length > 0 && (
+  {
+    (relatedTerms.length > 0 || relatedLinks.length > 0) && (
+      <Sheet tone="cream">
+        {relatedTerms.length > 0 && (
           <section class="aside-block" aria-labelledby="related-terms">
             <h2 id="related-terms">Related terms</h2>
             <ul class="chips">
               {relatedTerms.map((r) => (
                 <li>
-                  <a class="pill chip" href={url(`/glossary/${r.slug}/`)}>
+                  <a class="pill" href={url(`/glossary/${r.slug}/`)}>
                     {r.term}
                   </a>
                 </li>
               ))}
             </ul>
           </section>
-        )
-      }
+        )}
 
-      {
-        relatedLinks.length > 0 && (
+        {relatedLinks.length > 0 && (
           <section class="aside-block" aria-labelledby="related-links">
             <h2 id="related-links">Tools and guides</h2>
             <ul class="links">
               {relatedLinks.map((l) => (
                 <li>
-                  <a href={url(l.path)}>{l.label}</a>
+                  <a class="card" href={url(l.path)}>{l.label}</a>
                 </li>
               ))}
               <li>
-                <a href={url('/glossary/')}>All glossary terms</a>
+                <a class="card" href={url('/glossary/')}>All glossary terms</a>
               </li>
             </ul>
           </section>
-        )
-      }
-    </div>
-  </Section>
+        )}
+      </Sheet>
+    )
+  }
 
   <CtaBand>
     <CtaTiles slot="art" />
@@ -125,34 +125,8 @@ const jsonLd = [
 </Base>
 
 <style>
-  .head {
-    display: grid;
-    gap: 28px;
-    align-items: center;
-  }
-
-  .head-art {
-    width: 100%;
-    max-width: 360px;
-    height: auto;
-    justify-self: center;
-  }
-
-  @media (min-width: 900px) {
-    .head {
-      grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
-      gap: 56px;
-    }
-
-    .head-art {
-      max-width: 520px;
-    }
-  }
-
-  .body {
-    max-width: var(--prose);
-    display: grid;
-    gap: clamp(32px, 5vw, 48px);
+  .aside-block + .aside-block {
+    margin-top: clamp(32px, 5vw, 48px);
   }
 
   .aside-block h2 {
@@ -171,33 +145,30 @@ const jsonLd = [
   .chips {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 10px;
   }
 
-  .chip {
+  .chips a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
     text-decoration: none;
-    transition: background-color 0.15s ease;
-  }
-
-  .chip:hover {
-    background: var(--surface);
-    border-color: var(--line-strong);
   }
 
   .links {
     display: grid;
-    gap: 8px;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+    gap: 12px;
   }
 
   .links a {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 16px 18px;
     color: var(--ink);
-    text-decoration: underline;
-    text-decoration-color: var(--line-strong);
-    text-underline-offset: 0.2em;
-    text-decoration-thickness: 1.5px;
-  }
-
-  .links a:hover {
-    text-decoration-color: var(--ink);
+    font-weight: 600;
+    text-decoration: none;
   }
 </style>
+

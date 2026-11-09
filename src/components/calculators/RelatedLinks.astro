@@ -13,15 +13,17 @@ interface Props {
 }
 
 const { items } = Astro.props;
+const EDGES = ['edge-blue', 'edge-green', 'edge-yellow', 'edge-pink'];
 ---
 
 <ul class="related grid grid-3" role="list">
 	{
-		items.map((item) => (
+		items.map((item, i) => (
 			<li>
-				<a class="card related-card" href={url(item.href)}>
+				<a class={`card related-card ${EDGES[i % EDGES.length]}`} href={url(item.href)}>
 					<span class="related-title">{item.title}</span>
 					<span class="related-text muted">{item.text}</span>
+					<span class="related-arrow" aria-hidden="true">↗</span>
 				</a>
 			</li>
 		))
@@ -31,23 +33,69 @@ const { items } = Astro.props;
 <style>
 	.related {
 		list-style: none;
+		gap: 20px;
 	}
 
 	.related-card {
+		position: relative;
 		display: flex;
 		flex-direction: column;
-		gap: 6px;
+		gap: 8px;
 		height: 100%;
-		padding: 20px;
+		padding: clamp(22px, 2.6vw, 30px);
 	}
 
 	.related-title {
+		padding-right: 24px;
+		font-size: 1.1875rem;
 		font-weight: 560;
 		letter-spacing: -0.015em;
+		line-height: 1.25;
 	}
 
 	.related-text {
-		font-size: 0.9375rem;
-		line-height: 1.45;
+		font-size: 0.9688rem;
+		line-height: 1.55;
+	}
+
+	/* Diagonal arrow in the top-right corner: only on hover or keyboard focus. */
+	.related-arrow {
+		position: absolute;
+		top: 14px;
+		right: 16px;
+		font-size: 1.25rem;
+		line-height: 1;
+		color: var(--ink);
+		opacity: 0;
+		pointer-events: none;
+	}
+
+	.related-card:focus-visible .related-arrow {
+		opacity: 1;
+	}
+
+	@media (hover: hover) and (pointer: fine) {
+		.related-card:hover .related-arrow {
+			opacity: 1;
+		}
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		.related-arrow {
+			translate: -2px 2px;
+			transition:
+				opacity 200ms var(--ease-out),
+				translate 200ms var(--ease-out);
+		}
+
+		.related-card:focus-visible .related-arrow {
+			translate: 0 0;
+		}
+
+		@media (hover: hover) and (pointer: fine) {
+			.related-card:hover .related-arrow {
+				translate: 0 0;
+			}
+		}
 	}
 </style>

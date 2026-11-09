@@ -21,24 +21,50 @@ const { items, class: className } = Astro.props;
 <style>
   .stat-row {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-    gap: clamp(20px, 4vw, 48px);
+    grid-template-columns: repeat(auto-fit, minmax(min(170px, 100%), 1fr));
+    gap: clamp(12px, 2vw, 20px);
   }
 
   .stat {
     display: flex;
     flex-direction: column-reverse;
     gap: 6px;
-    padding-top: 16px;
-    border-top: 1px solid var(--line-strong);
+    padding: clamp(18px, 2.2vw, 26px);
+    border-radius: var(--radius);
+    background: var(--white);
+    box-shadow: var(--shadow-border);
+  }
+
+  /* Small coloured square above the figure (the logo's four colours in turn). */
+  .stat::after {
+    content: '';
+    order: 1;
+    width: 14px;
+    height: 14px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    background: var(--sheen), var(--chip, var(--green));
+  }
+
+  .stat:nth-child(4n + 2) {
+    --chip: var(--yellow);
+  }
+
+  .stat:nth-child(4n + 3) {
+    --chip: var(--blue);
+  }
+
+  .stat:nth-child(4n + 4) {
+    --chip: var(--navy);
   }
 
   dd {
     margin: 0;
-    font-size: clamp(2.25rem, 5vw, 3.5rem);
+    font-size: clamp(2rem, 4.5vw, 3rem);
     font-weight: 560;
     letter-spacing: -0.035em;
     line-height: 1;
+    color: var(--ink);
     font-variant-numeric: tabular-nums;
   }
 

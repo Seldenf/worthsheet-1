@@ -1,6 +1,6 @@
 ---
 import Base from '../../layouts/Base.astro';
-import Section from '../../components/Section.astro';
+import Sheet from '../../components/Sheet.astro';
 import Eyebrow from '../../components/Eyebrow.astro';
 import Button from '../../components/Button.astro';
 import Faq from '../../components/Faq.astro';
@@ -48,6 +48,8 @@ const dataDate = new Date(`${FDIC_META.dataDate}T12:00:00Z`).toLocaleDateString(
   day: 'numeric',
   timeZone: 'UTC',
 });
+
+const tones = ['green', 'blue', 'yellow', 'pink'] as const;
 ---
 
 <Base
@@ -57,26 +59,30 @@ const dataDate = new Date(`${FDIC_META.dataDate}T12:00:00Z`).toLocaleDateString(
   breadcrumbs={[{ name: 'Banks', path }]}
   jsonLd={[faqLd(faq)]}
 >
-  <section class="hero">
-    <div class="container hero-grid">
-      <div class="hero-copy">
-        <Eyebrow>Bank finder</Eyebrow>
-        <h1>Find FDIC-insured banks by ZIP code or state</h1>
+  <Sheet grid seed={26} id="hero" aria-labelledby="hero-title">
+    <div class="split">
+      <div class="split-copy stack" style="--stack-gap: 1.25rem">
+        <Eyebrow tone="green">Bank finder</Eyebrow>
+        <h1 id="hero-title">Find FDIC-insured banks <span class="accent">by ZIP code or state</span></h1>
         <p class="lead">
           An FDIC-insured bank is a bank whose deposits are protected by the Federal Deposit Insurance
           Corporation, up to $250,000 per depositor, per insured bank, for each account ownership category.
           Enter a ZIP code to see the full-service bank offices there, or pick a state below.
         </p>
+        <div class="hero-actions">
+          <Button href="#finder" variant="primary">Search by ZIP code</Button>
+          <Button href="#states" variant="secondary">Browse by state</Button>
+        </div>
       </div>
       <div class="hero-art">
         <BankMap class="float" />
       </div>
     </div>
-  </section>
+  </Sheet>
 
-  <Section id="finder" tone="surface" aria-labelledby="finder-title">
+  <Sheet id="finder" tone="green" aria-labelledby="finder-title">
     <div class="finder-wrap">
-      <div class="finder-copy stack">
+      <div class="sec-head stack" style="--stack-gap: 1rem">
         <h2 id="finder-title">Search FDIC-insured banks by ZIP code</h2>
         <p class="muted">
           The search runs in your browser against the FDIC's public BankFind API and lists every
@@ -88,12 +94,12 @@ const dataDate = new Date(`${FDIC_META.dataDate}T12:00:00Z`).toLocaleDateString(
         <BankFinder />
       </div>
     </div>
-  </Section>
+  </Sheet>
 
-  <Section aria-labelledby="pfs-title">
+  <Sheet aria-labelledby="pfs-title">
     <div class="split">
-      <div>
-        <Eyebrow>For your financial statement</Eyebrow>
+      <div class="sec-head stack" style="--stack-gap: 1rem">
+        <Eyebrow tone="blue">For your financial statement</Eyebrow>
         <h2 id="pfs-title">Why bank names matter on a personal financial statement</h2>
       </div>
       <div class="stack">
@@ -121,10 +127,10 @@ const dataDate = new Date(`${FDIC_META.dataDate}T12:00:00Z`).toLocaleDateString(
         </div>
       </div>
     </div>
-  </Section>
+  </Sheet>
 
-  <Section id="states" tone="surface" aria-labelledby="states-title">
-    <div class="stack" style="--stack-gap: 12px">
+  <Sheet id="states" tone="blue" aria-labelledby="states-title">
+    <div class="sec-head stack" style="--stack-gap: 1rem">
       <h2 id="states-title">Banks by state</h2>
       <p class="lead">
         {fmt(FDIC_META.activeInstitutions51)} active FDIC-insured banks are headquartered in the 50 states and
@@ -134,10 +140,11 @@ const dataDate = new Date(`${FDIC_META.dataDate}T12:00:00Z`).toLocaleDateString(
     </div>
     <ul class="state-grid" aria-label="Banks by state">
       {
-        states.map((s) => (
+        states.map((s, i) => (
           <li>
-            <a class="card state-card" href={url(`/banks/${s.slug}/`)}>
+            <a class="card state-card" data-tone={tones[i % tones.length]} href={url(`/banks/${s.slug}/`)}>
               <span class="state-name">{s.name}</span>
+              <span class="state-arrow" aria-hidden="true">↗</span>
               <span class="state-stats num">
                 {fmt(s.stats.banks)} {s.stats.banks === 1 ? 'bank' : 'banks'}
                 <span aria-hidden="true"> · </span>
@@ -154,17 +161,17 @@ const dataDate = new Date(`${FDIC_META.dataDate}T12:00:00Z`).toLocaleDateString(
       state; branches are full-service offices in the state, whoever owns them. U.S. territories are not
       included. Listings are public data, not recommendations or rankings.
     </p>
-  </Section>
+  </Sheet>
 
-  <Section aria-labelledby="faq-title">
+  <Sheet id="faq" aria-labelledby="faq-title">
     <div class="split">
-      <div>
-        <Eyebrow>FAQ</Eyebrow>
+      <div class="sec-head stack" style="--stack-gap: 1rem">
+        <Eyebrow tone="green">FAQ</Eyebrow>
         <h2 id="faq-title">Questions about FDIC-insured banks</h2>
       </div>
       <Faq items={faq} />
     </div>
-  </Section>
+  </Sheet>
 
   <CtaBand>
     <CtaTiles slot="art" />
@@ -172,37 +179,25 @@ const dataDate = new Date(`${FDIC_META.dataDate}T12:00:00Z`).toLocaleDateString(
 </Base>
 
 <style>
-  .hero {
-    padding-block: clamp(32px, 6vw, 80px) clamp(40px, 6vw, 80px);
-  }
-
-  .hero-grid {
-    display: grid;
-    gap: clamp(28px, 5vw, 64px);
-    align-items: center;
-  }
-
-  @media (min-width: 900px) {
-    .hero-grid {
-      grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
-    }
-  }
-
-  .hero-copy {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 20px;
-  }
-
+  /* Sheets, cards, split layouts and shared type come from global.css and Sheet.astro. */
   .hero-art {
     width: 100%;
     max-width: 520px;
     margin-inline: auto;
   }
 
-  .finder-wrap,
-  .split {
+  .hero-actions,
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .hero-actions {
+    margin-top: 28px;
+  }
+
+  .finder-wrap {
     display: grid;
     gap: clamp(24px, 4vw, 56px);
   }
@@ -212,26 +207,16 @@ const dataDate = new Date(`${FDIC_META.dataDate}T12:00:00Z`).toLocaleDateString(
       grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
       align-items: start;
     }
-
-    .split {
-      grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
-      align-items: start;
-    }
   }
 
-  .split h2 {
-    margin-top: 12px;
-  }
-
-  .actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
+  .finder-wrap .sec-head,
+  .split .sec-head {
+    margin-bottom: 0;
   }
 
   .state-grid {
     list-style: none;
-    margin: clamp(24px, 4vw, 40px) 0 0;
+    margin: 0;
     padding: 0;
     display: grid;
     gap: 12px;
@@ -239,12 +224,14 @@ const dataDate = new Date(`${FDIC_META.dataDate}T12:00:00Z`).toLocaleDateString(
   }
 
   .state-card {
+    position: relative;
     display: flex;
     flex-direction: column;
     gap: 4px;
-    padding: 16px 18px;
+    justify-content: center;
+    min-height: 72px;
     height: 100%;
-    box-shadow: none;
+    padding: 16px 44px 16px 18px;
   }
 
   .state-name {
@@ -255,6 +242,68 @@ const dataDate = new Date(`${FDIC_META.dataDate}T12:00:00Z`).toLocaleDateString(
   .state-stats {
     font-size: 0.9375rem;
     color: var(--muted);
+  }
+
+  /* --edge: rim light; --tone: arrow colour. */
+  .state-card[data-tone='blue'] {
+    --edge: rgba(108, 190, 228, 0.9);
+    --tone: #6cbee4;
+  }
+
+  .state-card[data-tone='green'] {
+    --edge: rgba(64, 170, 74, 0.85);
+    --tone: #40aa4a;
+  }
+
+  .state-card[data-tone='yellow'] {
+    --edge: rgba(250, 195, 68, 0.95);
+    --tone: #c9921a;
+  }
+
+  .state-card[data-tone='pink'] {
+    --edge: rgba(224, 127, 184, 0.85);
+    --tone: #e07fb8;
+  }
+
+  /* Diagonal arrow in the card's top-right corner: only on hover or keyboard focus. */
+  .state-arrow {
+    position: absolute;
+    top: 14px;
+    right: 16px;
+    font-size: 1.25rem;
+    line-height: 1;
+    color: var(--tone);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .state-card:focus-visible .state-arrow {
+    opacity: 1;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .state-card:hover .state-arrow {
+      opacity: 1;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .state-arrow {
+      translate: -2px 2px;
+      transition:
+        opacity 200ms cubic-bezier(0.23, 1, 0.32, 1),
+        translate 200ms cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    .state-card:focus-visible .state-arrow {
+      translate: 0 0;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .state-card:hover .state-arrow {
+        translate: 0 0;
+      }
+    }
   }
 
   .source {

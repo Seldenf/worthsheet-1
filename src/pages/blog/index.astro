@@ -1,7 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
-import Section from '../../components/Section.astro';
+import Sheet from '../../components/Sheet.astro';
 import Eyebrow from '../../components/Eyebrow.astro';
 import PostCard from '../../components/PostCard.astro';
 import CtaBand from '../../components/CtaBand.astro';
@@ -66,9 +66,9 @@ const collectionLd = {
   breadcrumbs={[{ name: 'Blog', path: '/blog/' }]}
   jsonLd={[collectionLd]}
 >
-  <Section tone="surface" aria-labelledby="blog-title">
-    <div class="stack blog-hero" style="--stack-gap: 1.25rem">
-      <Eyebrow>Guides</Eyebrow>
+  <Sheet grid seed={30} id="hero" aria-labelledby="blog-title">
+    <div class="stack blog-copy" style="--stack-gap: 1.25rem">
+      <Eyebrow tone="blue">Guides</Eyebrow>
       <h1 id="blog-title">WorthSheet guides: personal financial statements, credit and mortgages</h1>
       <p class="lead">
         Plain-English guides on how to build a personal financial statement, what lenders look at
@@ -90,7 +90,7 @@ const collectionLd = {
       }
       {
         topics.length > 1 && (
-          <nav class="chips" aria-label="Jump to a topic">
+          <nav class="topic-nav" aria-label="Jump to a topic">
             <ul>
               {topics.map((topic) => (
                 <li>
@@ -104,10 +104,12 @@ const collectionLd = {
         )
       }
     </div>
-  </Section>
+  </Sheet>
 
-  <Section aria-labelledby="latest-title">
-    <h2 id="latest-title" class="section-title">Latest guides</h2>
+  <Sheet aria-labelledby="latest-title">
+    <div class="sec-head">
+      <h2 id="latest-title">Latest guides</h2>
+    </div>
     {
       posts.length > 0 ? (
         <div class="grid grid-3 posts">
@@ -119,14 +121,14 @@ const collectionLd = {
         <p class="muted">New guides are on the way. Meanwhile, get the free template below.</p>
       )
     }
-  </Section>
+  </Sheet>
 
   {
     topics.length > 1 && (
-      <Section tone="surface" aria-labelledby="topics-title">
-        <h2 id="topics-title" class="section-title">
-          Browse by topic
-        </h2>
+      <Sheet tone="cream" aria-labelledby="topics-title">
+        <div class="sec-head">
+          <h2 id="topics-title">Browse by topic</h2>
+        </div>
         <div class="grid grid-2 topics">
           {topics.map((topic) => (
             <div id={`topic-${topic.id}`} class="card topic">
@@ -141,7 +143,7 @@ const collectionLd = {
             </div>
           ))}
         </div>
-      </Section>
+      </Sheet>
     )
   }
 
@@ -151,8 +153,13 @@ const collectionLd = {
 </Base>
 
 <style>
-  .blog-hero {
+  .blog-copy {
     max-width: 52rem;
+  }
+
+  .featured {
+    margin: 0;
+    font-size: 0.9688rem;
   }
 
   .featured a {
@@ -160,31 +167,23 @@ const collectionLd = {
     text-underline-offset: 0.2em;
   }
 
-  .chips ul {
+  .topic-nav ul {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
     list-style: none;
+    margin: 0;
     padding: 0;
   }
 
-  .chips a.pill {
-    min-height: 40px;
+  .topic-nav a.pill {
+    min-height: 44px;
     padding-inline: 1.1em;
     text-decoration: none;
   }
 
-  .chips a.pill:hover {
-    border-color: var(--line-strong);
-    background: var(--paper);
-  }
-
-  .section-title {
-    margin-bottom: clamp(20px, 3vw, 36px);
-    font-size: clamp(1.6rem, 3vw, 2.25rem);
-  }
-
   .topic {
+    padding: clamp(18px, 2.4vw, 26px);
     scroll-margin-top: 96px;
   }
 
@@ -212,3 +211,4 @@ const collectionLd = {
     text-decoration-color: var(--ink);
   }
 </style>
+

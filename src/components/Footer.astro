@@ -36,10 +36,19 @@ const year = new Date().getFullYear();
 ---
 
 <footer class="site-footer">
-  <div class="container">
+  <div class="footer-card">
     <div class="footer-grid">
       <div class="footer-brand">
-        <a class="logo" href={url('/')}>{SITE_NAME}</a>
+        <a class="logo" href={url('/')} aria-label={`${SITE_NAME} home`}>
+          <svg class="logo-mark" viewBox="0 0 64 64" width="32" height="32" aria-hidden="true">
+            <rect width="64" height="64" rx="16" fill="#edecea" fill-opacity="0.25"></rect>
+            <rect class="sq sq-tl" x="14" y="14" width="16" height="16" rx="4" fill="#40aa4a"></rect>
+            <rect class="sq sq-tr" x="34" y="14" width="16" height="16" rx="4" fill="#fac344"></rect>
+            <rect class="sq sq-br" x="34" y="34" width="16" height="16" rx="4" fill="#6cbee4"></rect>
+            <rect class="sq sq-bl" x="14" y="34" width="16" height="16" rx="4" fill="#0c2635"></rect>
+          </svg>
+          <span class="logo-text">{SITE_NAME}</span>
+        </a>
         <p class="muted">
           A free personal financial statement template for Google Sheets and Excel.
         </p>
@@ -75,16 +84,26 @@ const year = new Date().getFullYear();
 </footer>
 
 <style>
+  /* A rounded card as wide as the page sheets (see Sheet.astro), on the paper background. */
   .site-footer {
-    padding-block: clamp(48px, 7vw, 88px) 32px;
-    background: var(--surface);
-    border-top: 1px solid var(--line);
+    padding: clamp(24px, 4vw, 48px) 0 16px;
     font-size: 0.9375rem;
+    color: var(--ink);
+  }
+
+  .footer-card {
+    width: min(1200px, 100% - 32px);
+    margin-inline: auto;
+    padding: clamp(28px, 4.5vw, 56px) clamp(20px, 4vw, 56px) clamp(20px, 3vw, 32px);
+    border: 1px solid var(--beige);
+    border-radius: 24px;
+    background-color: var(--surface);
+    background-image: var(--grain-soft);
   }
 
   .footer-grid {
     display: grid;
-    gap: 40px 32px;
+    gap: 32px 24px;
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -93,44 +112,108 @@ const year = new Date().getFullYear();
     max-width: 22em;
   }
 
+  .footer-brand p {
+    margin-top: 12px;
+  }
+
   .logo {
-    display: inline-block;
-    margin-bottom: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
     font-size: 1.25rem;
     font-weight: 600;
     letter-spacing: -0.03em;
+    color: var(--ink);
     text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .logo-mark {
+      transition: scale 150ms var(--ease-out);
+    }
+
+    .logo:active .logo-mark {
+      scale: 0.96;
+    }
+
+    .logo-mark .sq {
+      transition: translate 300ms var(--ease-in-out);
+    }
+  }
+
+  @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+    .logo:hover .sq-tl {
+      translate: 20px 0;
+    }
+
+    .logo:hover .sq-tr {
+      translate: 0 20px;
+    }
+
+    .logo:hover .sq-br {
+      translate: -20px 0;
+    }
+
+    .logo:hover .sq-bl {
+      translate: 0 -20px;
+    }
   }
 
   .footer-title {
-    margin-bottom: 14px;
-    font-size: 0.8125rem;
-    font-weight: 560;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--muted);
+    margin-bottom: 10px;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--ink);
   }
 
   .footer-col ul {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 2px;
+    padding: 0;
     list-style: none;
   }
 
   .footer-col a,
   .link-button {
+    display: inline-flex;
+    align-items: center;
+    min-height: 36px;
     padding: 0;
     border: 0;
     background: none;
     font-size: inherit;
     text-decoration: none;
-    color: var(--ink);
+    color: var(--muted);
+    cursor: pointer;
+    transition: color 150ms var(--ease-out);
   }
 
-  .footer-col a:hover,
-  .link-button:hover {
-    text-decoration: underline;
+  @media (pointer: coarse) {
+    .footer-col a,
+    .link-button {
+      min-height: 44px;
+    }
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .footer-col a:hover,
+    .link-button:hover {
+      color: var(--ink);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+  }
+
+  .footer-col a:focus-visible,
+  .link-button:focus-visible,
+  .logo:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
+    border-radius: 6px;
   }
 
   .footer-bottom {
@@ -138,9 +221,9 @@ const year = new Date().getFullYear();
     flex-wrap: wrap;
     justify-content: space-between;
     gap: 8px 24px;
-    margin-top: clamp(40px, 6vw, 72px);
-    padding-top: 24px;
-    border-top: 1px solid var(--line-strong);
+    margin-top: clamp(32px, 5vw, 56px);
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
     color: var(--muted);
     font-size: 0.875rem;
   }

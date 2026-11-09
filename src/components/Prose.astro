@@ -13,6 +13,8 @@ const { class: className } = Astro.props;
     max-width: var(--prose);
     font-size: 1.0625rem;
     line-height: 1.7;
+    color: var(--ink);
+    overflow-wrap: break-word;
   }
 
   .prose > * + * {
@@ -42,13 +44,22 @@ const { class: className } = Astro.props;
   .prose a {
     color: var(--ink);
     text-decoration: underline;
-    text-decoration-color: var(--line-strong);
+    text-decoration-color: rgba(64, 170, 74, 0.55);
     text-underline-offset: 0.2em;
     text-decoration-thickness: 1.5px;
+    transition: text-decoration-color 150ms var(--ease-out);
   }
 
-  .prose a:hover {
-    text-decoration-color: var(--ink);
+  @media (hover: hover) and (pointer: fine) {
+    .prose a:hover {
+      text-decoration-color: var(--ink);
+    }
+  }
+
+  .prose a:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
+    border-radius: 4px;
   }
 
   .prose ul,
@@ -64,10 +75,22 @@ const { class: className } = Astro.props;
     color: var(--muted);
   }
 
+  /* Callout: a tinted rounded card. */
   .prose blockquote {
-    padding: 0.2em 0 0.2em 1.25em;
-    border-left: 3px solid var(--line-strong);
-    color: var(--muted);
+    margin-inline: 0;
+    padding: clamp(16px, 2.4vw, 24px) clamp(18px, 2.6vw, 28px);
+    border-radius: var(--radius);
+    background-color: var(--tint-blue);
+    background-image: var(--grain-soft);
+    color: var(--ink);
+  }
+
+  .prose blockquote > * + * {
+    margin-top: 0.7em;
+  }
+
+  .prose blockquote > :first-child {
+    margin-top: 0;
   }
 
   .prose code {
@@ -102,9 +125,11 @@ const { class: className } = Astro.props;
 
   .prose table {
     display: block;
+    max-width: 100%;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
     border: 1px solid var(--line);
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius);
     background: var(--white);
   }
 </style>

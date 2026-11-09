@@ -46,12 +46,21 @@ const { items, class: className } = Astro.props;
     align-items: center;
     justify-content: space-between;
     gap: 24px;
+    min-height: 44px;
     padding: 20px 4px;
     cursor: pointer;
     list-style: none;
     font-size: 1.125rem;
     font-weight: 540;
     letter-spacing: -0.015em;
+    color: var(--ink);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  summary:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
+    border-radius: 8px;
   }
 
   summary::-webkit-details-marker {
@@ -60,6 +69,12 @@ const { items, class: className } = Astro.props;
 
   summary svg {
     flex: none;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    summary svg {
+      transition: rotate 200ms var(--ease-out);
+    }
   }
 
   details[open] > summary svg {

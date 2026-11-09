@@ -1,6 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
-import Section from '../components/Section.astro';
+import Sheet from '../components/Sheet.astro';
 import Eyebrow from '../components/Eyebrow.astro';
 import Button from '../components/Button.astro';
 import Faq from '../components/Faq.astro';
@@ -192,17 +192,17 @@ const criteriaTitles = {
     faqLd(faq),
   ]}
 >
-  <section class="hero">
-    <div class="container hero-grid">
-      <div class="hero-copy">
-        <Eyebrow>Free homebuyer self-check</Eyebrow>
-        <h1>Mortgage readiness assessment (free score calculator)</h1>
+  <Sheet grid seed={25} id="hero" aria-labelledby="hero-title">
+    <div class="split">
+      <div class="split-copy">
+        <Eyebrow tone="green">Free homebuyer self-check</Eyebrow>
+        <h1 id="hero-title">Mortgage readiness assessment <span class="accent">(free score calculator)</span></h1>
         <p class="lead">
           The mortgage readiness assessment is a free self-check that rates your credit score, income, loan-to-value
           ratio, debt-to-income ratio and personal financial statement from Poor to Excellent, so you can see what to
           improve before you apply.
         </p>
-        <ul class="hero-points">
+        <ul class="list-check">
           <li>Five criteria, the same bands as the Homebuyer Readiness tab of our free template</li>
           <li>Instant ratings and a personalized checklist of next steps</li>
           <li>No credit check: it only uses numbers you type, in your browser</li>
@@ -216,9 +216,9 @@ const criteriaTitles = {
         <ReadinessGauge class="float" level={3} />
       </div>
     </div>
-  </section>
+  </Sheet>
 
-  <Section id="assessment" tone="surface" aria-labelledby="assessment-title">
+  <Sheet id="assessment" aria-labelledby="assessment-title">
     <div data-ra class="ra">
       <div class="ra-intro">
         <h2 id="assessment-title">Rate your mortgage readiness</h2>
@@ -663,12 +663,12 @@ const criteriaTitles = {
         educational bands, not lender approval rules.
       </p>
     </div>
-  </Section>
+  </Sheet>
 
-  <Section id="programs" aria-labelledby="programs-title">
+  <Sheet id="programs" aria-labelledby="programs-title">
     <div class="split">
-      <div>
-        <Eyebrow>Loan-to-value notes</Eyebrow>
+      <div class="sec-head">
+        <Eyebrow tone="blue">Loan-to-value notes</Eyebrow>
         <h2 id="programs-title">LTV and loan programs</h2>
       </div>
       <Prose>
@@ -705,12 +705,12 @@ const criteriaTitles = {
         </p>
       </Prose>
     </div>
-  </Section>
+  </Sheet>
 
-  <Section tone="surface" aria-labelledby="method-title">
+  <Sheet tone="cream" aria-labelledby="method-title">
     <div class="split">
-      <div>
-        <Eyebrow>Method</Eyebrow>
+      <div class="sec-head">
+        <Eyebrow tone="yellow">Method</Eyebrow>
         <h2 id="method-title">How the assessment is scored</h2>
       </div>
       <Prose>
@@ -750,20 +750,22 @@ const criteriaTitles = {
         </p>
       </Prose>
     </div>
-  </Section>
+  </Sheet>
 
-  <Section aria-labelledby="faq-title">
+  <Sheet aria-labelledby="faq-title">
     <div class="split">
-      <div>
-        <Eyebrow>FAQ</Eyebrow>
+      <div class="sec-head">
+        <Eyebrow tone="green">FAQ</Eyebrow>
         <h2 id="faq-title">Mortgage readiness questions</h2>
       </div>
       <Faq items={faq} />
     </div>
-  </Section>
+  </Sheet>
 
-  <Section tone="surface" aria-labelledby="related-title">
-    <h2 id="related-title">Related tools and guides</h2>
+  <Sheet tone="blue" aria-labelledby="related-title">
+    <div class="sec-head">
+      <h2 id="related-title">Related tools and guides</h2>
+    </div>
     <div class="grid grid-3 related">
       {
         related.map((r) => (
@@ -774,7 +776,7 @@ const criteriaTitles = {
         ))
       }
     </div>
-  </Section>
+  </Sheet>
 
   <CtaBand
     title="Run this with your real numbers in the free template"
@@ -785,66 +787,16 @@ const criteriaTitles = {
 </Base>
 
 <style>
-  .hero {
-    padding-block: clamp(40px, 7vw, 96px) clamp(40px, 6vw, 80px);
-  }
-
-  .hero-grid {
-    display: grid;
-    gap: clamp(28px, 5vw, 64px);
-    align-items: center;
-  }
-
-  @media (min-width: 900px) {
-    .hero-grid {
-      grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
-    }
-  }
-
-  .hero-copy {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 20px;
-  }
-
-  .hero-copy h1,
-  .hero-copy p {
-    margin: 0;
-  }
-
-  .hero-points {
-    margin: 0;
-    padding-left: 1.2em;
-    color: var(--muted);
-  }
-
-  .hero-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-
   .hero-art {
     max-width: 520px;
     width: 100%;
     margin-inline: auto;
   }
 
-  .split {
-    display: grid;
-    gap: clamp(24px, 4vw, 56px);
-  }
-
-  @media (min-width: 900px) {
-    .split {
-      grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
-      align-items: start;
-    }
-  }
-
-  .split h2 {
-    margin: 12px 0 0;
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
   }
 
   /* ---------- Assessment ---------- */
@@ -1099,6 +1051,14 @@ const criteriaTitles = {
     border-color: #0f9d58;
   }
 
+  .ra-results-card {
+    background: linear-gradient(165deg, var(--tint-green), var(--white) 72%);
+  }
+
+  .ra-steps {
+    background: var(--tint-cream);
+  }
+
   /* ---------- Results ---------- */
   .ra-results-card h3,
   .ra-steps h3 {
@@ -1164,6 +1124,10 @@ const criteriaTitles = {
 
   .related {
     margin-top: 28px;
+  }
+
+  .related .card {
+    height: 100%;
   }
 
   .related h3 {

@@ -21,7 +21,7 @@
   --ink: var(--navy);
   --ink-hover: var(--navy-hover);
   --muted: var(--navy-muted);
-  --muted-soft: rgba(12, 38, 53, 0.48);
+  --muted-soft: rgba(12, 38, 53, 0.64);
   /* Warm ink kept for values that sit on the warm-grey illustration palette. */
   --ink-warm: #2e2926;
   --paper: #fdfcfa;
@@ -285,6 +285,66 @@ p {
   --accent-ink: #2b7fae;
 }
 
+.accent-yellow {
+  --accent-ink: #a87a00;
+}
+
+/* Section heading stack: eyebrow, h2, lead. */
+:where(.sec-head) {
+  max-width: 44rem;
+  margin-bottom: clamp(32px, 4.5vw, 56px);
+}
+
+/* Two-column copy + art; stacks under 900px. */
+:where(.split) {
+  display: grid;
+  gap: clamp(32px, 5vw, 72px);
+  align-items: center;
+}
+
+:where(.split-copy) {
+  min-width: 0;
+}
+
+/* Copy columns space their children like .stack even when the markup forgets the class
+   (class-level specificity so it beats the element margin reset). */
+.split-copy:not(.stack) > * + * {
+  margin-top: var(--stack-gap, 1.25rem);
+}
+
+/* Subpage heroes are <Sheet>s with longer titles than the home hero: a calmer H1 scale. */
+.sheet-body h1 {
+  font-size: clamp(2.125rem, 4.2vw, 3.25rem);
+}
+
+:where(.split-art) {
+  width: 100%;
+  max-width: 600px;
+  margin-inline: auto;
+}
+
+:where(.split-art-small) {
+  max-width: 560px;
+}
+
+@media (min-width: 900px) {
+  :where(.split) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  :where(.split-reverse) > :where(.split-art) {
+    order: -1;
+  }
+
+  :where(.split-art) {
+    margin-inline: 0;
+  }
+
+  :where(.split-safe) {
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  }
+}
+
 /* White plate with a faint isometric grid that fades out towards the edges. */
 .iso-panel {
   position: relative;
@@ -324,14 +384,6 @@ p {
   max-width: calc(var(--prose) + var(--gutter) * 2);
   margin-inline: auto;
   padding-inline: var(--gutter);
-}
-
-.section {
-  padding-block: var(--section-y);
-}
-
-.section-tight {
-  padding-block: clamp(48px, 7vw, 88px);
 }
 
 .tone-white {
@@ -628,8 +680,9 @@ textarea {
   padding: 0 14px;
   background: var(--white);
   border: 1px solid var(--line-strong);
-  border-radius: var(--radius-sm);
+  border-radius: 12px;
   color: var(--ink);
+  font-size: 1rem;
   line-height: 1.3;
   transition:
     border-color 0.15s ease,
@@ -659,15 +712,15 @@ textarea::placeholder {
   input:hover,
   select:hover,
   textarea:hover {
-    border-color: rgba(46, 41, 38, 0.4);
+    border-color: rgba(12, 38, 53, 0.4);
   }
 }
 
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-  outline: 2px solid var(--blue);
-  outline-offset: 1px;
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
   border-color: var(--ink);
 }
 
@@ -749,12 +802,27 @@ input[type='range']::-webkit-slider-thumb {
 }
 
 input[type='range']::-moz-range-thumb {
-  width: 16px;
-  height: 16px;
+  width: 22px;
+  height: 22px;
+  box-sizing: border-box;
   border-radius: 50%;
   background: var(--ink);
   border: 3px solid var(--white);
-  box-shadow: 0 1px 4px rgba(46, 41, 38, 0.4);
+  box-shadow: 0 1px 4px rgba(12, 38, 53, 0.4);
+}
+
+input[type='range']:focus-visible {
+  outline: none;
+}
+
+input[type='range']:focus-visible::-webkit-slider-thumb {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+input[type='range']:focus-visible::-moz-range-thumb {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
 }
 
 input[type='checkbox'],

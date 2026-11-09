@@ -80,6 +80,14 @@ const edge = heroImage ? undefined : COVER_EDGE[cover ?? 'DocumentStack'];
   .post-card {
     padding: 0;
     overflow: hidden;
+    border-radius: 20px;
+    color: var(--ink);
+  }
+
+  .post-card-link:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: -2px;
+    border-radius: inherit;
   }
 
   .post-card-link {

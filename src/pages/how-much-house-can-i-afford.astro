@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
-import Section from '../components/Section.astro';
+import Sheet from '../components/Sheet.astro';
+import Eyebrow from '../components/Eyebrow.astro';
 import Prose from '../components/Prose.astro';
 import Faq from '../components/Faq.astro';
 import CtaBand from '../components/CtaBand.astro';
@@ -86,8 +87,11 @@ const related = [
 >
 	<CalcLayout
 		eyebrow="Free calculator"
-		title="How much house can I afford?"
+		title="How much house"
+		accent="can I afford?"
 		lead="Enter your income, monthly debts, down payment, interest rate and the cost of owning a home. The calculator applies the 28/36 rule, subtracts property taxes, insurance and HOA dues, and solves for the most expensive home that fits."
+		seed={23}
+		howHref="#method"
 		formId="afford-form"
 		inputsTitle="Income and costs"
 		resultsTone="green"
@@ -144,10 +148,12 @@ const related = [
 		</div>
 	</CalcLayout>
 
-	<Section tone="surface" aria-labelledby="method">
-		<div class="two-col">
+	<Sheet id="method" aria-labelledby="method-title">
+		<div class="split cols">
+			<div class="col">
+			<Eyebrow tone="blue">How it works</Eyebrow>
 			<Prose>
-				<h2 id="method">How the affordability estimate works</h2>
+				<h2 id="method-title">How the affordability estimate works</h2>
 				<p>
 					The calculator uses the 28/36 rule of thumb: spend no more than 28% of gross monthly income on housing and no more than 36% on all debt, housing included. It is a benchmark, not a lender requirement. Then it works backward from the monthly payment you can afford to the largest price:
 				</p>
@@ -162,6 +168,9 @@ const related = [
 					The estimate does not include PMI, closing costs, maintenance or utilities. If the budget cannot cover insurance, HOA dues and the tax on your down payment, the calculator says so instead of showing a price.
 				</p>
 			</Prose>
+			</div>
+			<div class="col">
+			<Eyebrow tone="green">In numbers</Eyebrow>
 			<Prose>
 				<h2 id="example">Worked example</h2>
 				<p>
@@ -180,13 +189,16 @@ const related = [
 					The rate matters a lot. With the same inputs, a {5.5}% rate supports about {formatUSD(atRate(5.5))}, while {7.5}% supports about {formatUSD(atRate(7.5))}. These rates are only examples, not forecasts.
 				</p>
 			</Prose>
+			</div>
 		</div>
-	</Section>
+	</Sheet>
 
-	<Section aria-labelledby="after">
-		<div class="two-col">
+	<Sheet id="after" tone="cream" aria-labelledby="after-title">
+		<div class="split cols">
+			<div class="col">
+			<Eyebrow tone="yellow">Beyond the rule</Eyebrow>
 			<Prose>
-				<h2 id="after">What lenders look at beyond 28/36</h2>
+				<h2 id="after-title">What lenders look at beyond 28/36</h2>
 				<p>
 					Lenders apply their own limits. Fannie Mae allows a debt-to-income ratio up to 36% for manually underwritten loans, up to 45% with strong credit and reserves, and up to 50% through Desktop Underwriter (<a href="https://selling-guide.fanniemae.com/sel/b3-6-02/debt-income-ratios" rel="noopener">Selling Guide B3-6-02</a>). Check your own ratios with the <a href={url('/debt-to-income-ratio-calculator/')}>DTI calculator</a>; the glossary explains <a href={url('/glossary/front-end-dti/')}>front-end DTI</a> and <a href={url('/glossary/back-end-dti/')}>back-end DTI</a>.
 				</p>
@@ -194,31 +206,37 @@ const related = [
 					Taxes and insurance are often paid through an <a href={url('/glossary/escrow/')}>escrow account</a>, so they are part of your monthly payment even though you do not send them separately. For the loan itself, the <a href={url('/mortgage-calculator/')}>mortgage calculator</a> shows total interest and a yearly amortization schedule.
 				</p>
 			</Prose>
+			</div>
+			<div class="col">
+			<Eyebrow tone="navy">Next step</Eyebrow>
 			<Prose>
 				<h2>Prepare your numbers before you apply</h2>
 				<p>
 					A lender will ask what you own and what you owe. The free WorthSheet template totals your assets, liabilities and net worth in Google Sheets or Excel, and its Homebuyer Readiness tab scores five criteria lenders care about. Try the <a href={url('/mortgage-readiness-assessment/')}>mortgage readiness assessment</a> to see where you stand.
 				</p>
 			</Prose>
+			</div>
 		</div>
-	</Section>
+	</Sheet>
 
-	<Section tone="surface" aria-labelledby="faq-title">
-		<div class="two-col">
-			<div class="stack">
+	<Sheet id="faq" aria-labelledby="faq-title">
+		<div class="split faq-cols">
+			<div class="stack" style="--stack-gap: 1.25rem">
+				<Eyebrow tone="blue">FAQ</Eyebrow>
 				<h2 id="faq-title">Home affordability FAQ</h2>
 				<p class="lead">What the estimate includes and how to read it.</p>
 			</div>
 			<Faq items={faq} />
 		</div>
-	</Section>
+	</Sheet>
 
-	<Section aria-labelledby="related-title">
-		<div class="stack" style="--stack-gap: 24px">
+	<Sheet id="related" aria-labelledby="related-title">
+		<div class="sec-head stack" style="--stack-gap: 1.25rem">
+			<Eyebrow tone="green">Keep exploring</Eyebrow>
 			<h2 id="related-title">Related tools and guides</h2>
-			<RelatedLinks items={related} />
 		</div>
-	</Section>
+		<RelatedLinks items={related} />
+	</Sheet>
 
 	<CtaBand>
 		<CtaTiles slot="art" />
@@ -269,7 +287,18 @@ const related = [
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 	}
 
+	@media (max-width: 479px) {
+		.out-grid {
+			grid-template-columns: minmax(0, 1fr);
+		}
+	}
+
 	.check {
+		padding: 14px 16px;
+		border: 1px solid transparent;
+		border-radius: var(--radius-sm);
+		background: var(--white);
+		box-shadow: var(--shadow-border);
 		font-size: 0.9375rem;
 	}
 
@@ -287,20 +316,25 @@ const related = [
 		color: inherit;
 	}
 
-	.two-col {
-		display: grid;
-		gap: clamp(32px, 5vw, 64px);
+	/* Two prose columns, top aligned; the eyebrow chip sits right above the heading. */
+	.cols,
+	.faq-cols {
 		align-items: start;
 	}
 
-	@media (min-width: 520px) {
-		.field-grid {
-			grid-template-columns: repeat(2, minmax(0, 1fr));
-		}
+	.col {
+		display: flex;
+		flex-direction: column;
+		gap: 1.25rem;
+		min-width: 0;
 	}
 
-	@media (min-width: 900px) {
-		.two-col {
+	.col :global(.prose > h2:first-child) {
+		margin-top: 0;
+	}
+
+	@media (min-width: 520px) and (max-width: 899px), (min-width: 1280px) {
+		.field-grid {
 			grid-template-columns: repeat(2, minmax(0, 1fr));
 		}
 	}

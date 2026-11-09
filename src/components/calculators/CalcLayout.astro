@@ -1,15 +1,17 @@
 ---
 /**
  * Hero + two-column tool shell shared by all calculators. Render it inside `<Base>`; follow it with your own
- * `<Section>`s (explanation, FAQ, related links) and a `<CtaBand>`.
+ * `<Sheet>`s (explanation, FAQ, related links) and a `<CtaBand>`.
  *
  * Props
- * - eyebrow      small label above the h1 (rendered as `<p class="eyebrow">`).
- * - title        (required) the page's single `<h1>`.
+ * - eyebrow      chip label above the h1.
+ * - title        (required) the page's single `<h1>`; `accent` is appended in the green accent colour.
  * - lead         intro paragraph under the h1.
+ * - seed         (required) grid seed of the hero sheet; use a unique number per page.
  * - formId       (required) id of the `<form novalidate>` that wraps the default slot (pass to `bindCalculator`).
  * - inputsTitle  heading above the inputs (default "Your numbers"); resultsTitle (default "Your results").
  * - resultsTone  background of the results panel: 'surface' | 'blue' | 'green' | 'yellow' | 'cream' (default 'surface').
+ * - howHref      target of the secondary hero button (default `#how`).
  *
  * Slots
  * - art       hero illustration, e.g. `<CalculatorTile slot="art" />`.
@@ -17,99 +19,104 @@
  * - results   result content. Put the valid-state markup inside `<div data-results>…</div>`; the layout supplies
  *             a `<p data-empty hidden>` placeholder that `showResults(false, msg)` reveals when inputs are invalid.
  *             Everything sits in an `aria-live="polite"` region.
- * - below     optional full-width content under the tool card (e.g. an amortization table).
+ * - below     optional full-width content under the tool cards (e.g. an amortization table).
  *
  * The standard disclaimer is rendered under the tool.
  */
+import Sheet from '../Sheet.astro';
+import Eyebrow from '../Eyebrow.astro';
+import Button from '../Button.astro';
+
 interface Props {
 	eyebrow?: string;
 	title: string;
+	accent?: string;
 	lead?: string;
+	seed: number;
 	formId: string;
 	inputsTitle?: string;
 	resultsTitle?: string;
 	resultsTone?: 'surface' | 'blue' | 'green' | 'yellow' | 'cream';
+	howHref?: string;
 }
 
 const {
 	eyebrow,
 	title,
+	accent,
 	lead,
+	seed,
 	formId,
 	inputsTitle = 'Your numbers',
 	resultsTitle = 'Your results',
 	resultsTone = 'surface',
+	howHref = '#how',
 } = Astro.props;
+
+const chipTone = { surface: 'green', green: 'green', blue: 'blue', yellow: 'yellow', cream: 'yellow' }[resultsTone] as
+	| 'green'
+	| 'blue'
+	| 'yellow';
 ---
 
-<section class="calc-hero tone-paper">
-	<div class="container calc-hero-grid">
-		<div class="calc-hero-copy">
-			{eyebrow && <p class="eyebrow">{eyebrow}</p>}
-			<h1>{title}</h1>
+<Sheet grid seed={seed} id="hero" aria-labelledby="calc-title">
+	<div class="split calc-hero">
+		<div class="stack split-copy" style="--stack-gap: 1.25rem">
+			{eyebrow && <Eyebrow tone={chipTone}>{eyebrow}</Eyebrow>}
+			<h1 id="calc-title">{title}{accent && <>{' '}<span class="accent">{accent}</span></>}</h1>
 			{lead && <p class="lead">{lead}</p>}
-		</div>
-		<div class="calc-hero-art"><slot name="art" /></div>
-	</div>
-</section>
-
-<section class="calc-tool" aria-label="Calculator">
-	<div class="container">
-		<div class="calc-grid">
-			<div class="calc-panel card">
-				<h2 class="calc-panel-title">{inputsTitle}</h2>
-				<form id={formId} class="calc-form" novalidate autocomplete="off">
-					<noscript><p class="field-error">This calculator needs JavaScript. The example results below use the prefilled values.</p></noscript>
-					<slot />
-				</form>
-			</div>
-
-			<div class:list={['calc-panel', 'calc-results', `calc-tone-${resultsTone}`]}>
-				<h2 class="calc-panel-title">{resultsTitle}</h2>
-				<div class="calc-live" aria-live="polite" aria-atomic="false">
-					<p class="calc-empty" data-empty hidden>Fix the highlighted fields to see your results.</p>
-					<slot name="results" />
-				</div>
+			<div class="calc-actions">
+				<Button href="#calculator" variant="primary">Use the calculator</Button>
+				<Button href={howHref} variant="secondary">How it works</Button>
 			</div>
 		</div>
-
-		<slot name="below" />
-
-		<p class="disclaimer calc-disclaimer">
-			Estimates for educational purposes only. Not a loan offer or financial advice.
-		</p>
+		<div class="split-art calc-hero-art"><slot name="art" /></div>
 	</div>
-</section>
+</Sheet>
+
+<Sheet id="calculator" aria-labelledby={`${formId}-title`}>
+	<div class="calc-grid">
+		<div class="calc-panel card edge-green">
+			<h2 id={`${formId}-title`} class="calc-panel-title">{inputsTitle}</h2>
+			<form id={formId} class="calc-form" novalidate autocomplete="off">
+				<noscript><p class="field-error">This calculator needs JavaScript. The example results below use the prefilled values.</p></noscript>
+				<slot />
+			</form>
+		</div>
+
+		<div class:list={['calc-panel', 'calc-results', 'card', `calc-tone-${resultsTone}`]}>
+			<h2 class="calc-panel-title">{resultsTitle}</h2>
+			<div class="calc-live" aria-live="polite" aria-atomic="false">
+				<p class="calc-empty" data-empty hidden>Fix the highlighted fields to see your results.</p>
+				<slot name="results" />
+			</div>
+		</div>
+	</div>
+
+	<slot name="below" />
+
+	<p class="disclaimer calc-disclaimer">
+		Estimates for educational purposes only. Not a loan offer or financial advice.
+	</p>
+</Sheet>
 
 <style>
 	.calc-hero {
-		padding-block: clamp(32px, 6vw, 72px) clamp(16px, 3vw, 32px);
+		min-width: 0;
 	}
 
-	.calc-hero-grid {
-		display: grid;
-		gap: 32px;
-		align-items: center;
-	}
-
-	.calc-hero-copy {
+	.calc-actions {
 		display: flex;
-		flex-direction: column;
-		gap: 16px;
+		flex-wrap: wrap;
+		gap: 12px;
 	}
 
 	.calc-hero-art {
-		max-width: 420px;
-		width: 100%;
-		margin-inline: auto;
+		max-width: 460px;
 	}
 
 	.calc-hero-art:empty {
 		display: none;
-	}
-
-	.calc-tool {
-		padding-block: clamp(16px, 3vw, 32px) clamp(48px, 8vw, 96px);
 	}
 
 	.calc-grid {
@@ -123,6 +130,7 @@ const {
 		flex-direction: column;
 		gap: 20px;
 		min-width: 0;
+		padding: clamp(20px, 3vw, 32px);
 	}
 
 	.calc-panel-title {
@@ -137,25 +145,23 @@ const {
 		gap: 18px;
 	}
 
-	.calc-results {
-		padding: clamp(20px, 3vw, 32px);
-		border: 1px solid var(--line);
-		border-radius: var(--radius);
-	}
-
 	.calc-tone-surface {
 		background: var(--surface);
 	}
 	.calc-tone-blue {
+		--edge: rgba(108, 190, 228, 0.9);
 		background: var(--tint-blue);
 	}
 	.calc-tone-green {
+		--edge: rgba(64, 170, 74, 0.85);
 		background: var(--tint-green);
 	}
 	.calc-tone-yellow {
+		--edge: rgba(250, 195, 68, 0.95);
 		background: var(--tint-yellow);
 	}
 	.calc-tone-cream {
+		--edge: rgba(250, 195, 68, 0.95);
 		background: var(--tint-cream);
 	}
 
@@ -163,6 +169,7 @@ const {
 		display: flex;
 		flex-direction: column;
 		gap: 16px;
+		min-width: 0;
 	}
 
 	.calc-empty {
@@ -179,17 +186,8 @@ const {
 	}
 
 	@media (min-width: 900px) {
-		.calc-hero-grid {
-			grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
-		}
-
 		.calc-grid {
 			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-		}
-
-		.calc-results {
-			position: sticky;
-			top: calc(var(--header-h) + 16px);
 		}
 	}
 </style>

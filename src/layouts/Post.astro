@@ -7,6 +7,7 @@ import Prose from '../components/Prose.astro';
 import Faq from '../components/Faq.astro';
 import Button from '../components/Button.astro';
 import CtaBand from '../components/CtaBand.astro';
+import Sheet from '../components/Sheet.astro';
 import PostCard from '../components/PostCard.astro';
 import PostCover from '../components/PostCover.astro';
 import CtaTiles from '../components/illustrations/CtaTiles.astro';
@@ -91,44 +92,46 @@ const jsonLd = [
   breadcrumbs={crumbs}
   jsonLd={jsonLd}
 >
-  <article class="post">
-    <header class="container-narrow post-header">
-      <h1>{title}</h1>
-      <p class="post-meta muted">
-        By {SITE_NAME} Team · Published <time datetime={iso(pubDate)}>{fmt(pubDate)}</time>
+  <Sheet grid seed={31} id="hero" aria-labelledby="post-title">
+    <div class="split">
+      <header class="split-copy stack post-header" style="--stack-gap: 16px">
+        <h1 id="post-title">{title}</h1>
+        <p class="post-meta muted">
+          By {SITE_NAME} Team · Published <time datetime={iso(pubDate)}>{fmt(pubDate)}</time>
+          {
+            showUpdated && (
+              <>
+                {' '}
+                · Updated <time datetime={iso(updatedDate)}>{fmt(updatedDate)}</time>
+              </>
+            )
+          }
+        </p>
+      </header>
+
+      <figure class="post-art">
         {
-          showUpdated && (
-            <>
-              {' '}
-              · Updated <time datetime={iso(updatedDate)}>{fmt(updatedDate)}</time>
-            </>
+          heroImage ? (
+            <Image
+              src={heroImage}
+              alt={heroAlt ?? ''}
+              width={1200}
+              widths={[480, 768, 1200]}
+              sizes="(min-width: 900px) 50vw, 100vw"
+              loading="eager"
+              fetchpriority="high"
+              decoding="async"
+            />
+          ) : (
+            <PostCover cover={cover} />
           )
         }
-      </p>
-    </header>
+      </figure>
+    </div>
+  </Sheet>
 
-    {
-      heroImage ? (
-        <figure class="container post-hero">
-          <Image
-            src={heroImage}
-            alt={heroAlt ?? ''}
-            width={1200}
-            widths={[480, 768, 1200]}
-            sizes="(min-width: 1200px) 1136px, 100vw"
-            loading="eager"
-            fetchpriority="high"
-            decoding="async"
-          />
-        </figure>
-      ) : (
-        <figure class="container post-hero">
-          <PostCover cover={cover} wide />
-        </figure>
-      )
-    }
-
-    <div class="container-narrow post-content">
+  <article>
+    <Sheet>
       {
         toc.length >= 4 && (
           <nav class="toc card" aria-labelledby="toc-title">
@@ -169,21 +172,21 @@ const jsonLd = [
           </section>
         )
       }
-    </div>
+    </Sheet>
   </article>
 
   {
     related.length > 0 && (
-      <section class="related" aria-labelledby="related-title">
-        <div class="container">
+      <Sheet tone="cream" class="related" aria-labelledby="related-title">
+        <div class="sec-head">
           <h2 id="related-title">Related guides</h2>
-          <div class="grid grid-3">
-            {related.map((post) => (
-              <PostCard post={post} />
-            ))}
-          </div>
         </div>
-      </section>
+        <div class="grid grid-3">
+          {related.map((post) => (
+            <PostCard post={post} />
+          ))}
+        </div>
+      </Sheet>
     )
   }
 
@@ -193,40 +196,25 @@ const jsonLd = [
 </Base>
 
 <style>
-  .post {
-    padding-top: clamp(16px, 3vw, 32px);
-  }
-
-  .post-header {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-
   .post-header h1 {
     font-size: clamp(2rem, 5vw, 3.25rem);
     text-wrap: balance;
   }
 
   .post-meta {
+    margin: 0;
     font-size: 0.9375rem;
   }
 
-  .post-hero {
-    margin-block: clamp(24px, 4vw, 40px);
+  .post-art {
+    margin: 0;
   }
 
-  .post-hero :global(img) {
+  .post-art :global(img) {
     display: block;
     width: 100%;
-    max-width: 960px;
     height: auto;
-    margin-inline: auto;
     border-radius: var(--radius-lg);
-  }
-
-  .post-content {
-    padding-bottom: clamp(32px, 6vw, 64px);
   }
 
   .toc {
@@ -285,18 +273,10 @@ const jsonLd = [
     font-size: clamp(1.6rem, 3vw, 2.125rem);
   }
 
-  .related {
-    padding-block: clamp(40px, 6vw, 72px);
-    background: var(--surface);
-  }
-
-  .related h2 {
-    margin-bottom: clamp(20px, 3vw, 32px);
-    font-size: clamp(1.6rem, 3vw, 2.125rem);
-  }
-
   /* ---------- Markdown body (extends the shared .prose styles) ---------- */
   .post-body {
+    max-width: 760px;
+    margin-inline: auto;
     overflow-wrap: break-word;
   }
 

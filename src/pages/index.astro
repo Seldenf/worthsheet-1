@@ -7,7 +7,6 @@ import Sheet from '../components/Sheet.astro';
 import Eyebrow from '../components/Eyebrow.astro';
 import Faq from '../components/Faq.astro';
 import CtaBand from '../components/CtaBand.astro';
-import CtaBandV2 from '../components/CtaBandV2.astro';
 import HeroSheet from '../components/illustrations/HeroSheet.astro';
 import IsoTiles from '../components/illustrations/IsoTiles.astro';
 import CategoriesStack from '../components/illustrations/CategoriesStack.astro';
@@ -574,21 +573,11 @@ const jsonLd = [
   </Sheet>
 
   <CtaBand />
-
-  <!-- TEMPORARY: CTA v2 comparison for review. Remove once a variant is chosen. -->
-  <p class="cta-v2-label">CTA v2 — temporary</p>
-  <CtaBandV2 />
 </Base>
 
 <style>
   /* Grid, sheets, cards and highlighted cells come from global.css (.sheet-*) and Sheet.astro.
      Every section below the hero is a <Sheet>; this file only lays out what sits inside them. */
-
-  /* ---------- Shared bits ---------- */
-  .sec-head {
-    max-width: 44rem;
-    margin-bottom: clamp(32px, 4.5vw, 56px);
-  }
 
   :global(#features),
   :global(#how-to-use) {
@@ -916,41 +905,6 @@ const jsonLd = [
   .banks-row .disclaimer {
     max-width: 36em;
     margin-inline: auto;
-  }
-
-  /* ---------- Split sections ---------- */
-  .split {
-    display: grid;
-    gap: clamp(32px, 5vw, 72px);
-    align-items: center;
-  }
-
-  .split-art {
-    width: 100%;
-    max-width: 600px;
-    margin-inline: auto;
-  }
-
-  .split-art-small {
-    max-width: 560px;
-  }
-
-  @media (min-width: 900px) {
-    .split {
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    }
-
-    .split-reverse .split-art {
-      order: -1;
-    }
-
-    .split-art {
-      margin-inline: 0;
-    }
-
-    .split-safe {
-      grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
-    }
   }
 
   /* ---------- Steps: a tile above each step, joined by a dotted line in the 4-up layout ----------
@@ -1553,17 +1507,6 @@ const jsonLd = [
         transition-delay: 250ms;
       }
     }
-  }
-
-  /* TEMPORARY: label above the CTA v2 comparison. Remove with it. */
-  .cta-v2-label {
-    margin: 0;
-    padding: 0.5rem 1rem;
-    font-size: 0.75rem;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--ink);
-    opacity: 0.6;
   }
 
   /* ---------- Free tools ---------- */
