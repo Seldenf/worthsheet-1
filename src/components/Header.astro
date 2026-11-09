@@ -81,7 +81,7 @@ const calculatorsActive = [...calculators, featured].some((c) => current.startsW
                 stroke-linejoin="round"></path>
             </svg>
           </button>
-          <div id="nav-calculators" class="dropdown" hidden>
+          <div id="nav-calculators" class="dropdown">
             <div class="dropdown-inner">
             <ul class="mega-grid">
               {
@@ -264,13 +264,20 @@ const calculatorsActive = [...calculators, featured].some((c) => current.startsW
     color: var(--ink);
   }
 
-  .nav-list > li > a:hover,
-  .dropdown-toggle:hover,
   .dropdown-toggle[aria-expanded='true'],
   .nav-list > li > a[aria-current='page'],
   .dropdown-toggle.active {
     background: var(--white);
     box-shadow: inset 0 0 0 1px rgba(12, 38, 53, 0.55);
+  }
+
+  /* Hover only on real pointers, so a tap doesn't leave a sticky pill on touch screens. */
+  @media (hover: hover) and (pointer: fine) {
+    .nav-list > li > a:hover,
+    .dropdown-toggle:hover {
+      background: var(--white);
+      box-shadow: inset 0 0 0 1px rgba(12, 38, 53, 0.55);
+    }
   }
 
   .dropdown-toggle svg {
@@ -301,7 +308,7 @@ const calculatorsActive = [...calculators, featured].some((c) => current.startsW
     transform-origin: top;
   }
 
-  .dropdown[hidden] {
+  .dropdown:not([data-open]) {
     display: none;
   }
 
@@ -540,12 +547,12 @@ const calculatorsActive = [...calculators, featured].some((c) => current.startsW
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    .dropdown:not([hidden]) {
+    .dropdown[data-open] {
       animation: dropdown-in 200ms cubic-bezier(0.23, 1, 0.32, 1);
     }
 
-    .dropdown:not([hidden]) .mega-item,
-    .dropdown:not([hidden]) .mega-feature {
+    .dropdown[data-open] .mega-item,
+    .dropdown[data-open] .mega-feature {
       animation: mega-stagger 200ms cubic-bezier(0.23, 1, 0.32, 1) both;
       animation-delay: calc(var(--i, 0) * 30ms);
     }
@@ -612,8 +619,9 @@ const calculatorsActive = [...calculators, featured].some((c) => current.startsW
       height: calc(100dvh - var(--header-h));
       flex-direction: column;
       align-items: stretch;
+      flex-wrap: nowrap;
       gap: 16px;
-      padding: 16px clamp(20px, 5vw, 40px) 32px;
+      padding: 16px clamp(20px, 5vw, 40px) 0;
       background: var(--paper);
       border-bottom: 1px solid var(--line);
       overflow-x: hidden;
@@ -627,8 +635,19 @@ const calculatorsActive = [...calculators, featured].some((c) => current.startsW
       pointer-events: auto;
     }
 
+    :global(html.js) .nav-list {
+      flex: none;
+    }
+
+    /* CTA is pinned to the bottom of the panel; when the content is taller it sticks to the bottom edge. */
     .nav-cta-wrap {
       display: block;
+      flex: none;
+      position: sticky;
+      bottom: 0;
+      margin-top: auto;
+      padding: 12px 0 calc(32px + env(safe-area-inset-bottom));
+      background: var(--paper);
     }
 
     @media (prefers-reduced-motion: no-preference) {
@@ -715,9 +734,6 @@ const calculatorsActive = [...calculators, featured].some((c) => current.startsW
       gap: 12px;
       margin: 0;
       grid-template-rows: 1fr;
-      transition:
-        grid-template-rows 300ms cubic-bezier(0.23, 1, 0.32, 1),
-        visibility 300ms cubic-bezier(0.23, 1, 0.32, 1);
       padding: 0;
       border: 0;
       border-radius: 0;
@@ -725,7 +741,7 @@ const calculatorsActive = [...calculators, featured].some((c) => current.startsW
       background: transparent;
     }
 
-    .dropdown[hidden] {
+    .dropdown:not([data-open]) {
       display: grid;
       grid-template-rows: 0fr;
       visibility: hidden;
@@ -739,18 +755,47 @@ const calculatorsActive = [...calculators, featured].some((c) => current.startsW
       overflow: hidden;
     }
 
-    .dropdown:not([hidden]) {
+    .dropdown[data-open] {
       animation: none;
     }
 
     .dropdown-toggle svg {
-      transition: transform 300ms cubic-bezier(0.23, 1, 0.32, 1);
+      transition: transform 250ms cubic-bezier(0.77, 0, 0.175, 1);
     }
 
     .dropdown-toggle[aria-expanded='true'],
     .dropdown-toggle.active {
       background: rgba(12, 38, 53, 0.04);
       box-shadow: none;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      /* Submenu: rows collapse/expand together with a content fade; visibility waits for the collapse to end. */
+      .dropdown {
+        transition:
+          grid-template-rows 250ms cubic-bezier(0.77, 0, 0.175, 1),
+          visibility 0s;
+      }
+
+      .dropdown:not([data-open]) {
+        transition:
+          grid-template-rows 250ms cubic-bezier(0.77, 0, 0.175, 1),
+          visibility 0s linear 250ms;
+      }
+
+      .dropdown-inner {
+        transition:
+          opacity 200ms cubic-bezier(0.23, 1, 0.32, 1) 40ms,
+          translate 250ms cubic-bezier(0.23, 1, 0.32, 1);
+      }
+
+      .dropdown:not([data-open]) .dropdown-inner {
+        opacity: 0;
+        translate: 0 -6px;
+        transition:
+          opacity 150ms ease-in,
+          translate 250ms cubic-bezier(0.77, 0, 0.175, 1);
+      }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -815,10 +860,9 @@ const calculatorsActive = [...calculators, featured].some((c) => current.startsW
       font-size: 0.9375rem;
     }
 
+    /* The panel's pinned CTA already offers the template on mobile; no second button in the submenu. */
     .dropdown .mega-cta {
-      justify-content: center;
-      margin-left: 0;
-      padding: 12px 16px;
+      display: none;
     }
 
     :global(.nav-cta) {
@@ -896,7 +940,7 @@ const calculatorsActive = [...calculators, featured].some((c) => current.startsW
   function setDropdown(open: boolean) {
     if (!dropdownToggle || !dropdown) return;
     dropdownToggle.setAttribute('aria-expanded', String(open));
-    dropdown.hidden = !open;
+    dropdown.toggleAttribute('data-open', open);
   }
 
   let collapseTimer: number | undefined;
