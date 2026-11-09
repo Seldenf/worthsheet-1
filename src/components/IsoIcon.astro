@@ -1,4 +1,5 @@
 ---
+import { LUCIDE } from '../lib/lucide-glyphs';
 type Icon = 'house' | 'scale' | 'percent' | 'key' | 'gauge' | 'bank' | 'document' | 'sheet' | 'pin';
 type Tone = 'green' | 'blue' | 'yellow' | 'pink' | 'white';
 
@@ -23,17 +24,17 @@ const TONES: Record<Tone, { fill: string; side: string; edge: string; edgeWidth:
   white: { fill: '#ffffff', side: '#d9d6d3', edge: '#e3e0dd', edgeWidth: 1, ink: '#2e2926' },
 };
 
-// Glyphs drawn on a 24×24 grid, stroked upright on the tile top.
+// Lucide glyphs (24×24 grid, ISC; see src/lib/lucide-glyphs.ts), stroked upright on the tile top.
 const ICONS: Record<Icon, string> = {
-  house: '<path d="M3.5 11.5 12 4l8.5 7.5M6 10v10h12V10M10 20v-5.5h4V20"/>',
-  scale: '<path d="M12 4v16M8 20h8M4 7h16M4 7 1.5 13.5a2.5 2.5 0 0 0 5 0zM20 7l-2.5 6.5a2.5 2.5 0 0 0 5 0z"/>',
-  percent: '<path d="M18 6 6 18"/><circle cx="7.5" cy="7.5" r="2.3"/><circle cx="16.5" cy="16.5" r="2.3"/>',
-  key: '<circle cx="7.5" cy="12" r="3.5"/><path d="M11 12h9.5M17.5 12v3M20.5 12v2.5"/>',
-  gauge: '<path d="M4 16a8 8 0 1 1 16 0"/><path d="M12 16l3.5-4"/><circle cx="12" cy="16" r="1" fill="currentColor" stroke="none"/>',
-  bank: '<path d="M3 9.5 12 4l9 5.5zM5.5 12v6M10 12v6M14 12v6M18.5 12v6M3 20.5h18"/>',
-  document: '<path d="M6 3h8l4 4v14H6zM14 3v4h4M9 12h6M9 16h6"/>',
-  sheet: '<rect x="3.5" y="4.5" width="17" height="15" rx="1.5"/><path d="M3.5 9.5h17M3.5 14.5h17M9.5 4.5v15M14.5 4.5v15"/>',
-  pin: '<path d="M12 21s-6-5.5-6-10.5a6 6 0 0 1 12 0C18 15.5 12 21 12 21z"/><circle cx="12" cy="10.5" r="2.2"/>',
+  house: LUCIDE.house,
+  scale: LUCIDE.scale,
+  percent: LUCIDE.percent,
+  key: LUCIDE.key,
+  gauge: LUCIDE.gauge,
+  bank: LUCIDE.bank,
+  document: LUCIDE.document,
+  sheet: LUCIDE.sheet,
+  pin: LUCIDE.pin,
 };
 
 const t = TONES[tone];
@@ -45,7 +46,7 @@ const CX = 26;
 const CY = 18;
 const iso = (cy: number) => `matrix(1 -0.5 1 0.5 ${CX - S} ${cy})`;
 // Glyph lies flat on the top face: 24-grid glyph centred on the face square, side G·S.
-const G = 0.7;
+const G = 0.78;
 const glyphTransform = `translate(${S / 2} ${S / 2}) scale(${G}) translate(-12 -12)`;
 // ~1.8 viewBox units after the iso projection (its linear map has mean scale ≈1).
 const glyphStroke = (1.8 / G).toFixed(2);
