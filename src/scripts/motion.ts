@@ -519,7 +519,8 @@ function pusher(svg: SVGElement, area: HTMLElement) {
 // transforms are read, so CSS breathing, intro and push animations do not shift the lattice.
 // Grid lines only, no values.
 const SHEET_GRID = 'svg.wsi-tiles .wsi-tiles-base > g > path, svg.wsi-shield g[clip-path] > path';
-const SHEET_STROKE = 'rgba(46,41,38,.15)';
+// Navy-tinted lines (the site ink at low alpha) so the grid matches the palette instead of warm grey.
+const SHEET_STROKE = 'rgba(12,38,53,.09)';
 const SHEET_LERP = 0.12;
 
 // FNV-1a: string to 32-bit seed.

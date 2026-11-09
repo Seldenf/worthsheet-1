@@ -3,7 +3,7 @@
    make-interfaces-feel-better (Jakub Krehel) and emil-design-eng (Emil Kowalski).
    - Animate only opacity / translate / scale / filter (`transform` only on .wsi-pt pusher); name every
      transitioned property.
-   - Staged entrances: semantic chunks, 300ms ease-out, 12px rise, 4px blur, 100ms stagger.
+   - Staged entrances: semantic chunks, 300ms ease-out, 12px rise, 4px blur, 70ms stagger.
    - Interactive state uses transitions (interruptible); keyframes only for run-once entrances.
    - Movement, scale and blur run only under prefers-reduced-motion: no-preference.
    - Content is visible without JS: every hidden state is gated by html.js. */
@@ -16,7 +16,7 @@
   /* better-ui icon cross-fade curve. */
   --ease-icon: cubic-bezier(0.2, 0, 0, 1);
   --enter-ms: 300ms;
-  --stagger-ms: 100ms;
+  --stagger-ms: 70ms;
   interpolate-size: allow-keywords;
 }
 
@@ -301,13 +301,17 @@ details[open]::details-content {
     opacity: 0;
     background-image: var(--sheet);
     background-repeat: no-repeat;
-    transition: opacity 900ms var(--ease-out);
+    /* Leaving: a slow fade (the spotlight lingers, then dissolves). */
+    transition: opacity 1400ms cubic-bezier(0.4, 0, 0.2, 1);
     -webkit-mask-image: radial-gradient(280px circle at var(--mx) var(--my), #000 0%, rgba(0, 0, 0, 0.55) 40%, transparent 100%);
     mask-image: radial-gradient(280px circle at var(--mx) var(--my), #000 0%, rgba(0, 0, 0, 0.55) 40%, transparent 100%);
   }
 
+  /* Entering: quick, so the grid answers the pointer immediately. */
   .has-sheet.sheet-on::before {
     opacity: 1;
+    transition-duration: 260ms;
+    transition-timing-function: var(--ease-out);
   }
 
   /* Edge light: rim highlight that follows the cursor. The ring colour comes from --edge. */
