@@ -6,9 +6,7 @@ import Button from '../components/Button.astro';
 import Sheet from '../components/Sheet.astro';
 import Eyebrow from '../components/Eyebrow.astro';
 import Faq from '../components/Faq.astro';
-import CtaA from '../components/cta-variants/CtaA.astro';
-import CtaB from '../components/cta-variants/CtaB.astro';
-import CtaC from '../components/cta-variants/CtaC.astro';
+import CtaBand from '../components/CtaBand.astro';
 import HeroSheet from '../components/illustrations/HeroSheet.astro';
 import IsoTiles from '../components/illustrations/IsoTiles.astro';
 import CategoriesStack from '../components/illustrations/CategoriesStack.astro';
@@ -574,14 +572,7 @@ const jsonLd = [
     </div>
   </Sheet>
 
-  {/* TEMPORARY: three CTA variants stacked for the owner to compare. Keep one, delete the rest
-      plus the labels, and restore the single bottom band. */}
-  <p class="cta-variant-label">CTA variant A — temporary</p>
-  <CtaA />
-  <p class="cta-variant-label">CTA variant B — temporary</p>
-  <CtaB />
-  <p class="cta-variant-label">CTA variant C — temporary</p>
-  <CtaC />
+  <CtaBand />
 </Base>
 
 <style>
@@ -610,6 +601,12 @@ const jsonLd = [
     align-items: flex-start;
     gap: 24px;
     padding: 35px clamp(20px, 2.8vw, 39px) 0;
+    /* The copy column overlaps the art; only its actual content should catch the pointer so art pieces stay draggable. */
+    pointer-events: none;
+  }
+
+  .hero-copy > * {
+    pointer-events: auto;
   }
 
   .hero-proof {
@@ -1395,37 +1392,37 @@ const jsonLd = [
   /* ---------- Dynamic categories: hover or focus on a row drives the illustration ----------
      The row's text takes the bullet's tone and the bullet scales up. The key word gets a spreadsheet
      cell selection: a 1.5px frame that draws itself, a fill handle at its corner and a faint tint. */
-  #categories ul.list-check li[data-view] {
+  :global(#categories) ul.list-check li[data-view] {
     --tone: #0a7a43;
     width: fit-content;
     max-width: 100%;
     cursor: default;
   }
 
-  #categories ul.list-check li[data-view]:nth-child(3n + 2) {
+  :global(#categories) ul.list-check li[data-view]:nth-child(3n + 2) {
     --tone: #1b78a8;
   }
 
-  #categories ul.list-check li[data-view]:nth-child(3n + 3) {
+  :global(#categories) ul.list-check li[data-view]:nth-child(3n + 3) {
     --tone: #9a6700;
   }
 
   /* .sel wraps the key word; the tint, frame and handle sit around it without affecting layout. */
-  #categories .sel {
+  :global(#categories) .sel {
     position: relative;
     display: inline-block;
     white-space: nowrap;
     isolation: isolate;
   }
 
-  #categories .sel-tint,
-  #categories .sel-frame,
-  #categories .sel-handle {
+  :global(#categories) .sel-tint,
+  :global(#categories) .sel-frame,
+  :global(#categories) .sel-handle {
     position: absolute;
     pointer-events: none;
   }
 
-  #categories .sel-tint {
+  :global(#categories) .sel-tint {
     inset: -2px -5px;
     z-index: -1;
     border-radius: 2px;
@@ -1433,7 +1430,7 @@ const jsonLd = [
     opacity: 0;
   }
 
-  #categories .sel-frame {
+  :global(#categories) .sel-frame {
     inset: -2px -5px;
     width: calc(100% + 10px);
     height: calc(100% + 4px);
@@ -1441,7 +1438,7 @@ const jsonLd = [
     opacity: 0;
   }
 
-  #categories .sel-frame rect {
+  :global(#categories) .sel-frame rect {
     x: 0.75px;
     y: 0.75px;
     width: calc(100% - 1.5px);
@@ -1453,7 +1450,7 @@ const jsonLd = [
     stroke-dashoffset: 1;
   }
 
-  #categories .sel-handle {
+  :global(#categories) .sel-handle {
     right: -8px;
     bottom: -5px;
     width: 6px;
@@ -1464,67 +1461,67 @@ const jsonLd = [
     opacity: 0;
   }
 
-  #categories ul.list-check li[data-view]:focus-visible {
+  :global(#categories) ul.list-check li[data-view]:focus-visible {
     outline: 2px solid var(--ink);
     outline-offset: 6px;
     border-radius: 4px;
     color: var(--tone);
   }
 
-  #categories ul.list-check li[data-view]:focus-visible::before {
+  :global(#categories) ul.list-check li[data-view]:focus-visible::before {
     scale: 1.08;
   }
 
-  #categories ul.list-check li[data-view]:focus-visible .sel-tint,
-  #categories ul.list-check li[data-view]:focus-visible .sel-frame,
-  #categories ul.list-check li[data-view]:focus-visible .sel-handle {
+  :global(#categories) ul.list-check li[data-view]:focus-visible .sel-tint,
+  :global(#categories) ul.list-check li[data-view]:focus-visible .sel-frame,
+  :global(#categories) ul.list-check li[data-view]:focus-visible .sel-handle {
     opacity: 1;
   }
 
-  #categories ul.list-check li[data-view]:focus-visible .sel-frame rect {
+  :global(#categories) ul.list-check li[data-view]:focus-visible .sel-frame rect {
     stroke-dashoffset: 0;
   }
 
   @media (hover: hover) and (pointer: fine) {
-    #categories ul.list-check li[data-view]:hover {
+    :global(#categories) ul.list-check li[data-view]:hover {
       color: var(--tone);
     }
 
-    #categories ul.list-check li[data-view]:hover::before {
+    :global(#categories) ul.list-check li[data-view]:hover::before {
       scale: 1.08;
     }
 
-    #categories ul.list-check li[data-view]:hover .sel-tint,
-    #categories ul.list-check li[data-view]:hover .sel-frame,
-    #categories ul.list-check li[data-view]:hover .sel-handle {
+    :global(#categories) ul.list-check li[data-view]:hover .sel-tint,
+    :global(#categories) ul.list-check li[data-view]:hover .sel-frame,
+    :global(#categories) ul.list-check li[data-view]:hover .sel-handle {
       opacity: 1;
     }
 
-    #categories ul.list-check li[data-view]:hover .sel-frame rect {
+    :global(#categories) ul.list-check li[data-view]:hover .sel-frame rect {
       stroke-dashoffset: 0;
     }
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    #categories ul.list-check li[data-view] {
+    :global(#categories) ul.list-check li[data-view] {
       transition: color 200ms var(--ease-out);
     }
 
-    #categories ul.list-check li[data-view]::before {
+    :global(#categories) ul.list-check li[data-view]::before {
       transition: scale 200ms var(--ease-out);
     }
 
     /* Leaving: everything fades out over 200ms, the stroke un-draws only once it is invisible. */
-    #categories .sel-tint,
-    #categories .sel-frame {
+    :global(#categories) .sel-tint,
+    :global(#categories) .sel-frame {
       transition: opacity 200ms var(--ease-out);
     }
 
-    #categories .sel-frame rect {
+    :global(#categories) .sel-frame rect {
       transition: stroke-dashoffset 0s linear 200ms;
     }
 
-    #categories .sel-handle {
+    :global(#categories) .sel-handle {
       scale: 0.2;
       transition:
         opacity 200ms var(--ease-out),
@@ -1532,21 +1529,21 @@ const jsonLd = [
     }
 
     /* Entering: the stroke draws on over 350ms, then the handle pops in at the end of it. */
-    #categories ul.list-check li[data-view]:focus-visible .sel-frame rect {
+    :global(#categories) ul.list-check li[data-view]:focus-visible .sel-frame rect {
       transition: stroke-dashoffset 350ms var(--ease-out);
     }
 
-    #categories ul.list-check li[data-view]:focus-visible .sel-handle {
+    :global(#categories) ul.list-check li[data-view]:focus-visible .sel-handle {
       scale: 1;
       transition-delay: 250ms;
     }
 
     @media (hover: hover) and (pointer: fine) {
-      #categories ul.list-check li[data-view]:hover .sel-frame rect {
+      :global(#categories) ul.list-check li[data-view]:hover .sel-frame rect {
         transition: stroke-dashoffset 350ms var(--ease-out);
       }
 
-      #categories ul.list-check li[data-view]:hover .sel-handle {
+      :global(#categories) ul.list-check li[data-view]:hover .sel-handle {
         scale: 1;
         transition-delay: 250ms;
       }
@@ -1578,29 +1575,25 @@ const jsonLd = [
     line-height: 1.55;
   }
 
-  /* --edge: rim light; --tone: arrow colour; --glow: inner glow on hover. */
+  /* --edge: rim light; --tone: arrow colour. */
   .tool[data-tone='blue'] {
     --edge: rgba(108, 190, 228, 0.9);
     --tone: #6cbee4;
-    --glow: rgba(108, 190, 228, 0.45);
   }
 
   .tool[data-tone='green'] {
     --edge: rgba(64, 170, 74, 0.85);
     --tone: #40aa4a;
-    --glow: rgba(64, 170, 74, 0.45);
   }
 
   .tool[data-tone='yellow'] {
     --edge: rgba(250, 195, 68, 0.95);
     --tone: #c9921a;
-    --glow: rgba(250, 195, 68, 0.5);
   }
 
   .tool[data-tone='pink'] {
     --edge: rgba(224, 127, 184, 0.85);
     --tone: #e07fb8;
-    --glow: rgba(224, 127, 184, 0.45);
   }
 
   /* Diagonal arrow in the card's top-right corner: only on hover or keyboard focus. */
@@ -1615,33 +1608,17 @@ const jsonLd = [
     pointer-events: none;
   }
 
-  .tool:focus-visible {
-    box-shadow:
-      var(--shadow-border),
-      inset 0 0 24px -10px var(--glow);
-  }
-
   .tool:focus-visible .tool-arrow {
     opacity: 1;
   }
 
   @media (hover: hover) and (pointer: fine) {
-    .tool:hover {
-      box-shadow:
-        var(--shadow-border),
-        inset 0 0 24px -10px var(--glow);
-    }
-
     .tool:hover .tool-arrow {
       opacity: 1;
     }
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    .tool {
-      transition: box-shadow 300ms var(--ease-out);
-    }
-
     .tool-arrow {
       translate: -2px 2px;
       transition:
@@ -1662,18 +1639,6 @@ const jsonLd = [
 
   .tools-note {
     margin-top: 24px;
-  }
-
-  /* TEMPORARY: label above each stacked CTA variant. Remove with the comparison. */
-  .cta-variant-label {
-    max-width: var(--container, 72rem);
-    margin: 32px auto 8px;
-    padding-inline: 20px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--muted, #5b6b75);
   }
 
   /* ---------- Latest posts ---------- */

@@ -254,55 +254,72 @@ function headerScroll(el: HTMLElement) {
   update();
 }
 
-// Cursor pusher for every illustration: spring-physics repulsion. Runs only on fine hover pointers (gated by the
-// caller). Every .wsi-pt inside the svg is pushed away from the cursor while the cursor is within PUSH_RADIUS of
+// Cursor pusher and drag & drop for every illustration: spring physics. Runs only on fine hover pointers (gated by
+// the caller). Every .wsi-pt inside the svg is pushed away from the cursor while the cursor is within PUSH_RADIUS of
 // its centre (force falls off with distance; at most PUSH_MAX px x --d, plus a tiny tilt in the push direction)
-// and springs back, with a little overshoot, once the cursor is gone. The integrator runs in rAF only while
-// something moves. Writes --rx/--ry (translate) and --rr (rotate) on each .wsi-pt; motion.css turns them into
-// `transform`. Positions are tracked in screen px and converted to svg user units on write.
+// and springs back, with a little overshoot, once the cursor is gone. A .wsi-pt can also be grabbed (pointerdown),
+// dragged 1:1 and dropped: it stays where it was dropped for the session (that position becomes its rest position,
+// the repel spring works around it); double-click sends it back home. While grabbed it lifts (scale GRAB_SCALE and
+// a stronger shadow via .is-grabbed in motion.css); on drop the spring settles with a little overshoot. The
+// integrator runs in rAF only while something moves. Writes --rx/--ry (translate), --rr (rotate) and --rs (scale) on
+// each .wsi-pt; motion.css turns them into `transform`. Positions are tracked in screen px and converted to svg user
+// units on write; the dropped offset is stored in svg units so it survives resizes.
 const PUSH_RADIUS = 160;
 const PUSH_MAX = 10;
 const PUSH_TILT = 2; // degrees
 const SPRING_K = 170; // stiffness
 const SPRING_C = 18; // damping (underdamped: ratio ~0.69, a slight overshoot)
 const SPRING_DT = 1 / 120;
+const GRAB_SCALE = 1.04;
+const DRAG_SLOP = 3; // px: below this a press-and-release is still a click
+const FLICK_MAX = 360; // px/s: cap of the release velocity that feeds the drop settle
+const FLICK_GAIN = 0.35;
 
 interface Pusher {
   el: SVGElement;
   d: number;
-  x: number; y: number; r: number; // current offset (px, px, deg)
-  vx: number; vy: number; vr: number;
+  x: number; y: number; r: number; s: number; // current offset (px, px, deg) and scale
+  vx: number; vy: number; vr: number; vs: number;
+  ox: number; oy: number; // rest offset from home (svg units): where the piece was dropped
+  grabbed: boolean;
 }
 
 function pusher(svg: SVGElement, area: HTMLElement) {
   const pts: Pusher[] = Array.from(svg.querySelectorAll<SVGElement>('.wsi-pt')).map((el) => ({
     el,
     d: parseFloat(el.style.getPropertyValue('--d')) || 1,
-    x: 0, y: 0, r: 0, vx: 0, vy: 0, vr: 0,
+    x: 0, y: 0, r: 0, s: 1, vx: 0, vy: 0, vr: 0, vs: 0,
+    ox: 0, oy: 0, grabbed: false,
   }));
   if (!pts.length) return;
   let mx = 0, my = 0, active = false, raf = 0, last = 0;
+
+  const svgScale = () => {
+    const vb = (svg as unknown as SVGSVGElement).viewBox?.baseVal;
+    const w = svg.getBoundingClientRect().width;
+    return vb && vb.width && w ? w / vb.width : 1;
+  };
 
   const step = (now: number) => {
     const frame = Math.min((now - last) / 1000 || SPRING_DT, 0.032);
     last = now;
     // Read layout first, then write.
-    const box = svg.getBoundingClientRect();
-    const vb = (svg as unknown as SVGSVGElement).viewBox?.baseVal;
-    const scale = vb && vb.width && box.width ? box.width / vb.width : 1;
+    const scale = svgScale();
     const targets = pts.map((p) => {
-      let tx = 0, ty = 0, tr = 0;
-      if (active) {
+      const rx = p.ox * scale;
+      const ry = p.oy * scale;
+      let tx = rx, ty = ry, tr = 0;
+      if (active && !p.grabbed) {
         const r = p.el.getBoundingClientRect();
         if (r.width || r.height) {
-          // Rest centre: the measured centre minus the offset we applied ourselves.
-          const dx = r.left + r.width / 2 - p.x - mx;
-          const dy = r.top + r.height / 2 - p.y - my;
+          // Rest centre: the measured centre minus the offset we applied ourselves, plus the dropped offset.
+          const dx = r.left + r.width / 2 - p.x + rx - mx;
+          const dy = r.top + r.height / 2 - p.y + ry - my;
           const dist = Math.hypot(dx, dy);
           if (dist < PUSH_RADIUS && dist > 0.5) {
             const f = (1 - dist / PUSH_RADIUS) ** 2;
-            tx = (dx / dist) * f * PUSH_MAX * p.d;
-            ty = (dy / dist) * f * PUSH_MAX * p.d;
+            tx += (dx / dist) * f * PUSH_MAX * p.d;
+            ty += (dy / dist) * f * PUSH_MAX * p.d;
             tr = (dx / dist) * f * PUSH_TILT;
           }
         }
@@ -314,30 +331,42 @@ function pusher(svg: SVGElement, area: HTMLElement) {
     for (let i = 0; i < pts.length; i++) {
       const p = pts[i];
       const [tx, ty, tr] = targets[i];
+      const ts = p.grabbed ? GRAB_SCALE : 1;
+      if (p.grabbed) {
+        // Follows the pointer 1:1: no spring on position while held.
+        p.x = tx; p.y = ty; p.vx = p.vy = 0;
+        moving = true;
+      }
       for (let t = 0; t < frame; t += SPRING_DT) {
-        p.vx += (SPRING_K * (tx - p.x) - SPRING_C * p.vx) * SPRING_DT;
-        p.vy += (SPRING_K * (ty - p.y) - SPRING_C * p.vy) * SPRING_DT;
+        if (!p.grabbed) {
+          p.vx += (SPRING_K * (tx - p.x) - SPRING_C * p.vx) * SPRING_DT;
+          p.vy += (SPRING_K * (ty - p.y) - SPRING_C * p.vy) * SPRING_DT;
+          p.x += p.vx * SPRING_DT;
+          p.y += p.vy * SPRING_DT;
+        }
         p.vr += (SPRING_K * (tr - p.r) - SPRING_C * p.vr) * SPRING_DT;
-        p.x += p.vx * SPRING_DT;
-        p.y += p.vy * SPRING_DT;
+        p.vs += (SPRING_K * (ts - p.s) - SPRING_C * p.vs) * SPRING_DT;
         p.r += p.vr * SPRING_DT;
+        p.s += p.vs * SPRING_DT;
       }
       const settled =
-        Math.abs(tx - p.x) < 0.02 && Math.abs(ty - p.y) < 0.02 && Math.abs(tr - p.r) < 0.01 &&
-        Math.abs(p.vx) < 0.05 && Math.abs(p.vy) < 0.05 && Math.abs(p.vr) < 0.05;
+        Math.abs(tx - p.x) < 0.02 && Math.abs(ty - p.y) < 0.02 && Math.abs(tr - p.r) < 0.01 && Math.abs(ts - p.s) < 0.0005 &&
+        Math.abs(p.vx) < 0.05 && Math.abs(p.vy) < 0.05 && Math.abs(p.vr) < 0.05 && Math.abs(p.vs) < 0.005;
       if (settled) {
-        p.x = tx; p.y = ty; p.r = tr; p.vx = p.vy = p.vr = 0;
+        p.x = tx; p.y = ty; p.r = tr; p.s = ts; p.vx = p.vy = p.vr = p.vs = 0;
       } else {
         moving = true;
       }
-      if (settled && !tx && !ty && !tr) {
+      if (settled && !tx && !ty && !tr && ts === 1) {
         p.el.style.removeProperty('--rx');
         p.el.style.removeProperty('--ry');
         p.el.style.removeProperty('--rr');
+        p.el.style.removeProperty('--rs');
       } else {
         p.el.style.setProperty('--rx', `${(p.x / scale).toFixed(3)}px`);
         p.el.style.setProperty('--ry', `${(p.y / scale).toFixed(3)}px`);
         p.el.style.setProperty('--rr', `${p.r.toFixed(3)}deg`);
+        p.el.style.setProperty('--rs', p.s.toFixed(4));
       }
     }
     raf = moving ? requestAnimationFrame(step) : 0;
@@ -364,6 +393,95 @@ function pusher(svg: SVGElement, area: HTMLElement) {
     active = false;
     kick();
   });
+
+  // ---- Drag & drop ----
+  const noSelect = (e: Event) => e.preventDefault();
+  for (const p of pts) {
+    const el = p.el;
+    let id = -1;
+    let sx = 0, sy = 0, startOx = 0, startOy = 0, scale = 1;
+    let minX = -Infinity, maxX = Infinity, minY = -Infinity, maxY = Infinity;
+    let moved = false;
+    let lx = 0, ly = 0, lt = 0, vx = 0, vy = 0;
+
+    el.addEventListener('pointerdown', (e) => {
+      if (e.pointerType === 'touch' || e.button !== 0 || p.grabbed) return;
+      e.preventDefault();
+      e.stopPropagation(); // the innermost piece wins
+      id = e.pointerId;
+      el.setPointerCapture(id);
+      scale = svgScale();
+      sx = e.clientX; sy = e.clientY;
+      startOx = p.ox; startOy = p.oy;
+      moved = false;
+      lx = e.clientX; ly = e.clientY; lt = e.timeStamp; vx = vy = 0;
+      // Keep the piece inside the svg's visible box unless the svg lets its content overflow.
+      minX = minY = -Infinity; maxX = maxY = Infinity;
+      if (getComputedStyle(svg).overflow !== 'visible') {
+        const box = svg.getBoundingClientRect();
+        const r = el.getBoundingClientRect();
+        minX = Math.min(box.left - r.left, 0); maxX = Math.max(box.right - r.right, 0);
+        minY = Math.min(box.top - r.top, 0); maxY = Math.max(box.bottom - r.bottom, 0);
+      }
+      p.grabbed = true;
+      el.classList.add('is-grabbed');
+      document.addEventListener('selectstart', noSelect);
+      kick();
+    });
+
+    el.addEventListener('pointermove', (e) => {
+      if (!p.grabbed || e.pointerId !== id) return;
+      const dx = Math.min(Math.max(e.clientX - sx, minX), maxX);
+      const dy = Math.min(Math.max(e.clientY - sy, minY), maxY);
+      if (!moved && Math.hypot(e.clientX - sx, e.clientY - sy) > DRAG_SLOP) moved = true;
+      p.ox = startOx + dx / scale;
+      p.oy = startOy + dy / scale;
+      const dt = (e.timeStamp - lt) / 1000;
+      if (dt > 0) {
+        // Smoothed pointer velocity (screen px/s) for the drop settle.
+        vx = vx * 0.5 + ((e.clientX - lx) / dt) * 0.5;
+        vy = vy * 0.5 + ((e.clientY - ly) / dt) * 0.5;
+      }
+      lx = e.clientX; ly = e.clientY; lt = e.timeStamp;
+      kick();
+    });
+
+    const drop = (e: PointerEvent) => {
+      if (!p.grabbed || e.pointerId !== id) return;
+      p.grabbed = false;
+      el.classList.remove('is-grabbed');
+      document.removeEventListener('selectstart', noSelect);
+      if (el.hasPointerCapture(id)) el.releasePointerCapture(id);
+      id = -1;
+      // A pointer that was still moving hands a little of its velocity to the spring, which overshoots the drop point.
+      if (e.timeStamp - lt < 80) {
+        const cap = (v: number) => Math.max(-FLICK_MAX, Math.min(FLICK_MAX, v * FLICK_GAIN));
+        p.vx = cap(vx);
+        p.vy = cap(vy);
+      }
+      kick();
+    };
+    el.addEventListener('pointerup', drop);
+    el.addEventListener('pointercancel', drop);
+    el.addEventListener('lostpointercapture', drop);
+
+    // A drag ending over a link (illustrations inside cards) must not follow it.
+    el.addEventListener('click', (e) => {
+      if (moved) {
+        e.preventDefault();
+        e.stopPropagation();
+        moved = false;
+      }
+    }, true);
+
+    // Double-click sends the piece back home.
+    el.addEventListener('dblclick', (e) => {
+      e.preventDefault();
+      p.ox = 0;
+      p.oy = 0;
+      kick();
+    });
+  }
 }
 
 // Spreadsheet background for opted-in elements only (`main [data-cursor-sheet]`, a block inside a

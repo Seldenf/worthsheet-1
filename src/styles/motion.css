@@ -205,15 +205,27 @@ details[open]::details-content {
 }
 
 /* ---------- Illustration cursor pusher, spreadsheet reveal, edge light (fine hover pointers, motion allowed) ----------
-   motion.ts runs a spring on every .wsi-pt inside svg.wsi and writes --rx/--ry (translate) and --rr (rotate) on it. On each
+   motion.ts runs a spring on every .wsi-pt inside svg.wsi and writes --rx/--ry (translate), --rr (rotate) and --rs (scale) on it;
+   a piece can also be grabbed and dropped (.is-grabbed while held). On each
    [data-cursor-sheet] element (which gets .has-sheet) it sets --sheet (the
    generated grid), --mx/--my (the lagging mask centre) and .sheet-on while the pointer is over it. --ex/--ey go on
    edge-light hosts. Only small floating elements marked .wsi-pt move; the svg itself never transforms. */
 @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
   svg.wsi .wsi-pt {
-    transform: translate(var(--rx, 0px), var(--ry, 0px)) rotate(var(--rr, 0deg));
+    transform: translate(var(--rx, 0px), var(--ry, 0px)) rotate(var(--rr, 0deg)) scale(var(--rs, 1));
     transform-box: fill-box;
     transform-origin: center;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-user-drag: none;
+    transition: filter 200ms var(--ease-out);
+  }
+
+  /* Held piece: lifted (scale comes from motion.ts via --rs) with a stronger shadow. */
+  svg.wsi .wsi-pt.is-grabbed {
+    cursor: grabbing;
+    filter: drop-shadow(0 8px 10px rgba(12, 38, 53, 0.28));
   }
 
   /* Opt-in only: elements marked data-cursor-sheet (a Sheet card, which clips and layers it) get the
@@ -253,7 +265,7 @@ details[open]::details-content {
     position: absolute;
     inset: 0;
     border-radius: inherit;
-    padding: 1px;
+    padding: var(--edge-w, 1px);
     background: radial-gradient(
       var(--edge-r, 160px) circle at var(--ex, 50%) var(--ey, 50%),
       var(--edge, rgba(46, 41, 38, 0.28)),
@@ -267,20 +279,69 @@ details[open]::details-content {
     pointer-events: none;
   }
 
+  /* Inner glow: local, only near the cursor where the rim lights up (never a whole-card inset glow). It sits
+     above the host's own background and under its content (the host isolates its stacking context). */
+  .card,
+  .mega-item,
+  .mega-feature,
+  .post-card,
+  .btn-primary {
+    isolation: isolate;
+  }
+
+  .card::before,
+  .mega-item::before,
+  .mega-feature::before,
+  .post-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background: radial-gradient(
+      140px circle at var(--ex, 50%) var(--ey, 50%),
+      color-mix(in srgb, var(--edge, rgba(46, 41, 38, 0.28)) 22%, transparent),
+      transparent 70%
+    );
+    opacity: 0;
+    transition: opacity 300ms var(--ease-out);
+    pointer-events: none;
+  }
+
+  /* Primary button: soft white light inside the button, only around the cursor. */
+  .btn-primary::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background: radial-gradient(70px circle at var(--ex, 50%) var(--ey, 50%), rgba(255, 255, 255, 0.18), transparent 100%);
+    opacity: 0;
+    transition: opacity 300ms var(--ease-out);
+    pointer-events: none;
+  }
+
   .btn:hover::after,
   .card:hover::after,
   .mega-item:hover::after,
   .mega-feature:hover::after,
-  .post-card:hover::after {
+  .post-card:hover::after,
+  .card:hover::before,
+  .mega-item:hover::before,
+  .mega-feature:hover::before,
+  .post-card:hover::before,
+  .btn-primary:hover::before {
     opacity: 1;
   }
 }
 
-/* Edge-light colours: the primary (navy) button gets a soft white light near the cursor; the secondary button's dark
-   light is set with the button in global.css. Buttons use a tighter light than cards (--edge-r) and the ring covers the
-   button's own 1px border. No full outline and no inset ring on hover. */
+/* Edge-light colours: the primary (navy) button gets a clearly visible white light near the cursor (a bright 2px rim
+   over its own border plus a local inner glow); the secondary button's dark light is set with the button in
+   global.css. Buttons use a tighter light than cards (--edge-r) and the ring covers the button's own 1px border.
+   No full outline and no inset ring on hover. */
 .btn-primary {
-  --edge: rgba(255, 255, 255, 0.85);
+  --edge: #fff;
+  --edge-w: 2px;
 }
 
 .btn {

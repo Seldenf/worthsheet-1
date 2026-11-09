@@ -1,7 +1,10 @@
 ---
+/**
+ * Closing CTA band: a navy card with grain and soft glows, centred copy, a light button and three
+ * trust ticks below it. A passed `art` slot is ignored.
+ */
 import Button from './Button.astro';
 import Sheet from './Sheet.astro';
-import CtaIcons from './illustrations/CtaIcons.astro';
 import { STATS } from '../config';
 
 interface Props {
@@ -15,6 +18,8 @@ const {
   text = `Build a bank-ready personal financial statement in Google Sheets or Excel. Free, with ${STATS.assetCategories} asset and ${STATS.liabilityCategories} liability categories built in.`,
   class: className,
 } = Astro.props;
+
+const ticks = ['Free forever', 'Google Sheets & Excel', '9,000+ downloads'];
 ---
 
 <Sheet
@@ -26,90 +31,124 @@ const {
   aria-labelledby="cta-band-title"
 >
   <div class="cta-band">
-    <div class="cta-art"><slot name="art"><CtaIcons /></slot></div>
-    <div class="cta-copy">
-      <h2 id="cta-band-title">{title}</h2>
-      <p class="lead">{text}</p>
-      <div class="cta-actions">
-        <Button href="/download/" variant="primary">Get the free template</Button>
-      </div>
+    <h2 id="cta-band-title">{title}</h2>
+    <p class="cta-band-text">{text}</p>
+    <div class="cta-band-actions">
+      <Button href="/download/" variant="secondary" size="lg" class="cta-band-btn">Get the free template</Button>
     </div>
+    <ul class="cta-band-ticks">
+      {
+        ticks.map((t) => (
+          <li>
+            <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false">
+              <circle cx="8" cy="8" r="8" fill="#40aa4a"></circle>
+              <path
+                d="M4.6 8.3l2.2 2.2 4.6-4.9"
+                fill="none"
+                stroke="#fff"
+                stroke-width="1.7"
+                stroke-linecap="round"
+                stroke-linejoin="round"></path>
+            </svg>
+            <span>{t}</span>
+          </li>
+        ))
+      }
+    </ul>
   </div>
 </Sheet>
 
-<style>
-  /* Centred copy. The default art is a few small floating iso tiles (CtaIcons) laid over the whole
-     card, around the copy. A custom `art` slot keeps the old behaviour: below the copy on small
-     screens, a banner behind it from 960px up. */
-  .cta-band {
-    --pad: clamp(24px, 4.6vw, 64px);
-    position: relative;
-    display: grid;
-    gap: 24px;
-    justify-items: center;
-    text-align: center;
+<style is:global>
+  /* Card surface: navy, a cool glow, a green wash bottom-left, a faint yellow wash top-right, grain. */
+  .cta-band-wrap .sheet-card {
+    border-color: rgba(255, 255, 255, 0.08);
+    background-color: #0c2635;
+    background-image:
+      var(--grain),
+      radial-gradient(55% 80% at 50% 50%, rgba(108, 190, 228, 0.2), transparent 72%),
+      radial-gradient(45% 70% at 0% 100%, rgba(64, 170, 74, 0.16), transparent 70%),
+      radial-gradient(40% 60% at 100% 0%, rgba(250, 195, 68, 0.08), transparent 70%),
+      linear-gradient(160deg, #123447 0%, #0a1f2b 100%);
   }
 
-  .cta-copy {
+  .cta-band-wrap .sheet-body {
+    padding: 0;
+  }
+</style>
+
+<style>
+  .cta-band {
+    --pad: clamp(24px, 4.6vw, 64px);
     position: relative;
     z-index: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
+    text-align: center;
     gap: 16px;
-    max-width: 30rem;
+    padding: clamp(40px, 5.4vw, 72px) var(--pad);
   }
 
-  .cta-copy :global(.lead) {
-    margin-inline: auto;
+  .cta-band h2 {
+    max-width: 17ch;
+    color: #fff;
   }
 
-  .cta-actions {
+  .cta-band-text {
+    max-width: 32rem;
+    margin: 0;
+    font-size: clamp(1rem, 1.45vw, 1.125rem);
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.72);
+  }
+
+  .cta-band-actions {
     margin-top: 8px;
   }
 
-  .cta-art {
-    order: 2;
-    width: calc(100% + 2 * var(--pad));
-    margin-inline: calc(-1 * var(--pad));
+  /* Light button on navy: white fill, navy label, no hairline. */
+  .cta-band-actions :global(.cta-band-btn) {
+    --btn-bg: #fff;
+    --btn-fg: var(--navy);
+    --btn-border: #fff;
+    background-image: linear-gradient(rgba(0, 0, 0, 0) 70%, rgba(0, 0, 0, 0.05));
   }
 
-  .cta-art:empty {
-    display: none;
-  }
-
-  /* Default art: the icon layer covers the whole card and ignores the pointer. */
-  .cta-art:has(.cta-icons) {
-    position: absolute;
-    z-index: 0;
-    inset: 0 calc(-1 * var(--pad));
-    width: auto;
-    margin: 0;
-    order: 0;
-    pointer-events: none;
-  }
-
-  @media (min-width: 960px) {
-    .cta-band {
-      min-height: 320px;
-      align-content: center;
-    }
-
-    .cta-art:not(:has(.cta-icons)) {
-      position: absolute;
-      top: 50%;
-      left: calc(-1 * var(--pad));
-      right: calc(-1 * var(--pad));
-      width: auto;
-      margin: 0;
-      translate: 0 -50%;
-      pointer-events: none;
+  @media (hover: hover) and (pointer: fine) {
+    .cta-band-actions :global(.cta-band-btn:hover) {
+      --btn-bg: var(--tint-blue);
+      --btn-border: var(--tint-blue);
     }
   }
 
-  @media (max-width: 639px) {
-    .cta-band:has(.cta-icons) .cta-copy {
-      padding-inline: 40px;
+  .cta-band-ticks {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px 22px;
+    margin: 12px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .cta-band-ticks li {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.3;
+    color: rgba(255, 255, 255, 0.84);
+  }
+
+  .cta-band-ticks svg {
+    flex: none;
+  }
+
+  @media (max-width: 479px) {
+    .cta-band-actions,
+    .cta-band-actions :global(.btn) {
+      width: 100%;
     }
   }
 </style>

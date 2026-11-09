@@ -247,6 +247,10 @@ const calculatorsActive = [...calculators, featured].some((c) => current.startsW
     border: 0;
     border-radius: 999px;
     background: transparent;
+    box-shadow: inset 0 0 0 1px transparent;
+    transition:
+      background-color 0.2s cubic-bezier(0.23, 1, 0.32, 1),
+      box-shadow 0.2s cubic-bezier(0.23, 1, 0.32, 1);
     font-size: 1rem;
     font-weight: 500;
     text-decoration: none;
@@ -255,13 +259,11 @@ const calculatorsActive = [...calculators, featured].some((c) => current.startsW
 
   .nav-list a:hover,
   .dropdown-toggle:hover,
-  .dropdown-toggle[aria-expanded='true'] {
-    background: var(--beige-soft);
-  }
-
+  .dropdown-toggle[aria-expanded='true'],
   .nav-list a[aria-current='page'],
   .dropdown-toggle.active {
-    background: var(--beige-soft);
+    background: var(--white);
+    box-shadow: inset 0 0 0 1px rgba(12, 38, 53, 0.55);
   }
 
   .dropdown-toggle svg {
