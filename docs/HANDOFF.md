@@ -110,13 +110,14 @@ Everything below is on `main` and deployed; `prod-domain` is rebased on it.
 - `body { overflow-x: clip }` plus header `overflow-x: clip` to stop sideways panning on mobile.
 - Logo mark cropped to the squares (`viewBox="14 14 36 36"`, 22px) in the Header and Footer.
 - Blue ShieldSecure illustration and blue "Why WorthSheet" chip.
-- Cursor iso grid: navy lines at `.09` alpha (`SHEET_STROKE`), 260ms in and 1400ms out, synced to the illustration grids.
+- Cursor iso grid is a canvas trail (`sheet()` in `motion.ts`, `.sheet-trail` in `motion.css`):
+  - Lines are in logo colours by age: blue → green → yellow, then fade.
+  - Radius is 160px and the trail lingers about 3s.
+  - The lattice is synced to the illustration grids.
 - Cream page gap below the FAQ card (`#faq` margin-bottom). Reveal stagger is 70ms.
-
-## Experimental branch (not merged)
-
-- `icons-refresh`, in worktree `/tmp/ws-icons`: the iso-tile glyphs (IsoIcon, IsoTiles, StepTile, CtaTiles…) are swapped for a refined open-source set (Lucide, ISC).
-- The owner will decide after seeing it. If approved: `git checkout v3 && git merge icons-refresh`, then run the gates and ship. If rejected: delete the branch.
+- Icons: every iso-tile glyph uses Lucide (ISC). Path data and attribution are in `src/lib/lucide-glyphs.ts`.
+  - Glyph stroke is 1.5 on the 24-grid. `IsoIcon` computes its own thin stroke. Check marks use 3.2.
+  - Merged from the `icons-refresh` branch, which can now be deleted together with the worktree `/tmp/ws-icons`.
 
 Next session: see **Open items** above. The owner reviews visually and sends screenshots with small tweaks; iterate in rounds on `v3`, then fast-forward `main`.
 
