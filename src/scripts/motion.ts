@@ -510,18 +510,38 @@ function pusher(svg: SVGElement, area: HTMLElement) {
   }
 }
 
-// Spreadsheet background for opted-in elements only (`main [data-cursor-sheet]`, a block inside a
-// Sheet card). Each gets an isometric grid as an inline SVG data URL in --sheet (motion.css draws
-// it on ::before). The grid is the card illustration's own plate grid carried on past the plate:
+// Spreadsheet trail for opted-in elements only (`main [data-cursor-sheet]`, a block inside a Sheet card).
+// Each gets a <canvas> behind its content (motion.css positions it) that paints an isometric grid along
+// the cursor path. The grid is the card illustration's own plate grid carried on past the plate:
 // the same lattice (pitch and phase read from the grid path's `d`), the same projection (the
 // path's transform attributes), at the scale the svg is rendered at (getScreenCTM). So the cursor
 // lines continue the illustration's lines exactly, at the same 2:1 angle. Only attribute
 // transforms are read, so CSS breathing, intro and push animations do not shift the lattice.
 // Grid lines only, no values.
 const SHEET_GRID = 'svg.wsi-tiles .wsi-tiles-base > g > path, svg.wsi-shield g[clip-path] > path';
-// Navy-tinted lines (the site ink at low alpha) so the grid matches the palette instead of warm grey.
-const SHEET_STROKE = 'rgba(12,38,53,.09)';
-const SHEET_LERP = 0.12;
+const SHEET_ALPHA = 0.45; // line alpha at the freshest, fully covered spot
+const SHEET_RADIUS = 160; // spotlight radius (px) around every trail sample
+const SHEET_LIFE = 3200; // ms a sample stays lit
+const SHEET_HOLD = 0.5; // share of SHEET_LIFE at full strength before the smooth fade-out
+const SHEET_FADE_IN = 160; // ms for a new sample to reach full strength
+const SHEET_SPACING = 24; // px between trail samples
+const SHEET_MAX = 40; // samples kept
+const SHEET_COVER = 0.35; // coverage of one sample at its centre; overlapping samples add up to full
+// Logo palette by age (share of SHEET_LIFE): blue, then green, then yellow.
+const SHEET_COLORS: [number, number[]][] = [
+  [0, [108, 190, 228]], // #6cbee4
+  [0.35, [64, 170, 74]], // #40aa4a
+  [0.7, [250, 195, 68]], // #fac344
+  [1, [250, 195, 68]],
+];
+// Spotlight falloff (share of radius, share of coverage): soft edge.
+const SHEET_FALLOFF: [number, number][] = [
+  [0, 1],
+  [0.35, 0.72],
+  [0.65, 0.28],
+  [0.85, 0.06],
+  [1, 0],
+];
 
 // FNV-1a: string to 32-bit seed.
 function hashSeed(text: string) {
@@ -572,8 +592,8 @@ function gridMatrix(path: SVGPathElement, svg: SVGSVGElement) {
   return m;
 }
 
-// Lattice lines covering a width x height box (element px) whose origin is at screen (left, top).
-function sheetSvg(width: number, height: number, m: DOMMatrix, lattice: SheetLattice) {
+// Path data of the lattice lines covering a width x height box (element px); m maps local plate coordinates to element px.
+function sheetPath(width: number, height: number, m: DOMMatrix, lattice: SheetLattice) {
   const inv = m.inverse();
   const local = [[0, 0], [width, 0], [0, height], [width, height]].map(([x, y]) => inv.transformPoint(new DOMPoint(x, y)));
   const uMin = Math.min(...local.map((p) => p.x)), uMax = Math.max(...local.map((p) => p.x));
@@ -594,36 +614,103 @@ function sheetSvg(width: number, height: number, m: DOMMatrix, lattice: SheetLat
     edges += `M${at(uMin, y)}L${at(uMax, y)}`;
   }
 
-  return (
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">` +
-    `<path fill="none" stroke="${SHEET_STROKE}" stroke-width="1" d="${edges}"/></svg>`
-  );
+  return edges;
 }
 
-// Sets the grid, then a mask centre that lags the pointer (lerp, rAF, stops once settled).
-// On leave only .sheet-on is removed: the CSS opacity fades slowly while the mask keeps drifting.
-// The grid is regenerated when the element or its illustration changes size (resize, font load)
-// and on pointer enter (catches layout shifts no observer reports); an unchanged lattice is skipped.
+// The trail. Each pointer sample is a soft radial spotlight whose colour and strength follow its age; the spotlights
+// of all live samples are painted (oldest first) onto a canvas behind the card content, then the lattice layer is
+// multiplied in (destination-in), so only the grid lines show, coloured by when the cursor passed. Where spotlights
+// overlap their coverage saturates, so the freshest line alpha is SHEET_ALPHA however densely the trail is sampled.
+// rAF runs only while samples are alive. The lattice layer is rebuilt when the element or its illustration changes
+// size (resize, font load, DPR) and on pointer enter (catches layout shifts no observer reports); an unchanged
+// lattice is skipped.
+interface SheetSample {
+  x: number;
+  y: number;
+  t: number; // created: age counts from here
+}
+
+function sheetColor(f: number) {
+  let i = 1;
+  while (i < SHEET_COLORS.length - 1 && f > SHEET_COLORS[i][0]) i++;
+  const [f0, c0] = SHEET_COLORS[i - 1];
+  const [f1, c1] = SHEET_COLORS[i];
+  const k = Math.min(1, Math.max(0, (f - f0) / (f1 - f0)));
+  return c0.map((v, n) => Math.round(v + (c1[n] - v) * k));
+}
+
 function sheet(el: HTMLElement) {
   const path = el.querySelector<SVGPathElement>(SHEET_GRID);
   const svg = path?.ownerSVGElement;
   if (!path || !svg) return;
   const lattice = gridLattice(path);
 
+  const canvas = document.createElement('canvas');
+  const layer = document.createElement('canvas'); // the lattice lines, rebuilt on resize
+  const ctx = canvas.getContext('2d');
+  const lctx = layer.getContext('2d');
+  if (!ctx || !lctx) return;
+  canvas.className = 'sheet-trail';
+  canvas.setAttribute('aria-hidden', 'true');
+  el.append(canvas);
+
+  const samples: SheetSample[] = [];
+  let dpr = 1, raf = 0, broken = true;
+
+  const frame = () => {
+    const now = performance.now(); // not the rAF timestamp: it can precede an event stamped in the same frame
+    while (samples.length && now - samples[0].t >= SHEET_LIFE) samples.shift();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (!samples.length) {
+      raf = 0;
+      return;
+    }
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    for (const s of samples) {
+      const f = (now - s.t) / SHEET_LIFE;
+      const fade = Math.min(1, Math.max(0, (f - SHEET_HOLD) / (1 - SHEET_HOLD)));
+      const cover = SHEET_COVER * (1 - fade * fade * (3 - 2 * fade)) * Math.min(1, (now - s.t) / SHEET_FADE_IN);
+      if (cover < 0.004) continue;
+      const [r, g, b] = sheetColor(f);
+      const grad = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, SHEET_RADIUS);
+      for (const [at, k] of SHEET_FALLOFF) grad.addColorStop(at, `rgba(${r},${g},${b},${(cover * k).toFixed(3)})`);
+      ctx.fillStyle = grad;
+      ctx.fillRect(s.x - SHEET_RADIUS, s.y - SHEET_RADIUS, SHEET_RADIUS * 2, SHEET_RADIUS * 2);
+    }
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.globalCompositeOperation = 'destination-in';
+    ctx.drawImage(layer, 0, 0);
+    ctx.globalCompositeOperation = 'source-over';
+    raf = requestAnimationFrame(frame);
+  };
+  const kick = () => {
+    if (!raf) raf = requestAnimationFrame(frame);
+  };
+
   let drawn = '';
   const draw = () => {
     const m = gridMatrix(path, svg);
     if (!m) return;
-    // Screen to element px: the ::before box is the element's padding box.
+    // Screen to element px: the canvas box is the element's padding box.
     const box = el.getBoundingClientRect();
     const origin = new DOMMatrix().translate(-(box.left + el.clientLeft), -(box.top + el.clientTop)).multiply(m);
-    const key = [el.clientWidth, el.clientHeight, origin.a, origin.b, origin.c, origin.d, origin.e, origin.f]
+    const width = el.clientWidth, height = el.clientHeight;
+    const ratio = window.devicePixelRatio || 1;
+    const key = [ratio, width, height, origin.a, origin.b, origin.c, origin.d, origin.e, origin.f]
       .map((n) => n.toFixed(2))
       .join();
     if (key === drawn) return;
     drawn = key;
-    const grid = sheetSvg(el.clientWidth, el.clientHeight, origin, lattice);
-    el.style.setProperty('--sheet', `url("data:image/svg+xml,${encodeURIComponent(grid)}")`);
+    dpr = ratio;
+    canvas.width = layer.width = Math.max(1, Math.round(width * dpr));
+    canvas.height = layer.height = Math.max(1, Math.round(height * dpr));
+    lctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    lctx.lineWidth = 1;
+    lctx.strokeStyle = `rgba(0,0,0,${SHEET_ALPHA})`;
+    lctx.stroke(new Path2D(sheetPath(width, height, origin, lattice)));
+    if (samples.length) kick();
   };
   draw();
   el.classList.add('has-sheet');
@@ -631,47 +718,42 @@ function sheet(el: HTMLElement) {
   observer.observe(el);
   observer.observe(svg);
 
-  let tx = 0, ty = 0, cx = 0, cy = 0, raf = 0;
-  const paint = () => {
-    el.style.setProperty('--mx', `${cx.toFixed(1)}px`);
-    el.style.setProperty('--my', `${cy.toFixed(1)}px`);
-  };
-  const step = () => {
-    cx += (tx - cx) * SHEET_LERP;
-    cy += (ty - cy) * SHEET_LERP;
-    const settled = Math.abs(tx - cx) < 0.2 && Math.abs(ty - cy) < 0.2;
-    if (settled) (cx = tx), (cy = ty);
-    paint();
-    raf = settled ? 0 : requestAnimationFrame(step);
-  };
-  const kick = () => {
-    if (!raf) raf = requestAnimationFrame(step);
+  // A move shorter than SHEET_SPACING from the newest sample adds nothing; a longer one (a fast flick reports few
+  // events) is filled in at SHEET_SPACING so the trail stays continuous.
+  const track = (e: PointerEvent) => {
+    const r = el.getBoundingClientRect();
+    const x = e.clientX - r.left - el.clientLeft;
+    const y = e.clientY - r.top - el.clientTop;
+    const now = performance.now();
+    const last = samples[samples.length - 1];
+    if (!last || broken) {
+      samples.push({ x, y, t: now });
+    } else {
+      const d = Math.hypot(x - last.x, y - last.y);
+      const steps = Math.floor(d / SHEET_SPACING);
+      for (let i = 1; i <= steps; i++) {
+        samples.push({ x: last.x + ((x - last.x) * i) / steps, y: last.y + ((y - last.y) * i) / steps, t: now });
+      }
+    }
+    broken = false;
+    while (samples.length > SHEET_MAX) samples.shift();
+    kick();
   };
   el.addEventListener('pointerenter', (e) => {
     if (e.pointerType === 'touch') return;
     draw();
-    const r = el.getBoundingClientRect();
-    tx = e.clientX - r.left;
-    ty = e.clientY - r.top;
-    // Entering from rest starts the mask at the entry point rather than sweeping in from far away.
-    if (!raf) (cx = tx), (cy = ty), paint();
-    el.classList.add('sheet-on');
-    kick();
+    track(e);
   });
   el.addEventListener(
     'pointermove',
     (e) => {
-      if (e.pointerType === 'touch') return;
-      const r = el.getBoundingClientRect();
-      tx = e.clientX - r.left;
-      ty = e.clientY - r.top;
-      kick();
+      if (e.pointerType !== 'touch') track(e);
     },
     { passive: true },
   );
-  el.addEventListener('pointerleave', (e) => {
-    if (e.pointerType === 'touch') return;
-    el.classList.remove('sheet-on');
+  // Leaving ends the stroke: the trail keeps fading, and re-entering elsewhere starts a new one (no streak across).
+  el.addEventListener('pointerleave', () => {
+    broken = true;
   });
 }
  
