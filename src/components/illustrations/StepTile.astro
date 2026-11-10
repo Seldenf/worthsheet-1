@@ -1,4 +1,5 @@
 ---
+import { LUCIDE } from '../../lib/lucide-glyphs';
 /**
  * One isometric tile per "How to use" step, drawn in the same language as StepsFlow on main: a 2:1 iso
  * slab (darker side) under a top face, the flat outline glyph at 70% of the usual size on the face,
@@ -15,15 +16,15 @@ const { step, class: className } = Astro.props;
 
 // Every pad and tint is an opaque hex (no alpha), so nothing underneath shows through.
 const P = {
-  1: { fill: '#6cbee4', side: '#4a9fc8', pad: '#e2f2f9', glow: 'rgba(108, 190, 228, 0.55)', icon: '<path d="M12 4v11M7 10.5l5 5 5-5M5 19.5h14"/>' },
-  2: { fill: '#0f9d58', side: '#0a7a43', pad: '#e2f9e9', glow: 'rgba(15, 157, 88, 0.45)', icon: '<path d="M6 3h8l4 4v14H6zM14 3v4h4M9 12.5h6M9 16h6M12 10v8"/>' },
-  3: { fill: '#fac344', side: '#d9a02a', pad: '#f9f2e2', glow: 'rgba(250, 195, 68, 0.6)', icon: '<path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19zM14 7l3 3"/>' },
+  1: { fill: '#6cbee4', side: '#4a9fc8', pad: '#e2f2f9', glow: 'rgba(108, 190, 228, 0.55)', icon: LUCIDE.download },
+  2: { fill: '#0f9d58', side: '#0a7a43', pad: '#e2f9e9', glow: 'rgba(15, 157, 88, 0.45)', icon: LUCIDE.filePlus },
+  3: { fill: '#fac344', side: '#d9a02a', pad: '#f9f2e2', glow: 'rgba(250, 195, 68, 0.6)', icon: LUCIDE.pencil },
   4: {
     fill: '#0c2635',
     side: '#06141c',
     pad: '#e6edf1',
     glow: 'rgba(12, 38, 53, 0.4)',
-    icon: '<path d="M7 9V4h10v5M7 17H5a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-2M7 14h10v6H7z"/>',
+    icon: LUCIDE.printer,
   },
 } as const;
 const t = P[step];
@@ -70,7 +71,7 @@ const DELAY = -step * 0.8;
         <g
           transform={`translate(${S / 2} ${S / 2}) scale(${k}) translate(-12 -12)`}
           stroke="#fff"
-          stroke-width="2.6"
+          stroke-width="1.5"
           stroke-linecap="round"
           stroke-linejoin="round"
           fill="none"
