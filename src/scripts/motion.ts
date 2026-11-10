@@ -519,10 +519,10 @@ function pusher(svg: SVGElement, area: HTMLElement) {
 // transforms are read, so CSS breathing, intro and push animations do not shift the lattice.
 // Grid lines only, no values.
 const SHEET_GRID = 'svg.wsi-tiles .wsi-tiles-base > g > path, svg.wsi-shield g[clip-path] > path';
-const SHEET_ALPHA = 0.45; // line alpha at the freshest, fully covered spot
-const SHEET_RADIUS = 160; // spotlight radius (px) around every trail sample
-const SHEET_LIFE = 3200; // ms a sample stays lit
-const SHEET_HOLD = 0.5; // share of SHEET_LIFE at full strength before the smooth fade-out
+const SHEET_ALPHA = 0.28; // line alpha at the freshest, fully covered spot
+const SHEET_RADIUS = 125; // spotlight radius (px) around every trail sample
+const SHEET_LIFE = 1900; // ms a sample stays lit
+const SHEET_HOLD = 0.35; // share of SHEET_LIFE at full strength before the smooth fade-out
 const SHEET_FADE_IN = 160; // ms for a new sample to reach full strength
 const SHEET_SPACING = 24; // px between trail samples
 const SHEET_MAX = 40; // samples kept
