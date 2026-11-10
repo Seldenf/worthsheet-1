@@ -1,4 +1,5 @@
 ---
+import { LUCIDE } from '../../lib/lucide-glyphs';
 interface Props {
   class?: string;
   title?: string;
@@ -137,15 +138,16 @@ const tiles = [
         </g>
       )}
       <g transform={iso(t.x, t.y, t.s)}>
-        {t.kind === 'dollar' && (
-          <text x={t.s / 2} y={t.s * 0.76} font-size={t.s * 0.72} font-weight="700" fill="#fff" text-anchor="middle">$</text>
-        )}
-        {t.kind === 'bars' && (
-          <g fill="#4a9fc8">
-            <rect x="9" y="22" width="5" height="9" rx="1.5"></rect>
-            <rect x="17.5" y="15" width="5" height="16" rx="1.5"></rect>
-            <rect x="26" y="8" width="5" height="23" rx="1.5"></rect>
-          </g>
+        {(t.kind === 'dollar' || t.kind === 'bars') && (
+          <g
+            transform={`translate(${t.s / 2} ${t.s / 2}) scale(${(t.s * 0.62) / 24}) translate(-12 -12)`}
+            stroke={t.kind === 'dollar' ? '#fff' : '#4a9fc8'}
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            fill="none"
+            set:html={t.kind === 'dollar' ? LUCIDE.dollar : LUCIDE.chart}
+          ></g>
         )}
       </g>
     </g>
@@ -164,7 +166,7 @@ const tiles = [
   </g>
   <g class="wsi-breathe wsi-hero-top wsi-hero-f2" style={`${lag(0.8 + jit(7, 0.5))};--lift:-6px`}>
     <circle cx="806" cy="262" r="26" fill={C.green} stroke="#fff" stroke-width="3"></circle>
-    <path d="M794 263l8 8 15-17" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
+    <path d="M795 263l7.5 7.5 14-15" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
   </g>
   </g>
   </g>
