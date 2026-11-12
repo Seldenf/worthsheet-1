@@ -7,7 +7,7 @@ import { formatUSD, parseAmount } from '../../lib/finance';
 export type Unit = '$' | '%' | 'years' | '';
 
 export interface NumRule {
-	/** Phrase used inside messages, e.g. "the total amount" → "Enter the total amount." */
+	/** Phrase used inside messages, e.g. "the home price" → "Enter the home price." */
 	name: string;
 	/** Empty input is an error (default: empty is treated as `fallback`, which defaults to 0). */
 	required?: boolean;

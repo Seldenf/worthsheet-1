@@ -45,7 +45,7 @@ Lenders check what you tell them. Fannie Mae's Selling Guide, for example, requi
 
 A personal financial statement is a snapshot, so choose one date and make every number match it. Using the end of the most recent month is simple, because your statements already line up with it. Write the date at the top of the statement.
 
-How current it must be depends on the reader. SBA Form 413 says the information must be current within 120 days of submission for most programs, but SBA's SOP 50 10 8.1 asks lenders for guarantor statements dated within 90 days of loan approval, and a lender may set its own window. When in doubt, use fresh numbers dated shortly before you submit.
+How current it must be depends on the reader. SBA Form 413 says the information must be current within 120 days of submission for most programs, but SBA's SOP 50 10 8.1 (for loans that receive an SBA loan number on or after October 1, 2026) asks lenders for guarantor statements dated within 90 days of loan approval, and a lender may set its own window. When in doubt, use fresh numbers dated shortly before you submit.
 
 ## Step 2: List assets at current value
 
@@ -136,8 +136,8 @@ Sign only what you believe is accurate. Many lender and government forms carry a
 
 The free [WorthSheet template](/download/) turns steps 2 to 5 into a single page in Google Sheets or Excel:
 
-- **Step 2 (assets)** maps to the template's asset sections: checking, savings, retirement, investment, real estate, auto, boat and RV, private business interest, and other. Together they cover 27 asset categories.
-- **Step 3 (liabilities)** maps to credit cards, home loans, student loans, auto, boat and RV loans, notes payable and other obligations: 13 liability categories.
+- **Step 2 (assets)** maps to the template's asset sections: checking, savings, retirement, investment, real estate, auto, boat and RV, private business interest, and other. Together they cover 27 asset types.
+- **Step 3 (liabilities)** maps to credit cards, home loans, student loans, auto, boat and RV loans, notes payable and other obligations: 13 liability types.
 - **Step 5 (math)** is automatic: each category total sums its accounts, and net worth is calculated for you at the top.
 - **Step 6 (sign)** is the signature and date lines at the bottom of the printable page.
 

@@ -63,7 +63,7 @@ const related = [
 	{ href: '/how-to-calculate-debt-to-income-ratio/', title: 'How to calculate your DTI', text: 'The formula, what counts as debt and current program limits.' },
 	{ href: '/how-much-house-can-i-afford/', title: 'How much house can I afford?', text: 'Turn the 28/36 rule into a maximum home price.' },
 	{ href: '/mortgage-calculator/', title: 'Mortgage calculator', text: 'Estimate the principal and interest part of your housing payment.' },
-	{ href: '/mortgage-readiness-assessment/', title: 'Mortgage readiness assessment', text: 'Score DTI alongside credit, income, loan-to-value and net worth.' },
+	{ href: '/mortgage-readiness-assessment/', title: 'Mortgage readiness assessment', text: 'Score DTI alongside credit, income, loan-to-value and having a PFS.' },
 	{ href: '/glossary/debt-to-income-ratio/', title: 'Debt-to-income ratio (glossary)', text: 'A one-sentence definition and how lenders use it.' },
 	{ href: '/glossary/front-end-dti/', title: 'Front-end vs. back-end DTI', text: 'Definitions of the housing ratio and the total-debt ratio.' },
 ];
@@ -191,7 +191,7 @@ const rows = [
 					<li><strong>Back-end DTI (total DTI)</strong> = (housing payment + car, student, credit card, personal and other monthly debt payments) ÷ gross monthly income.</li>
 				</ul>
 				<p>
-					If you enter an annual income, it is divided by 12 first. Enter the minimum monthly payment for each debt, not the balance. Fannie Mae counts installment debts that extend beyond 10 months, minimum payments on revolving accounts, leases and alimony or child support beyond 10 months; add leases and support payments under "Other".
+					If you enter an annual income, it is divided by 12 first. Enter the minimum monthly payment for each debt, not the balance. Fannie Mae counts installment debts that extend beyond 10 months, minimum payments on revolving accounts, lease payments regardless of how many months remain, and alimony or child support that continues beyond 10 months; add leases and support payments under "Other".
 				</p>
 				<p>
 					The housing payment is normally PITI: principal, interest, property taxes and homeowners insurance (plus HOA dues, where they apply). The WorthSheet template's Homebuyer Readiness tab computes front-end DTI from the mortgage principal and interest only, so its front-end figure can be lower than the one here.
@@ -249,7 +249,7 @@ const rows = [
 					<li><strong>✕ Above 45%:</strong> possible only through automated underwriting (up to 50% at Fannie Mae); above 50% exceeds Fannie Mae's maximum.</li>
 				</ul>
 				<p>
-					These labels are educational. They do not predict an approval or denial. To see what a lower DTI could do for your price range, use the <a href={url('/how-much-house-can-i-afford/')}>home affordability calculator</a>, or check all five readiness criteria with the <a href={url('/mortgage-readiness-assessment/')}>mortgage readiness assessment</a>.
+					These labels are educational. They do not predict an approval or denial. To see what a lower DTI could do for your price range, use the <a href={url('/how-much-house-can-i-afford/')}>home affordability calculator</a>, or try the self-check across five areas in the <a href={url('/mortgage-readiness-assessment/')}>mortgage readiness assessment</a>.
 				</p>
 			</Prose>
 			</div>

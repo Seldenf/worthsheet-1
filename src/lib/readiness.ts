@@ -65,7 +65,7 @@ export function rateLtv(ltv: number): Rating | null {
 	return 'Excellent';
 }
 
-/** Front-end (housing) DTI as a decimal: Poor >28%, Good 20–28%, Very Good 10–20% (20 is Good), Excellent <10%. No Fair band. */
+/** Front-end (housing) DTI as a decimal: Poor >28%, Good >20–28%, Very Good 10–20% (10 and 20 are Very Good), Excellent <10%. No Fair band. */
 export function rateFrontDti(ratio: number): Rating | null {
 	if (!isNum(ratio) || ratio < 0) return null;
 	if (ratio > 0.28) return 'Poor';
@@ -74,7 +74,7 @@ export function rateFrontDti(ratio: number): Rating | null {
 	return 'Excellent';
 }
 
-/** Back-end (total) DTI as a decimal: Poor >36%, Good 30–36%, Very Good 20–30% (30 is Good), Excellent <20%. No Fair band. */
+/** Back-end (total) DTI as a decimal: Poor >36%, Good >30–36%, Very Good 20–30% (20 and 30 are Very Good), Excellent <20%. No Fair band. */
 export function rateBackDti(ratio: number): Rating | null {
 	if (!isNum(ratio) || ratio < 0) return null;
 	if (ratio > 0.36) return 'Poor';

@@ -14,7 +14,7 @@ relatedLinks:
     path: "/how-to-calculate-net-worth/"
 ---
 
-In the earlier [net worth](/glossary/net-worth/) example, $395,000 of assets includes only about $20,000 of savings. That $20,000 is the liquid part; the house, car and most retirement money are not. Real estate, vehicles and business interests can take weeks or months to sell, and selling may cost money. Withdrawing from a retirement account early may trigger taxes and penalties.
+Take the hypothetical household in the [net worth](/glossary/net-worth/) entry: $395,000 of assets, including only about $20,000 of savings. That $20,000 is the liquid part; the house, car and most retirement money are not. Real estate, vehicles and business interests can take weeks or months to sell, and selling may cost money. Withdrawing from a retirement account early may trigger taxes and penalties.
 
 Lenders care about liquidity because a loan payment has to be made in cash. Fannie Mae's risk assessment explicitly reviews liquid reserves, meaning funds left over after the down payment and closing costs ([Fannie Mae Selling Guide](https://selling-guide.fanniemae.com/sel/b3-1-01/comprehensive-risk-assessment)). Liquid assets are also what pay for the [down payment](/glossary/down-payment/) and closing costs.
 

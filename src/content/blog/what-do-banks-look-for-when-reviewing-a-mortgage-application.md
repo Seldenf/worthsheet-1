@@ -1,9 +1,9 @@
 ---
-title: "What do banks look for when reviewing a mortgage application?"
+title: "What Do Banks Look for When Reviewing a Mortgage Application?"
 seoTitle: "What Banks Look For in a Mortgage Application | WorthSheet"
 description: "Learn what banks evaluate in mortgage applications, including credit scores, income, DTI ratios, and more, to secure your loan approval."
 pubDate: 2024-02-05
-updatedDate: 2024-02-09
+updatedDate: 2026-11-12
 cover: BankMap
 keywords:
   - mortgage application
@@ -17,11 +17,11 @@ Banks assess various factors to determine the borrower’s creditworthiness and 
 
 ## 1. Credit Score & Credit History
 
-A borrower’s credit score is a numerical representation of their creditworthiness. Banks use this score to assess the likelihood that the borrower will repay the loan as agreed. Higher credit scores generally result in more favorable loan terms and a higher likelihood of approval. Prior to applying for a loan you can review your credit report from Annual Credit Report service and sign up for a credit score from a credit bureau or Credit Karma.
+A borrower’s credit score is a numerical representation of their creditworthiness. Banks use this score to assess the likelihood that the borrower will repay the loan as agreed. Higher credit scores generally result in more favorable loan terms and a higher likelihood of approval. Prior to applying for a loan you can review your credit reports at AnnualCreditReport.com and sign up for a credit score from a credit bureau or Credit Karma.
 
 ### [AnnualCreditReport.com](https://www.annualcreditreport.com/index.action)
 
-This is the only official website authorized by the federal government to provide free credit reports. You can request your reports online at AnnualCreditReport.com, by phone, or by mail. The website is easy to navigate, and you can select which bureau’s report you want or choose to receive all three reports at once. The Fair Credit Reporting Act (FCRA) mandates that the three major credit bureaus must provide you with a free credit report once a year. These credit bureaus are Equifax, Experian, and TransUnion. To obtain your free credit report, you can use the official website:
+This is the only official website authorized by the federal government to provide free credit reports. You can request your reports online at AnnualCreditReport.com, by phone, or by mail. The website is easy to navigate, and you can select which bureau’s report you want or choose to receive all three reports at once. The three major credit bureaus, Equifax, Experian, and TransUnion, offer free credit reports every week through the site. Note that AnnualCreditReport.com provides reports, not credit scores. To get your free credit reports, visit the official website: [AnnualCreditReport.com](https://www.annualcreditreport.com/).
 
 ### Credit Scores
 
@@ -51,7 +51,7 @@ The debt-to-income ratio is a measure of a borrower’s monthly debt payments re
 
 1. Front-End DTI (or Housing DTI): This includes the proposed monthly mortgage payment (principal, interest, taxes, and insurance) divided by the borrower’s gross monthly income.
 2. Back-End DTI (or Total DTI): This includes all monthly debt obligations, not just the mortgage, divided by the borrower’s gross monthly income. It typically includes items like credit card payments, car loans, student loans, and other debts.
-3. To determine your debt-to-income ratio you can start by creating a Personal Financial Statement (PFS). A PFS provides an overview of an individual’s financial position at a specific point in time and includes information about an individual’s assets, liabilities, and net worth.
+3. To determine your debt-to-income ratio you can start by listing your monthly debts and income. A Personal Financial Statement (PFS) can help you organize this: it provides an overview of an individual’s financial position at a specific point in time and includes information about an individual’s assets, liabilities, and net worth.
 
 ### Assets
 
@@ -61,13 +61,20 @@ These are items of value that an individual owns. One person can own assets, or 
 
 These are an individual’s debts or obligations. Debts should note whether they are associated with an individual, joint signers, or a private business. Examples of liabilities include:
 
+- **Credit Cards**
+- **Home Loans**: Mortgage, HELOC
+- **Student Loans**: Subsidized, Non-subsidized
+- **Vehicle Loans**: Auto, Boat, RV
+- **Notes Payable**: Personal loan, Business loan (personal guarantee), Other property loan
+- **Other Obligations**: Personal bankruptcy obligations, Alimony and/or child support
+
 ### Net Worth
 
 This is calculated by subtracting total liabilities from total assets. Net worth represents the individual’s wealth or the difference between what they own and what they owe.
 
 **[Download the WorthSheet Personal Financial Statement Template](/download/)**
 
-Worthsheet is a personal financial statement template that is available in Google Sheet or Microsoft Excel.
+WorthSheet is a personal financial statement template that is available in Google Sheets or Microsoft Excel.
 
 ## 4. Down Payment & Cash Reserves
 
@@ -88,8 +95,8 @@ The lender will typically require a professional appraisal of the property to de
 
 ## Personal Financial Statement
 
-In addition to requesting the above information, the bank will ask you to complete a personal financial statement. A personal financial statement (PFS) is a summary of a person’s financial health. A PFS provides an overview of an individual’s financial position at a specific point in time and includes information about an individual’s assets, liabilities, and net worth. Additional information related to a personal financial statement [can be found HERE](/what-is-a-personal-financial-statement/).
+A personal financial statement (PFS) is not part of the standard mortgage application. Lenders collect your assets and liabilities on the Uniform Residential Loan Application (URLA, Form 1003) and then verify them with account statements and other documents. Some lenders do ask for a PFS in special cases, such as for self-employed or business-owner borrowers, portfolio or jumbo loans, or investment-property portfolios. If your lender asks for one, a PFS gives an overview of your financial position at a specific point in time, including your assets, liabilities, and net worth. To learn when one is needed, read [do you need a personal financial statement for a mortgage](/do-you-need-a-personal-financial-statement-for-a-mortgage/). For a definition and examples, see [what is a personal financial statement](/what-is-a-personal-financial-statement/).
 
-**[Download the WorthSheet PFS Template](/download/)** WorthSheet is a personal financial statement template that is available in Google Sheet or Microsoft Excel.
+**[Download the WorthSheet PFS Template](/download/)** WorthSheet is a personal financial statement template that is available in Google Sheets or Microsoft Excel.
 
 Finally, before making a decision on a loan or savings plan, run the numbers! The best way to start is by trying out online personal financial calculators such as a simple mortgage calculator, retirement contribution (403b calculator, 401(k) calculator), net worth calculators, and bank rate calculators. Try our [mortgage calculator with an amortization schedule](/mortgage-calculator/).

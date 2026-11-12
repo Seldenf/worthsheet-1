@@ -38,7 +38,7 @@ If you want the plain definition rather than the calculation, see the glossary e
 
 ## Step 1: List your assets
 
-An [asset](/glossary/assets/) is anything of value that you own. The WorthSheet template groups them into eight categories, which makes a good checklist:
+An [asset](/glossary/assets/) is anything of value that you own. The WorthSheet template has eight asset sections; this list combines checking and savings accounts, so it shows seven groups, which make a good checklist:
 
 - **Checking and savings accounts**: every bank account, including accounts at online banks.
 - **Retirement accounts**: 401(k), 403(b), traditional, Roth and SEP IRAs, and pensions you can put a balance on.
@@ -48,7 +48,7 @@ An [asset](/glossary/assets/) is anything of value that you own. The WorthSheet 
 - **Private business interest**: your ownership stake in a company that is not publicly traded.
 - **Other**: an HSA, a 529 plan, annuities, the cash value of whole-life insurance, art and collectibles.
 
-Write down the institution or address next to each line, so every number can be traced back to a statement. In total the template covers 27 asset types across those categories, so use its list as a prompt for things you might forget.
+Write down the institution or address next to each line, so every number can be traced back to a statement. In total the template covers 27 asset types across those groups, so use its list as a prompt for things you might forget.
 
 ## Step 2: Put a realistic value on each asset
 
@@ -72,7 +72,7 @@ These are the hardest to price and the easiest to inflate. Use a conservative fi
 
 ## Step 3: List your liabilities
 
-A [liability](/glossary/liabilities/) is any amount you owe. Enter the current balance, not the monthly payment. The template's 13 liability categories make a good checklist:
+A [liability](/glossary/liabilities/) is any amount you owe. Enter the current balance, not the monthly payment. The template covers 13 liability types in six groups, which make a good checklist:
 
 - Credit cards
 - Home loans: mortgage and HELOC

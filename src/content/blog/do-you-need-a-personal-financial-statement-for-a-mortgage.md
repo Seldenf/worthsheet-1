@@ -18,8 +18,8 @@ faq:
     a: "The mortgage application is the lender's standard form for your loan request; a PFS is a borrower-prepared snapshot of assets, liabilities and net worth on one date, often with contingent liabilities and asset detail."
   - q: "Do I need a PFS for an SBA loan?"
     a: "Yes. SBA Form 413, or a lender's equivalent with the same data, is required from each proprietor, general partner, LLC managing member, 20%+ owner and guarantor."
-  - q: "Do I need a personal financial statement to get preapproved?"
-    a: "It depends on the lender. CFPB notes lenders use \"prequalification\" and \"preapproval\" differently, so ask what they need verified; the standard application already collects your assets and liabilities."
+  - q: "Do I need a personal financial statement to get pre-approved?"
+    a: "It depends on the lender. CFPB notes lenders use \"pre-qualification\" and \"pre-approval\" differently, so ask what they need verified; the standard application already collects your assets and liabilities."
   - q: "Can a spreadsheet PFS be used instead of the lender's form?"
     a: "Often, if the lender agrees. SBA explicitly accepts equivalent formats for 7(a), 504 and surety applications when they contain the same data as Form 413; for other lenders, ask before substituting."
 ---
@@ -107,9 +107,9 @@ Net worth is $566,000 − $297,700 = $268,300. Liquid assets (checking plus savi
 2. **List assets at current market value and liabilities at current balances.** Use balances, not monthly payments. Real estate goes in at estimated market value, not what you paid.
 3. **Subtract, check and sign.** Total assets minus total liabilities gives net worth. Confirm the totals match your account detail, then sign and date.
 
-The free WorthSheet template does the math automatically: 27 asset categories and 13 liability categories with formulas that sum for you. [Download the free template](/download/) to use as a rehearsal or to hand to a lender that accepts spreadsheet formats. Ask before substituting it for a lender's own form. For a step-by-step guide see [how to fill out a personal financial statement](/how-to-fill-out-a-personal-financial-statement/), and for a filled-in sample see the [personal financial statement example](/personal-financial-statement-example/).
+The free WorthSheet template does the math automatically: 27 asset types and 13 liability types with formulas that sum for you. [Download the free template](/download/) to use as a rehearsal or to hand to a lender that accepts spreadsheet formats. Ask before substituting it for a lender's own form. For a step-by-step guide see [how to fill out a personal financial statement](/how-to-fill-out-a-personal-financial-statement/), and for a filled-in sample see the [personal financial statement example](/personal-financial-statement-example/).
 
-If you are buying a home, our [mortgage readiness checklist](/mortgage-readiness-checklist/) shows what to review next, and the [Mortgage Readiness Assessment](/mortgage-readiness-assessment/) scores your credit, income, loan-to-value, debt-to-income and PFS. For what underwriters review, see [what banks look for when reviewing a mortgage application](/what-do-banks-look-for-when-reviewing-a-mortgage-application/).
+If you are buying a home, our [mortgage readiness checklist](/mortgage-readiness-checklist/) shows what to review next, and the [Mortgage Readiness Assessment](/mortgage-readiness-assessment/) is a self-check across five areas: credit, income, loan-to-value, debt-to-income and PFS. Having a PFS is part of WorthSheet's own check, not a lender requirement. For what underwriters review, see [what banks look for when reviewing a mortgage application](/what-do-banks-look-for-when-reviewing-a-mortgage-application/).
 
 *Estimates for educational purposes only. Not a loan offer or financial advice.*
 

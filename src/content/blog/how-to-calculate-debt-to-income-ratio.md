@@ -108,7 +108,7 @@ In practice:
 - **Variable pay, self-employment or rental income:** lenders document and average these differently, so ask your lender how it will treat yours.
 - **Co-borrowers:** if two people apply, the lender combines their incomes and their debts.
 
-Lenders verify income with pay stubs, tax returns and other documents. For more on that, see the overview of [what lenders review when reviewing a mortgage application](/what-do-banks-look-for-when-reviewing-a-mortgage-application/), where DTI is one of five main factors.
+Lenders verify income with pay stubs, tax returns and other documents. For more on that, see our overview of [what banks look for when reviewing a mortgage application](/what-do-banks-look-for-when-reviewing-a-mortgage-application/), where DTI is one of five main factors.
 
 ## What is a good DTI for a mortgage?
 
@@ -141,7 +141,7 @@ On that last point, a longer term has a cost. On a $200,000 loan at a hypothetic
 
 ## Calculate yours now
 
-Use the [debt-to-income ratio calculator](/debt-to-income-ratio-calculator/) to see your front-end and back-end ratios with your own numbers, or the [how much house can I afford](/how-much-house-can-i-afford/) tool to see what monthly payment your income and debts support. DTI is one of five criteria in the [mortgage readiness checklist](/mortgage-readiness-checklist/).
+Use the [debt-to-income ratio calculator](/debt-to-income-ratio-calculator/) to see your front-end and back-end ratios with your own numbers, or the [how much house can I afford](/how-much-house-can-i-afford/) tool to see what monthly payment your income and debts support. DTI is one of the five areas in WorthSheet's [mortgage readiness checklist](/mortgage-readiness-checklist/).
 
 **[Get the free WorthSheet template](/download/)** to list your debts, assets and net worth in one sheet, so your DTI inputs are ready before you apply.
 

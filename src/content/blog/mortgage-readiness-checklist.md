@@ -21,7 +21,7 @@ faq:
   - q: "How much cash should I have saved before buying?"
     a: "Enough for the down payment, closing costs and cash reserves. The exact amount depends on the loan program and lender, so ask for a Loan Estimate to see your closing costs."
   - q: "Is mortgage readiness the same as preapproval?"
-    a: "No. Readiness is your own check of credit, income, debt and savings. A preapproval is a lender's letter, based on verified information, stating how much it is generally willing to lend, and it is not a guaranteed loan offer."
+    a: "No. Readiness is your own check of credit, income, debt and savings. A pre-approval is a lender's letter, based on verified information, stating how much it is generally willing to lend, and it is not a guaranteed loan offer."
 ---
 
 Mortgage readiness is being able to show a lender a credit history it can score, stable income that supports the payment, a manageable debt-to-income ratio, enough cash for the down payment, closing costs and reserves, and a clear picture of your net worth.
@@ -30,7 +30,7 @@ This checklist turns that sentence into five numbers you can measure today, each
 
 ## What mortgage readiness means
 
-Readiness is your own audit of what an underwriter will verify later. The [Consumer Financial Protection Bureau (CFPB)](https://www.consumerfinance.gov/consumer-tools/mortgages/ready-to-buy-a-home/) frames it as yes/no questions: steady income, good credit, few long-term debts, savings for a down payment, and room in the budget for the mortgage, insurance and taxes. We group those into five checks:
+Readiness is your own audit of what an underwriter will verify later. The [Consumer Financial Protection Bureau (CFPB)](https://www.consumerfinance.gov/consumer-tools/mortgages/ready-to-buy-a-home/) frames it as yes/no questions: steady income, good credit, few long-term debts, savings for a down payment, and room in the budget for the mortgage, insurance and taxes. We group those into a self-check across five areas:
 
 1. **Credit:** an accurate report and a healthy score band.
 2. **Income and employment:** documented, stable, enough to carry the payment.
@@ -42,11 +42,11 @@ Readiness is your own audit of what an underwriter will verify later. The [Consu
 
 ## The 5-point mortgage readiness checklist
 
-Bands labeled "WorthSheet" are our own educational bands, taken from the Homebuyer Readiness tab of the free WorthSheet template. They are not lender approval rules. Where a lender or agency publishes a real limit, we cite it.
+Bands labeled "WorthSheet" are our own educational bands; they mirror the Homebuyer Readiness tab of the free WorthSheet template. They are not lender approval rules, and having a PFS is not a lender criterion. Where a lender or agency publishes a real limit, we cite it.
 
 ### 1. Credit: pull reports, know your score band
 
-Start with your reports, not your score. Errors can raise your rate, and the CFPB recommends reviewing reports early so there is time to fix mistakes. Request them from all three bureaus at [AnnualCreditReport.com](https://www.annualcreditreport.com/), the federally authorized source for free reports.
+Start with your reports, not your score. Errors can raise your rate, and the CFPB recommends reviewing reports early so there is time to fix mistakes. Request them from all three bureaus at [AnnualCreditReport.com](https://www.annualcreditreport.com/), the federally authorized source for free reports, which are available weekly. It gives you reports, not scores.
 
 The WorthSheet bands follow common FICO ranges: Poor 300–579, Fair 580–669, Good 670–739, Very Good 740–799, Excellent 800–850.
 
@@ -68,10 +68,10 @@ The template sorts household income into bands: under $40,000, $40,000–$75,000
 
 Treat 20% as a target, not a rule. The CFPB says 20% down improves your chances of approval, but you may qualify for a program needing much less, and a smaller down payment can mean paying mortgage insurance.
 
-- **FHA:** HUD's rules have allowed 3.5% down with a score of 580 or higher and a larger down payment for 500–579. These tiers come from HUD Mortgagee Letter 2026-11 as summarized by secondary sources; confirm current rules with an FHA-approved lender.
+- **FHA:** a score of 580 or higher allows 3.5% down; with a score of 500–579, the maximum loan-to-value ratio is 90%, so you need at least 10% down. These tiers come from HUD Mortgagee Letter 2026-11; confirm current rules with an FHA-approved lender.
 - **VA:** the VA says nearly 90% of VA-backed loans have no down payment, but you still need the required credit and income and a Certificate of Eligibility.
 
-WorthSheet LTV bands: Poor above 92.5%, Fair 85–92.5%, Good 75–85%, Very Good 60–75%, Excellent below 60%. The [mortgage calculator](/mortgage-calculator/) shows how a bigger down payment changes the payment.
+WorthSheet LTV bands: Poor above 92.5%, Fair above 85% to 92.5%, Good 75% to 85%, Very Good 60% to under 75%, Excellent under 60%. The [mortgage calculator](/mortgage-calculator/) shows how a bigger down payment changes the payment.
 
 **Fix:** automate savings into a dedicated account. The CFPB packet checklist asks for statements showing two months of history for your down payment and a signed letter if part is a gift.
 
@@ -81,9 +81,9 @@ WorthSheet LTV bands: Poor above 92.5%, Fair 85–92.5%, Good 75–85%, Very Goo
 
 The popular 28/36 rule says housing at or under 28% and total debt at or under 36%. It is a rule of thumb, not a lender rule. Fannie Mae's published maximum for manually underwritten loans is 36% of stable monthly income, up to 45% if the borrower meets the credit score and reserve requirements in its Eligibility Matrix; loans underwritten through DU can go to 50%. Government-backed loans follow their own agency rules.
 
-Fannie Mae counts more than the mortgage: housing payment, installment debts lasting beyond ten months, revolving payments, leases, and alimony or child support beyond ten months.
+Fannie Mae counts more than the mortgage: housing payment, installment debts lasting beyond ten months, revolving payments, lease payments regardless of how many months remain, and alimony or child support beyond ten months.
 
-WorthSheet front-end bands: Poor above 28%, Good 20–28%, Very Good 10–20%, Excellent 10% or less. Back-end: Poor above 36%, Good 30–36%, Very Good 20–30%, Excellent 20% or less. Check yours with the [debt-to-income ratio calculator](/debt-to-income-ratio-calculator/).
+WorthSheet front-end bands: Poor above 28%, Good above 20% to 28%, Very Good 10% to 20%, Excellent under 10%. Back-end: Poor above 36%, Good above 30% to 36%, Very Good 20% to 30%, Excellent under 20%. Check yours with the [debt-to-income ratio calculator](/debt-to-income-ratio-calculator/).
 
 **Fix:** pay off small installment loans and revolving balances first, since every monthly payment removed lowers back-end DTI. Avoid new debt mid-process: Fannie Mae requires re-underwriting when new debt or reduced income surfaces before closing and raises DTI beyond its tolerances.
 
@@ -149,15 +149,15 @@ Each sign maps to one of the five checks, and each has a fix.
 2. **Month 2:** track spending (the CFPB offers a free tracker) and set a target payment.
 3. **Months 3–4:** pay down revolving balances and small loans; keep saving.
 4. **Month 5:** assemble the document packet and request Loan Estimates.
-5. **Month 6:** ask for preapproval. The CFPB notes preapproval letters are not guaranteed loan offers, and that applying earlier can reveal credit issues in time to fix them.
+5. **Month 6:** ask for pre-approval. The CFPB notes pre-approval letters are not guaranteed loan offers, and that applying earlier can reveal credit issues in time to fix them.
 
 For how far ahead to begin, see [when to start looking for a mortgage](/when-to-start-looking-for-a-mortgage/). For the full list of what underwriters review, see [what banks look for when reviewing a mortgage application](/what-do-banks-look-for-when-reviewing-a-mortgage-application/).
 
 ## Test your readiness
 
-Run your numbers through the interactive [Mortgage Readiness Assessment](/mortgage-readiness-assessment/), which scores credit, income, LTV, front- and back-end DTI and your PFS with the bands above. The [how much house can I afford](/how-much-house-can-i-afford/) calculator shows the price range your income supports.
+Run your numbers through the interactive [Mortgage Readiness Assessment](/mortgage-readiness-assessment/), a self-check across five areas that scores credit, income, LTV, front- and back-end DTI and your PFS with the bands above. The [how much house can I afford](/how-much-house-can-i-afford/) calculator shows the price range your income supports.
 
-The spreadsheet version is the Homebuyer Readiness tab in the free WorthSheet template, next to its PFS tab. [Get the free template](/download/) and keep your numbers current as you save.
+The spreadsheet version is the Homebuyer Readiness tab in the free WorthSheet template, next to its Personal Financial Statement (PFS) tab. [Get the free template](/download/) and keep your numbers current as you save.
 
 *Estimates for educational purposes only. Not a loan offer or financial advice.*
 
@@ -172,7 +172,7 @@ Last reviewed: November 6, 2026
 - CFPB, [Does my credit score affect my ability to get a mortgage loan?](https://www.consumerfinance.gov/ask-cfpb/does-my-credit-score-affect-my-ability-to-get-a-mortgage-loan-or-the-mortgage-rate-i-pay-en-319/)
 - Fannie Mae Selling Guide, [B3-6-02, Debt-to-Income Ratios](https://selling-guide.fanniemae.com/sel/b3-6-02/debt-income-ratios) and [B3-5.1-01, Credit Scores](https://selling-guide.fanniemae.com/sel/b3-5.1-01/general-requirements-credit-scores)
 - Fannie Mae, [URLA instructions](https://singlefamily.fanniemae.com/media/17391/display)
-- HUD, [Mortgagee Letter 2026-11](https://www.hud.gov/sites/default/files/hudclips/documents/2026-11hsgml.pdf) (FHA tiers; verify on HUD.gov)
+- HUD, [Mortgagee Letter 2026-11](https://www.hud.gov/sites/default/files/hudclips/documents/2026-11hsgml.pdf) (FHA tiers)
 - U.S. Department of Veterans Affairs, [VA-backed home loans](https://www.va.gov/housing-assistance/home-loans/)
 - [AnnualCreditReport.com](https://www.annualcreditreport.com/)
 - WorthSheet template, Homebuyer Readiness tab (educational bands)

@@ -15,7 +15,7 @@ faq:
   - q: "Who needs to complete SBA Form 413?"
     a: "For 7(a), 504 and surety bond applications: each proprietor, general partner, LLC managing member, each owner of 20% or more of the equity (including the owner's spouse's and minor children's assets) and anyone providing a guaranty on the loan."
   - q: "How recent does SBA Form 413 have to be?"
-    a: "The form says the information must be current within 120 days of submission for 7(a), 504, surety, 8(a) and WOSB (90 days for Disaster). SOP 50 10 8.1 asks lenders for guarantor statements dated within 90 days of loan approval, and lenders may set shorter windows, so use fresh numbers."
+    a: "The form says the information must be current within 120 days of submission for 7(a), 504, surety, 8(a) and WOSB (90 days for Disaster). SOP 50 10 8.1, which applies to loans that receive an SBA loan number on or after October 1, 2026, asks lenders for guarantor statements dated within 90 days of loan approval, and lenders may set shorter windows, so use fresh numbers."
   - q: "Can I use my own personal financial statement instead of Form 413?"
     a: "For 7(a), 504 and surety purposes SBA accepts other formats that contain the same data, such as a lender's equivalent form or an accountant-prepared statement. 8(a) and WOSB applicants must use Form 413. Confirm with your lender first."
   - q: "Where do I send SBA Form 413?"
@@ -47,7 +47,7 @@ Return it to the **Lender** processing a 7(a) application, the **Certified Devel
 The form asks for the date the information is current. SBA's documents give different windows:
 
 - **The form:** the date "must be within 90 days of submission for Disaster or within 120 days of submission for 7(a)/504/SBG/8(a) BD/WOSB." SBA Information Notice 5000-868123 (effective June 13, 2025) confirms 120 days for those programs.
-- **SOP 50 10 8.1,** which governs 7(a) and 504 lenders for applications received by SBA on or after October 1, 2026: the lender "must obtain a personal financial statement from all individuals guaranteeing the loan except for Supplemental Guarantors, dated within 90 days of loan approval." Its 7(a) application appendix describes Form 413 or a lender equivalent "signed and dated within 90 days of submission to SBA."
+- **SOP 50 10 8.1,** which governs 7(a) and 504 lenders for loans that receive an SBA loan number on or after October 1, 2026: the lender "must obtain a personal financial statement from all individuals guaranteeing the loan except for Supplemental Guarantors, dated within 90 days of loan approval." Its 7(a) application appendix describes Form 413 or a lender equivalent "signed and dated within 90 days of submission to SBA."
 
 SBA's notice on the SOP adds that it is updating application forms to correspond with the SOP, and that until then lenders must collect the information required by the existing forms and the SOP. So the printed form and the SOP currently describe different windows, and the form may change. Several third-party guides present one rule as settled; the SBA documents do not.
 
@@ -148,7 +148,7 @@ For 7(a), 504 and surety purposes, SBA accepts other formats containing the same
 
 ## Prepare your numbers with the free template
 
-Most of the work is gathering and totaling. The free [WorthSheet template](/download/) has 27 asset categories and 13 liability categories that sum automatically, and the [SBA Form 413 page](/sba-form-413/) offers an SBA-oriented spreadsheet. See a finished statement in the [personal financial statement example](/personal-financial-statement-example/), the [general PFS how-to](/how-to-fill-out-a-personal-financial-statement/), or the glossary entry for [SBA Form 413](/glossary/sba-form-413/). Wondering whether a mortgage lender wants one? Read [do you need a personal financial statement for a mortgage](/do-you-need-a-personal-financial-statement-for-a-mortgage/).
+Most of the work is gathering and totaling. The free [WorthSheet template](/download/) has 27 asset types and 13 liability types that sum automatically, and the [SBA Form 413 page](/sba-form-413/) offers an SBA-oriented spreadsheet. See a finished statement in the [personal financial statement example](/personal-financial-statement-example/), the [general PFS how-to](/how-to-fill-out-a-personal-financial-statement/), or the glossary entry for [SBA Form 413](/glossary/sba-form-413/). Wondering whether a mortgage lender wants one? Read [do you need a personal financial statement for a mortgage](/do-you-need-a-personal-financial-statement-for-a-mortgage/).
 
 This article is educational and is not legal, tax or lending advice.
 

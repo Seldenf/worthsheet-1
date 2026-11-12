@@ -9,7 +9,7 @@ export type MortgageKey = 'price' | 'down' | 'rate' | 'years';
 export const MORTGAGE_KEYS: readonly MortgageKey[] = ['price', 'down', 'rate', 'years'];
 
 const RULES: Record<MortgageKey, NumRule> = {
-	price: { name: 'the total amount', required: true, min: 0, minExclusive: true, unit: '$' },
+	price: { name: 'the home price', required: true, min: 0, minExclusive: true, unit: '$' },
 	down: { name: 'a down payment', min: 0, unit: '$' },
 	rate: { name: 'an interest rate', required: true, min: 0, max: 100, unit: '%' },
 	years: { name: 'an amortization period', required: true, min: 1, max: 50, unit: 'years' },
@@ -63,7 +63,7 @@ export type MortgageOutcome =
 export function evaluateMortgage(raw: Record<MortgageKey, string>): MortgageOutcome {
 	const { values, errors } = readFields(raw, RULES);
 	if (!errors.price && !errors.down && values.down >= values.price) {
-		errors.down = 'The down payment must be less than the total amount.';
+		errors.down = 'The down payment must be less than the home price.';
 	}
 	if (Object.keys(errors).length > 0) return { ok: false, errors };
 	return { ok: true, result: computeMortgage(values.price, values.down, values.rate, values.years) };

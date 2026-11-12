@@ -93,15 +93,15 @@ const related = [
 	>
 		<CalculatorTile slot="art" />
 
-		<MoneyInput id="price" label="Total Amount ($)" value={MORTGAGE_DEFAULTS.price} hint="The purchase price of the home." required />
-		<MoneyInput id="down" label="Down Payment ($)" value={MORTGAGE_DEFAULTS.down} hint="Leave blank for no down payment." />
-		<MoneyInput id="rate" label="Interest Rate (%)" value={MORTGAGE_DEFAULTS.rate} prefix="" suffix="%" hint="Annual rate, for example 5 or 6.75." required />
-		<MoneyInput id="years" label="Amortization Period (years)" value={MORTGAGE_DEFAULTS.years} prefix="" suffix="years" inputmode="numeric" hint="Years to pay off the loan, for example 10, 15, 20, 25 or 30." required />
+		<MoneyInput id="price" label="Home price ($)" value={MORTGAGE_DEFAULTS.price} hint="The purchase price of the home." required />
+		<MoneyInput id="down" label="Down payment ($)" value={MORTGAGE_DEFAULTS.down} hint="Leave blank for no down payment." />
+		<MoneyInput id="rate" label="Interest rate (%)" value={MORTGAGE_DEFAULTS.rate} prefix="" suffix="%" hint="Annual rate, for example 5 or 6.75." required />
+		<MoneyInput id="years" label="Amortization period (years)" value={MORTGAGE_DEFAULTS.years} prefix="" suffix="years" inputmode="numeric" hint="Years to pay off the loan, for example 10, 15, 20, 25 or 30." required />
 
 		<div slot="results" data-results class="stack" style="--stack-gap: 16px">
 			<ResultCard primary label="Monthly principal & interest" out="payment" value={out.payment} hint="Taxes, insurance and PMI are not included." />
 			<div class="out-grid">
-				<ResultCard label="Loan amount" out="loan" value={out.loan} hint="Total amount minus down payment" />
+				<ResultCard label="Loan amount" out="loan" value={out.loan} hint="Home price minus down payment" />
 				<ResultCard label="Total interest" out="interest" value={out.interest} hint="Over the full term" />
 				<ResultCard label="Total cost" out="total" value={out.total} hint="Down payment plus every monthly payment" />
 				<ResultCard label="Paid off in" out="payoff" value={out.payoff} hint="At the scheduled payment" />
@@ -154,7 +154,7 @@ const related = [
 					This calculator uses the standard formula for a fixed-rate, fully amortizing loan with monthly payments. In plain words: take the loan amount (price minus down payment), multiply it by the monthly interest rate, and divide by one minus the discount factor <code>(1 + monthly rate)</code> raised to the power of minus the number of payments.
 				</p>
 				<ol>
-					<li><strong>Loan amount</strong> = total amount − down payment.</li>
+					<li><strong>Loan amount</strong> = home price − down payment.</li>
 					<li><strong>Monthly rate</strong> = annual rate ÷ 12.</li>
 					<li><strong>Number of payments</strong> = years × 12.</li>
 					<li><strong>Payment</strong> = loan × monthly rate ÷ (1 − (1 + monthly rate)<sup>−payments</sup>).</li>
@@ -207,7 +207,7 @@ const related = [
 			<Prose>
 				<h2>Get your finances lender-ready</h2>
 				<p>
-					Before you apply, a lender will want a clear picture of what you own and owe. The free WorthSheet template adds up your assets, liabilities and net worth in Google Sheets or Excel, and its Homebuyer Readiness tab scores the same five criteria as our <a href={url('/mortgage-readiness-assessment/')}>mortgage readiness assessment</a>.
+					Before you apply, a lender will want a clear picture of what you own and owe. The free WorthSheet template adds up your assets, liabilities and net worth in Google Sheets or Excel, and its Homebuyer Readiness tab is the same self-check across five areas as our <a href={url('/mortgage-readiness-assessment/')}>mortgage readiness assessment</a>.
 				</p>
 				<p>
 					For program rules, see the CFPB's <a href="https://www.consumerfinance.gov/owning-a-home/" rel="noopener">Buying a House</a> guide.

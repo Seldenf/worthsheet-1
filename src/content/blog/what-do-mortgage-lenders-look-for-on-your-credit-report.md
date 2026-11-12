@@ -103,11 +103,11 @@ Two details matter here. First, Fannie Mae's manual-underwriting requirements ar
 
 VA and USDA loans have their own credit guidelines, and many lenders add stricter rules of their own. Ask a lender who offers the program you're considering.
 
-Want to see where your score falls against WorthSheet's own educational bands? The [mortgage readiness assessment](/mortgage-readiness-assessment/) scores credit as the first of five criteria. Those bands are WorthSheet's, not a lender's approval rules.
+Want to see where your score falls against WorthSheet's own educational bands? The [mortgage readiness assessment](/mortgage-readiness-assessment/) is a self-check across five areas, and credit is the first. Those bands are WorthSheet's, not a lender's approval rules.
 
 ## How to check your credit reports before you apply
 
-1. **Get your reports.** The CFPB says you can view your free reports from Equifax, Experian and TransUnion once a week at [AnnualCreditReport.com](https://www.annualcreditreport.com), and you also have the right to one free report from each company every 12 months. It's the official source.
+1. **Get your reports.** The CFPB says you can view your free reports from Equifax, Experian and TransUnion once a week at [AnnualCreditReport.com](https://www.annualcreditreport.com), and you also have the right to one free report from each company every 12 months. It's the official source for reports, not scores.
 2. **Read all three.** Data can differ between bureaus because creditors don't have to report to all of them.
 3. **Look for errors.** Check names, addresses, accounts you don't recognize, wrong balances and payments marked late that weren't. The CFPB warns that errors can lower your score and mean a higher rate, and recommends correcting them well before you apply.
 4. **Dispute what's wrong.** Start with the CFPB's guide on [how to dispute an error](https://www.consumerfinance.gov/ask-cfpb/how-do-i-dispute-an-error-on-my-credit-report-en-314/). Allow time: you want any fixes to be reflected before a lender pulls your credit.
@@ -118,7 +118,7 @@ Checking your own report doesn't hurt your score. The CFPB says the credit repor
 
 - **Don't apply for new credit.** The CFPB advises avoiding new credit cards, car loans and other loans right before or during the mortgage process, because each application adds an inquiry that can lower your scores.
 - **Don't open many accounts quickly.** The CFPB says scores can fall when you apply for or open many new accounts in a short time.
-- **Do shop around within the window.** Multiple credit checks from mortgage lenders within a 45-day window are recorded as a single inquiry, so comparing offers won't stack inquiries. The CFPB says you can get multiple preapprovals and official Loan Estimates, and the effect on your credit is the same regardless of how many lenders you talk to, as long as the last check falls within 45 days of the first.
+- **Do shop around within the window.** Multiple credit checks from mortgage lenders within a 45-day window are recorded as a single inquiry, so comparing offers won't stack inquiries. The CFPB says you can get multiple pre-approvals and official Loan Estimates, and the effect on your credit is the same regardless of how many lenders you talk to, as long as the last check falls within 45 days of the first.
 - **Don't be alarmed by the inquiry itself.** An inquiry typically has a small negative effect. myFICO says FICO Scores consider only inquiries from the last 12 months, though they stay on the report for two years.
 
 ## Credit is only one piece

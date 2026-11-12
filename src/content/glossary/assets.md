@@ -14,7 +14,7 @@ relatedLinks:
     path: "/how-to-calculate-net-worth/"
 ---
 
-On a financial statement you list each asset at its current value, not what you paid. A home bought for $250,000 that would sell for about $300,000 today is a $300,000 asset, and the mortgage against it is listed separately as a [liability](/glossary/liabilities/). The WorthSheet template groups assets into 27 categories so nothing is missed.
+On a financial statement you list each asset at its current value, not what you paid. A home bought for $250,000 that would sell for about $300,000 today is a $300,000 asset, and the mortgage against it is listed separately as a [liability](/glossary/liabilities/). The WorthSheet template covers 27 asset types so nothing is missed.
 
 Lenders do not treat every asset the same. Cash and investments can fund a down payment or reserves, while a car or furniture cannot easily be turned into cash. Forms may also set their own valuation rules: on SBA Form 413, for example, real estate is reported at present market value and life insurance only at its cash surrender value ([SBA](https://www.sba.gov/document/sba-form-413-personal-financial-statement)).
 

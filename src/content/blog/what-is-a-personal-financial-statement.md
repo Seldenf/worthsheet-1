@@ -1,8 +1,8 @@
 ---
-title: "What is a personal financial statement?"
+title: "What Is a Personal Financial Statement?"
 description: "Learn to create and use a Personal Financial Statement (PFS) for effective financial planning and loan assessment."
 pubDate: 2024-01-28
-updatedDate: 2024-02-02
+updatedDate: 2026-11-12
 cover: GlossaryBook
 keywords:
   - personal financial statement
@@ -16,7 +16,7 @@ A personal financial statement (PFS) is a summary of a person’s financial heal
 
 - **Assets:** These are items of value that an individual owns. One person can own assets, or multiple individuals (in the case of a married couple) can jointly own them. Additionally, one can own assets outright or purchase them using a loan. Assets that have outstanding loans should be noted and associated with a loan listed in the liabilities section of the personal financial statement. Examples of assets include:
   - **Checking and Savings Accounts**
-  - **Retirement Accounts**: 401(k), 403(b), Sep IRA, Traditional IRA, Roth IRA, Pension, Social Security benefits
+  - **Retirement Accounts**: 401(k), 403(b), SEP IRA, Traditional IRA, Roth IRA, Pension
   - **Investment Accounts**: Brokerage Accounts, Mutual Fund Accounts, CDs, Money Market Accounts, Government Bonds, Crypto, Company Stock
   - **Real Estate**: Primary Home, Second Home, Investment Property
   - **Vehicles**: Car, Truck, Boat, RV
@@ -25,11 +25,11 @@ A personal financial statement (PFS) is a summary of a person’s financial heal
 
 - **Liabilities:** These are an individual’s debts or obligations. Debts should note whether they are associated with an individual, joint signers, or a private business. Examples of liabilities include:
   - **Credit Cards**
-  - **Home Loans**: Mortgage, HELOC, construction loans
-  - **Student Loans**: Subsidized (Government), Private
-  - **Vehicle Loans**: Car, Truck, Boat, RV
-  - **Notes Payable**: Personal loan, Business Loan (personal guarantee), Other property loan
-  - **Other**: 401(k) loan, hard money loan
+  - **Home Loans**: Mortgage, HELOC
+  - **Student Loans**: Subsidized / Non-subsidized
+  - **Vehicle Loans**: Auto, Boat, RV
+  - **Notes Payable**: Personal loan, Business loan (personal guarantee), Other property loan
+  - **Other Obligations**: Personal bankruptcy obligations, Alimony and/or child support
 
 - **Net Worth:** This is calculated by subtracting total liabilities from total assets. Net worth represents the individual’s wealth or the difference between what they own and what they owe.
 
@@ -37,7 +37,7 @@ A personal financial statement (PFS) is a summary of a person’s financial heal
 
 ## When should I create a personal financial statement?
 
-Personal financial statements are used for various purposes, such as assessing one’s financial health, applying for loans, planning for retirement, or as part of the overall financial planning process. It provides a snapshot of an individual’s financial situation, helping them make informed decisions about their finances. Additionally, lenders and financial institutions may request personal financial statements when considering loan applications to evaluate the borrower’s creditworthiness and ability to repay the loan.
+Personal financial statements are used for various purposes, such as assessing one’s financial health, planning for retirement, or as part of the overall financial planning process. It provides a snapshot of an individual’s financial situation, helping them make informed decisions about their finances. A PFS is not part of the standard mortgage application, because lenders collect your assets and liabilities on the Uniform Residential Loan Application (URLA, Form 1003). However, some lenders ask for one in special cases, such as for self-employed or business-owner borrowers, or portfolio or jumbo loans, and SBA business loans require one. See [do you need a personal financial statement for a mortgage](/do-you-need-a-personal-financial-statement-for-a-mortgage/) for details.
 
 ### What is the easiest way to create a personal financial statement?
 
@@ -47,14 +47,14 @@ Creating a personal financial statement doesn’t have to be a complicated proce
 
 Collect documents that detail your assets and liabilities. This may include bank statements, investment statements, loan statements, credit card statements, and any other relevant financial documents.
 
-#### 2. Download the Worthsheet PFS Template:
+#### 2. Download the WorthSheet PFS Template:
 
-[Get the free WorthSheet template](/download/). Worthsheet is a personal financial statement template that is available in Google Sheet or Microsoft Excel.
+[Get the free WorthSheet template](/download/). WorthSheet is a personal financial statement template that is available in Google Sheets or Microsoft Excel.
 
 - **List Your Assets**: Create a list of all your assets. See the above list of assets and liabilities.
-- **Determine Asset Values**: Assign values to your assets based on their current market or fair market value. For items like vehicles or personal property, you can estimate their value. You can also use websites such as [Zillow](https://www.zillow.com/), [Redfin](https://www.redfin.com/), [TrueCar](https://www.truecar.com/), and [edmunds](https://www.edmunds.com/).
+- **Determine Asset Values**: Assign values to your assets based on their current market or fair market value. For items like vehicles or personal property, you can estimate their value. You can also use websites such as [Zillow](https://www.zillow.com/), [Redfin](https://www.redfin.com/), [TrueCar](https://www.truecar.com/), and [Edmunds](https://www.edmunds.com/).
 - **List Your Liabilities**: Create a list of all your liabilities. See the above list of assets and liabilities.
-- **Calculate Net Worth**: Subtract your total liabilities from your total assets to calculate your net worth. The [Worthsheet template](/download/) will calculate this for you!
+- **Calculate Net Worth**: Subtract your total liabilities from your total assets to calculate your net worth. The [WorthSheet template](/download/) will calculate this for you!
 
 **[Download the free PFS template](/download/)**
 

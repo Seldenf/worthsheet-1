@@ -14,7 +14,7 @@ import { url } from '../lib/url';
 const path = '/mortgage-readiness-assessment/';
 const title = 'Mortgage Readiness Assessment & Score | WorthSheet';
 const description =
-  'Free mortgage readiness assessment: score your credit, income, loan-to-value, debt-to-income and net worth on five criteria lenders use. Based on our template.';
+  'Free mortgage readiness assessment: a self-check across five areas (credit, income, loan-to-value, debt-to-income and having a personal financial statement). Based on our template.';
 
 const faq = [
   {
@@ -22,12 +22,12 @@ const faq = [
     a: 'A quick self-check that rates your credit score, income, loan-to-value, debt-to-income and personal financial statement so you can see what to improve before applying.',
   },
   {
-    q: 'What criteria does the assessment score?',
-    a: 'Five: credit score, income and employment, loan-to-value ratio, debt-to-income ratio (front-end and back-end) and whether you have a personal financial statement.',
+    q: 'What does the assessment score?',
+    a: 'Five areas: credit score, income and employment, loan-to-value ratio, debt-to-income ratio (front-end and back-end) and whether you have a personal financial statement.',
   },
   {
     q: 'Are the ratings lender approval rules?',
-    a: 'No. They are educational bands based on commonly cited lender guidelines; each lender and loan program sets its own requirements.',
+    a: 'No. The bands are WorthSheet’s own and mirror the Homebuyer Readiness tab of our template. They are not lender rules, and each lender and loan program sets its own requirements.',
   },
   {
     q: 'What credit score do I need?',
@@ -98,13 +98,13 @@ const bands: Record<string, Band[]> = {
   front: [
     { rating: 'Poor', range: 'Above 28% of gross monthly income' },
     { rating: 'Good', range: 'Above 20% up to 28%' },
-    { rating: 'Very Good', range: '10% up to 20%' },
+    { rating: 'Very Good', range: '10% to 20% (including 10% and 20%)' },
     { rating: 'Excellent', range: 'Under 10%' },
   ],
   back: [
     { rating: 'Poor', range: 'Above 36% of gross monthly income' },
     { rating: 'Good', range: 'Above 30% up to 36%' },
-    { rating: 'Very Good', range: '20% up to 30%' },
+    { rating: 'Very Good', range: '20% to 30% (including 20% and 30%)' },
     { rating: 'Excellent', range: 'Under 20%' },
   ],
   pfs: [
@@ -129,7 +129,7 @@ const related = [
   {
     href: '/mortgage-readiness-checklist/',
     title: 'Mortgage readiness checklist',
-    text: 'The five criteria in plain English, with what to fix first.',
+    text: 'The five areas in plain English, with what to fix first.',
   },
   {
     href: '/how-much-house-can-i-afford/',
@@ -149,7 +149,7 @@ const related = [
   {
     href: '/net-worth-calculator/',
     title: 'Net worth calculator',
-    text: 'Total your assets and liabilities for criterion five.',
+    text: 'Total your assets and liabilities for area five.',
   },
   {
     href: '/what-do-banks-look-for-when-reviewing-a-mortgage-application/',
@@ -203,7 +203,7 @@ const criteriaTitles = {
           improve before you apply.
         </p>
         <ul class="list-check">
-          <li>Five criteria, the same bands as the Homebuyer Readiness tab of our free template</li>
+          <li>A self-check across five areas, with the same bands as the Homebuyer Readiness tab of our free template</li>
           <li>Instant ratings and a personalized checklist of next steps</li>
           <li>No credit check: it only uses numbers you type, in your browser</li>
         </ul>
@@ -223,7 +223,7 @@ const criteriaTitles = {
       <div class="ra-intro">
         <h2 id="assessment-title">Rate your mortgage readiness</h2>
         <p class="muted">
-          Fill in as many of the five criteria as you can. Each one is rated as you type, and the score on the right
+          Fill in as many of the five areas as you can. Each one is rated as you type, and the score on the right
           updates automatically. Amounts are in U.S. dollars.
         </p>
       </div>
@@ -254,10 +254,10 @@ const criteriaTitles = {
                 aria-describedby="ra-credit-hint ra-credit-err"
               />
               <p class="field-hint" id="ra-credit-hint">
-                Need your report? Get a free one at
+                Need your credit reports? Get them free, every week, at
                 <a href="https://www.annualcreditreport.com/" rel="noopener" target="_blank">AnnualCreditReport.com</a>,
-                the only website authorized by federal law to provide free credit reports. Scores are often free from
-                your bank or card issuer.
+                the only website authorized by federal law to provide free credit reports. It gives reports, not
+                scores; scores are often free from your bank or card issuer.
               </p>
               <p class="field-error" id="ra-credit-err" data-error="credit" hidden></p>
             </div>
@@ -515,7 +515,10 @@ const criteriaTitles = {
                   </tbody>
                 </table>
               </div>
-              <p class="muted">The two DTI scales have no Fair band, as in the template.</p>
+              <p class="muted">
+                Exactly 10% front-end or exactly 20% back-end is Very Good, not Excellent, as in the template. The two DTI
+                scales have no Fair band.
+              </p>
             </details>
           </section>
 
@@ -563,7 +566,8 @@ const criteriaTitles = {
             <details class="ra-bands">
               <summary>How the personal financial statement is rated</summary>
               <p>
-                Beyond the criteria above, a lender may ask you for a summary of your financial health. Entering totals
+                A PFS is not part of the standard mortgage application, because lenders collect your assets and liabilities
+                on the loan application itself. Some lenders ask for one in special cases, such as self-employment. Entering totals
                 counts as having a statement. Update it often.
               </p>
               <div class="table-wrap">
@@ -592,7 +596,7 @@ const criteriaTitles = {
             <h3 id="results-title">Your readiness score</h3>
             <div aria-live="polite" aria-atomic="true" class="ra-live">
               <p class="ra-empty muted" data-empty>
-                Fill in at least one criterion and your rating appears here.
+                Fill in at least one area and your rating appears here.
               </p>
               <div data-result hidden>
                 <div class="ra-gauge" data-gauge>
@@ -623,7 +627,7 @@ const criteriaTitles = {
             </p>
             <ul class="ra-step-list">
               <li data-step="credit" hidden>
-                <strong>Credit score.</strong> Get your free reports at
+                <strong>Credit score.</strong> Get your free reports, available weekly, at
                 <a href="https://www.annualcreditreport.com/" rel="noopener" target="_blank">AnnualCreditReport.com</a>,
                 dispute any errors, pay down revolving balances and avoid opening new credit before you apply. Lenders set
                 their own score minimums, so ask what applies to the loan you want.
@@ -716,9 +720,9 @@ const criteriaTitles = {
       <Prose>
         <p>
           This page replicates the <strong>Homebuyer Readiness</strong> tab of the free WorthSheet template. The five
-          criteria are your credit score, income and employment, loan-to-value ratio, debt-to-income ratio and personal
-          financial statement. The bands are WorthSheet's educational ratings based on commonly cited lender guidelines;
-          they are not approval rules, and every lender and loan program sets its own requirements.
+          areas are your credit score, income and employment, loan-to-value ratio, debt-to-income ratio and personal
+          financial statement. The bands are WorthSheet's own educational ratings and mirror the template; they are not
+          lender rules, and every lender and loan program sets its own requirements.
         </p>
         <ul>
           <li>
@@ -729,7 +733,7 @@ const criteriaTitles = {
             <strong>Front-end and back-end DTI:</strong> the template divides the principal-and-interest payment by gross
             monthly income. This page also lets you add monthly property tax, homeowners insurance and HOA dues (blank
             counts as $0), so leaving them empty gives the template's result. Back-end DTI adds your other monthly debt
-            payments.
+            payments. A ratio of exactly 10% (front-end) or 20% (back-end) is Very Good, not Excellent.
           </li>
           <li>
             <strong>Credit score bands:</strong> the ranges are contiguous: 670–739 is Good and 740–799 is Very Good,
@@ -1225,11 +1229,11 @@ const criteriaTitles = {
     }
 
     const OVERALL_NOTE: Record<Level, string> = {
-      0: 'Several criteria need work before most lenders would be comfortable. Start with the steps below.',
-      1: 'You are partway there. Strengthen the criteria rated Poor or Fair first.',
+      0: 'Several areas need work before you apply. Start with the steps below.',
+      1: 'You are partway there. Strengthen the areas rated Poor or Fair first.',
       2: 'Solid footing. A few improvements could widen your options.',
-      3: 'Strong across most criteria.',
-      4: 'Excellent across the criteria scored. This is an educational rating, not an approval.',
+      3: 'Strong across most areas.',
+      4: 'Excellent across the areas scored. This is an educational rating, not an approval.',
     };
 
     let tracked = false;
@@ -1316,11 +1320,11 @@ const criteriaTitles = {
 
       if (level !== null) {
         setGauge(level);
-        q<HTMLElement>('[data-headline]').textContent = `${good} of 5 criteria rated Good or better`;
+        q<HTMLElement>('[data-headline]').textContent = `${good} of 5 areas rated Good or better`;
         q<HTMLElement>('[data-overall]').textContent = `Overall: ${RATINGS[level]}.`;
         q<HTMLElement>('[data-overall-note]').textContent = OVERALL_NOTE[level];
         q<HTMLElement>('[data-scored]').textContent =
-          scored === 5 ? 'Based on all 5 criteria.' : `Based on ${scored} of 5 criteria so far. Fill in the rest for a complete score.`;
+          scored === 5 ? 'Based on all 5 areas.' : `Based on ${scored} of 5 areas so far. Fill in the rest for a complete score.`;
       }
 
       // Next steps for criteria rated below Good
